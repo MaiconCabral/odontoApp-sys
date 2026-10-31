@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-canvas: #f7f9fc;
+    --color-surface: #ffffff;
+    --color-surface-soft: #fbfcfe;
+    --color-line: #e9eef5;
+    --color-line-soft: #eef2f5;
+    --color-ink: #172033;
+    --color-heading: #1e2b3f;
+    --color-body: #354257;
+    --color-muted: #8592a4;
+    --color-faint: #a0abb9;
+  }
+
+  .dark {
+    --color-canvas: #0c111a;
+    --color-surface: #121a26;
+    --color-surface-soft: #0e1621;
+    --color-line: #233143;
+    --color-line-soft: #233143;
+    --color-ink: #edf2f8;
+    --color-heading: #edf2f8;
+    --color-body: #bec8d5;
+    --color-muted: #8998aa;
+    --color-faint: #738396;
+  }
+
+  html {
+    @apply bg-canvas font-sans text-ink;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-canvas;
+    min-width: 320px;
+  }
+}

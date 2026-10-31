@@ -29,3 +29,9 @@ Homestead.json
 .env.production
 .phpactor.json
 auth.json
+
+# Local AI tooling (not published)
+CLAUDE.md
+.cursor/
+.agents/
+.claude/
