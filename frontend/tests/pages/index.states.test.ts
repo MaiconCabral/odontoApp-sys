@@ -1,6 +1,6 @@
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import OverviewPage from '~/pages/index.vue'
+import OverviewPage from '~/pages/app/[tenant]/index.vue'
 
 const { useOverviewMock } = vi.hoisted(() => ({ useOverviewMock: vi.fn() }))
 

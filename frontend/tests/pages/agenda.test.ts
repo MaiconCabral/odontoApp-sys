@@ -1,7 +1,7 @@
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import type { VueWrapper } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import AgendaPage from '~/pages/agenda.vue'
+import AgendaPage from '~/pages/app/[tenant]/agenda.vue'
 
 function viewButton(page: VueWrapper, label: string) {
   const button = page.findAll('[aria-label="Visualização da agenda"] button').find(item => item.text() === label)

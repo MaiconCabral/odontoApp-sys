@@ -18,7 +18,7 @@ const chartDescription = computed(() =>
     subtitle="Volume de consultas confirmadas"
   >
     <template #action>
-      <button type="button" class="inline-flex items-center gap-[7px] rounded-[7px] border border-[#e6ebf1] bg-surface px-[9px] py-[7px] text-[10px] text-[#6e7b8c] dark:border-line dark:text-[#acb8c8]">
+      <button type="button" class="inline-flex items-center gap-[7px] rounded-[7px] border border-line bg-surface px-[9px] py-[7px] text-[10px] text-body">
         {{ weekly.range }} <ChevronDown :size="14" />
       </button>
     </template>
@@ -36,7 +36,7 @@ const chartDescription = computed(() =>
       role="img"
       :aria-label="`Agendamentos por dia: ${chartDescription}`"
     >
-      <div class="z-[2] flex h-[164px] flex-col justify-between pr-3 text-[9px] text-[#abb5c1]">
+      <div class="z-[2] flex h-[164px] flex-col justify-between pr-3 text-[9px] text-faint">
         <span v-for="tick in weekly.axis" :key="tick">{{ tick }}</span>
       </div>
       <div class="relative z-[3] flex flex-1 items-end justify-around px-2">
@@ -47,24 +47,24 @@ const chartDescription = computed(() =>
         >
           <div
             class="relative max-h-[140px] min-h-[15px] w-[18px] rounded-[6px_6px_2px_2px] transition-[height] duration-500 ease-in-out sm:w-[22px]"
-            :class="bar.highlighted ? 'bg-[#0c94b5] shadow-[0_5px_12px_rgba(12,148,181,.2)]' : 'bg-[#dceff3] dark:bg-[#214251]'"
+            :class="bar.highlighted ? 'bg-brand shadow-[0_5px_12px_rgba(2,132,199,.2)]' : 'bg-brand-soft'"
             :style="{ height: `${barHeightPercent(bar.value, weekly.scaleMax)}%` }"
           >
             <span
               v-if="bar.highlighted"
-              class="absolute left-1/2 top-[-22px] -translate-x-1/2 rounded bg-[#163d4b] px-[5px] py-[3px] text-[9px] text-white"
+              class="absolute left-1/2 top-[-22px] -translate-x-1/2 rounded bg-brand-soft px-[5px] py-[3px] text-[9px] text-white"
             >
               {{ bar.value }}
             </span>
           </div>
-          <small class="text-[9px] text-[#9aa6b4]">{{ bar.day }}</small>
+          <small class="text-[9px] text-muted">{{ bar.day }}</small>
         </div>
       </div>
       <div class="absolute inset-[0_0_25px_30px] flex flex-col justify-between">
         <i
           v-for="tick in weekly.axis"
           :key="tick"
-          class="border-t border-dashed border-[#e9eff3] dark:border-[#202e3d]"
+          class="border-t border-dashed border-line"
         />
       </div>
     </div>

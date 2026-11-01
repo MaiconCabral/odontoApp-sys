@@ -1,27 +1,22 @@
+import type { AuthUser, Plan, Tenant } from '~/types/auth'
+
 export type NavIcon = 'overview' | 'agenda' | 'patients' | 'settings'
 
-export type NavItem = {
+export type NavEntry = {
   id: string
   label: string
   icon: NavIcon
-  path: string
+  segment: string
   count?: number
 }
 
+export type NavItem = Omit<NavEntry, 'segment'> & {
+  path: string
+}
+
 export type Workspace = {
-  clinic: {
-    initials: string
-    name: string
-    unit: string
-  }
-  user: {
-    initials: string
-    name: string
-    role: string
-  }
-  plan: {
-    name: string
-    trialDaysLeft: number
-  }
+  clinic: Tenant
+  user: AuthUser
+  plan: Plan
   nav: NavItem[]
 }

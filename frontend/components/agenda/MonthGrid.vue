@@ -9,7 +9,7 @@ const props = defineProps<{
 const eventDates = computed(() => new Set(props.events.map(event => event.date)))
 const cells = computed(() => monthGrid(props.date))
 
-const lineClass = 'border-[#edf1f4] dark:border-[#202e3d]'
+const lineClass = 'border-line-soft'
 </script>
 
 <template>
@@ -17,7 +17,7 @@ const lineClass = 'border-[#edf1f4] dark:border-[#202e3d]'
     <div
       v-for="weekday in WEEKDAY_LABELS"
       :key="weekday"
-      class="border-b p-[13px] text-[10px] text-[#9da8b6]"
+      class="border-b p-[13px] text-[10px] text-faint"
       :class="lineClass"
     >
       {{ weekday }}
@@ -28,12 +28,12 @@ const lineClass = 'border-[#edf1f4] dark:border-[#202e3d]'
       class="h-[93px] border-b border-r p-2.5 text-[10px]"
       :class="[
         lineClass,
-        cell === date ? 'bg-[#f1fbfc] font-bold text-[#087f9e] dark:bg-surface-soft' : 'text-[#8794a5] dark:text-[#718096]',
+        cell === date ? 'bg-brand-tint font-bold text-brand-text dark:bg-surface-soft' : 'text-muted',
       ]"
     >
       <template v-if="cell">
         {{ dayOfMonth(cell) }}
-        <i v-if="eventDates.has(cell)" class="mt-[13px] block h-[5px] w-[5px] rounded-full bg-[#1698b4]" />
+        <i v-if="eventDates.has(cell)" class="mt-[13px] block h-[5px] w-[5px] rounded-full bg-brand" />
       </template>
     </div>
   </div>

@@ -2,10 +2,11 @@ import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { describe, expect, it } from 'vitest'
 import Sidebar from '~/components/layout/Sidebar.vue'
 import Topbar from '~/components/layout/Topbar.vue'
+import { demoTenantPath } from '../utils/session'
 
 describe('Sidebar', () => {
   it('marks the current page in the navigation', async () => {
-    const sidebar = await mountSuspended(Sidebar, { props: { collapsed: false, mobileOpen: false } })
+    const sidebar = await mountSuspended(Sidebar, { props: { collapsed: false, mobileOpen: false }, route: demoTenantPath })
 
     expect(sidebar.find('[aria-current="page"]').text()).toContain('Visão geral')
   })
@@ -14,7 +15,12 @@ describe('Sidebar', () => {
     const sidebar = await mountSuspended(Sidebar, { props: { collapsed: false, mobileOpen: false } })
     const links = sidebar.findAll('nav a').map(link => link.attributes('href'))
 
-    expect(links).toEqual(['/', '/agenda', '/pacientes', '/configuracoes'])
+    expect(links).toEqual([
+      demoTenantPath,
+      `${demoTenantPath}/agenda`,
+      `${demoTenantPath}/pacientes`,
+      `${demoTenantPath}/configuracoes`,
+    ])
   })
 
   it('hides the labels when collapsed but keeps them accessible', async () => {
@@ -33,7 +39,7 @@ describe('Sidebar', () => {
 
 describe('Topbar', () => {
   it('shows the current page and asks to open the menu', async () => {
-    const topbar = await mountSuspended(Topbar, { props: { menuOpen: false } })
+    const topbar = await mountSuspended(Topbar, { props: { menuOpen: false }, route: demoTenantPath })
 
     expect(topbar.text()).toContain('Visão geral')
 

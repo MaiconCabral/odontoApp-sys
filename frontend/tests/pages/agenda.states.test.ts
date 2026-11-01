@@ -1,6 +1,6 @@
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import AgendaPage from '~/pages/agenda.vue'
+import AgendaPage from '~/pages/app/[tenant]/agenda.vue'
 
 const { useAgendaMock } = vi.hoisted(() => ({ useAgendaMock: vi.fn() }))
 

@@ -20,7 +20,7 @@ const viewOptions: { value: AgendaView, label: string }[] = [
   { value: 'month', label: 'Mês' },
 ]
 
-const iconButtonClass = 'grid h-[34px] w-[34px] place-items-center rounded-lg text-[#738095] transition duration-200 hover:bg-[#f1f5f9] hover:text-[#167d9d] dark:hover:bg-[#172b37]'
+const iconButtonClass = 'grid h-[34px] w-[34px] place-items-center rounded-lg text-muted transition duration-200 hover:bg-line-soft hover:text-brand-text dark:hover:bg-brand-soft'
 </script>
 
 <template>
@@ -31,7 +31,7 @@ const iconButtonClass = 'grid h-[34px] w-[34px] place-items-center rounded-lg te
       </button>
       <button
         type="button"
-        class="inline-flex items-center rounded-[7px] border border-[#e6ebf1] bg-surface px-3 py-2 text-[10px] font-semibold text-[#3f4e62] dark:border-line dark:text-[#acb8c8]"
+        class="inline-flex items-center rounded-[7px] border border-line bg-surface px-3 py-2 text-[10px] font-semibold text-body"
         @click="$emit('today')"
       >
         Hoje
@@ -45,17 +45,17 @@ const iconButtonClass = 'grid h-[34px] w-[34px] place-items-center rounded-lg te
     <div class="flex flex-col-reverse items-end gap-2 sm:flex-row sm:items-center">
       <button
         type="button"
-        class="inline-flex items-center gap-[7px] rounded-[7px] border border-[#e6ebf1] bg-surface px-[9px] py-[7px] text-[10px] text-[#6e7b8c] dark:border-line dark:text-[#acb8c8]"
+        class="inline-flex items-center gap-[7px] rounded-[7px] border border-line bg-surface px-[9px] py-[7px] text-[10px] text-body"
       >
         <Filter :size="15" /> Filtros
       </button>
-      <div class="flex rounded-lg border border-[#e5ebf0] bg-surface p-[3px] dark:border-line" role="group" aria-label="Visualização da agenda">
+      <div class="flex rounded-lg border border-line bg-surface p-[3px]" role="group" aria-label="Visualização da agenda">
         <button
           v-for="option in viewOptions"
           :key="option.value"
           type="button"
           class="rounded-[5px] px-[11px] py-1.5 text-[10px]"
-          :class="view === option.value ? 'bg-[#e6f6f9] font-bold text-[#087e9f]' : 'text-[#8592a3] dark:text-[#acb8c8]'"
+          :class="view === option.value ? 'bg-brand-soft font-bold text-brand-text' : 'text-muted'"
           :aria-pressed="view === option.value"
           @click="view = option.value"
         >

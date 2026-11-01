@@ -1,26 +1,34 @@
 <script setup lang="ts">
-defineProps<{
+const props = withDefaults(defineProps<{
   label: string
   error?: string
   full?: boolean
-}>()
+  size?: 'default' | 'large'
+}>(), {
+  size: 'default',
+})
 
 const id = useId()
 const errorId = `${id}-error`
 
-const controlClass = 'h-[37px] w-full rounded-[7px] border border-[#e1e8ee] bg-surface px-[11px] text-[11px] text-[#506075] outline-none transition duration-200 focus:border-[#73cddd] aria-[invalid=true]:!border-[#d9705c] dark:border-line dark:text-ink dark:[color-scheme:dark]'
+const sizes = {
+  default: { control: 'h-[37px] rounded-[7px] px-[11px] text-[11px]', label: 'text-[10px]', error: 'text-[10px]' },
+  large: { control: 'h-11 rounded-lg px-3 text-[14px]', label: 'text-[13px]', error: 'text-[12px]' },
+}
+
+const controlClass = computed(() => `${sizes[props.size].control} w-full border border-line bg-surface text-body outline-none transition duration-200 focus:border-brand-accent aria-[invalid=true]:!border-[#d9705c] dark:[color-scheme:dark]`)
 </script>
 
 <template>
   <div class="flex min-w-0 flex-col gap-[7px]" :class="{ 'sm:col-span-2': full }">
-    <label :for="id" class="text-[10px] font-semibold text-[#748196] dark:text-muted">{{ label }}</label>
+    <label :for="id" class="font-semibold text-muted" :class="sizes[size].label">{{ label }}</label>
     <slot
       :id="id"
       :control-class="controlClass"
       :invalid="Boolean(error)"
       :described-by="error ? errorId : undefined"
     />
-    <p v-if="error" :id="errorId" class="text-[10px] text-[#c2553f]">
+    <p v-if="error" :id="errorId" class="text-[#c2553f] dark:text-[#e88d7b]" :class="sizes[size].error">
       {{ error }}
     </p>
   </div>

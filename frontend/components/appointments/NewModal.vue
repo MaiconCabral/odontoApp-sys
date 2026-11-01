@@ -29,7 +29,7 @@ const patientNames = computed(() =>
 const allEvents = computed(() => [...(agenda.value?.events ?? []), ...sessionEvents.value])
 
 function roomLabel(name: string) {
-  return name.split(' · ')[0]
+  return name.split(' ·')[0]
 }
 
 function submit() {
@@ -73,14 +73,14 @@ function submit() {
 
     <AppFormField v-slot="field" label="Paciente" :error="errors.patientName" full>
       <div
-        class="flex h-[37px] items-center gap-2 rounded-[7px] border border-[#e1e8ee] px-[11px] text-[#a2aebb] transition duration-200 focus-within:border-[#73cddd] dark:border-line"
+        class="flex h-[37px] items-center gap-2 rounded-[7px] border border-line px-[11px] text-faint transition duration-200 focus-within:border-brand-accent"
         :class="{ '!border-[#d9705c]': field.invalid }"
       >
         <Search :size="15" class="flex-none" />
         <input
           :id="field.id"
           v-model="form.patientName"
-          class="w-full border-0 bg-transparent text-[11px] text-[#526176] outline-none placeholder:text-[#abb5c0] dark:text-[#dce5ef] [&::-webkit-calendar-picker-indicator]:!hidden"
+          class="w-full border-0 bg-transparent text-[11px] text-body outline-none placeholder:text-faint [&::-webkit-calendar-picker-indicator]:!hidden"
           placeholder="Buscar paciente cadastrado"
           autocomplete="off"
           autofocus
@@ -136,18 +136,18 @@ function submit() {
     </AppFormField>
 
     <fieldset class="flex min-w-0 flex-col gap-[7px] sm:col-span-2">
-      <legend class="mb-[7px] text-[10px] font-semibold text-[#748196] dark:text-muted">
+      <legend class="mb-[7px] text-[10px] font-semibold text-muted">
         Sala / cadeira
       </legend>
       <div class="flex flex-col gap-2 sm:flex-row">
         <label
           v-for="room in agenda.rooms"
           :key="room.id"
-          class="flex flex-1 flex-wrap items-center gap-[7px] rounded-[7px] border p-[9px] text-left text-[10px] focus-within:border-[#73cddd]"
+          class="flex flex-1 flex-wrap items-center gap-[7px] rounded-[7px] border p-[9px] text-left text-[10px] focus-within:border-brand-accent"
           :class="[
             form.roomId === room.id
-              ? 'border-[#73cddd] bg-[#f1fbfc] text-[#087d9b] dark:bg-[#123543] dark:text-[#6cd0e5]'
-              : 'border-[#e0e8ee] bg-surface text-[#657488] dark:border-line dark:text-[#acb8c8]',
+              ? 'border-brand-accent bg-brand-tint text-brand-text dark:bg-brand-soft'
+              : 'border-line bg-surface text-body',
             isRoomTaken(allEvents, form.date, form.hour, room.id) ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
           ]"
         >
@@ -159,7 +159,7 @@ function submit() {
             :value="room.id"
             :disabled="isRoomTaken(allEvents, form.date, form.hour, room.id)"
           >
-          <span class="h-[7px] w-[7px] flex-none rounded-full border-2 border-[#94a2b2]" />
+          <span class="h-[7px] w-[7px] flex-none rounded-full border-2 border-faint" />
           {{ roomLabel(room.name) }}
           <small
             class="ml-[15px] w-full text-[8px]"

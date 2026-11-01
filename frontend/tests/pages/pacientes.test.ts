@@ -1,6 +1,6 @@
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { describe, expect, it } from 'vitest'
-import PatientsPage from '~/pages/pacientes.vue'
+import PatientsPage from '~/pages/app/[tenant]/pacientes.vue'
 
 describe('Pacientes', () => {
   it('renders the header and every patient', async () => {

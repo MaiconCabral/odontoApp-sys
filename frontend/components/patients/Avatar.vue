@@ -7,7 +7,7 @@ defineProps<{
 }>()
 
 const toneClasses: Record<PatientTone, string> = {
-  blue: 'bg-[#ddf3f7] text-[#087b9b]',
+  blue: 'bg-brand-soft text-brand-text',
   amber: 'bg-[#fff0d1] text-[#b98027]',
   green: 'bg-[#e1f6ed] text-[#218d69]',
   violet: 'bg-[#eeeafb] text-[#776fb1]',

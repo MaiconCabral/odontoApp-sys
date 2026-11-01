@@ -24,7 +24,7 @@ const form = reactive<ClinicData>({ ...props.clinic })
     <template #action>
       <button
         type="button"
-        class="inline-flex flex-none items-center justify-center gap-2 rounded-lg border border-[#e3e9f0] bg-surface px-[15px] py-2.5 text-[12px] font-bold text-[#647286] transition duration-200 dark:border-line dark:text-[#acb8c8]"
+        class="inline-flex flex-none items-center justify-center gap-2 rounded-lg border border-line bg-surface px-[15px] py-2.5 text-[12px] font-bold text-body transition duration-200"
       >
         Salvar alterações
       </button>
@@ -37,14 +37,14 @@ const form = reactive<ClinicData>({ ...props.clinic })
         class="flex flex-col gap-[7px]"
         :class="{ 'sm:col-span-2': field.full }"
       >
-        <label :for="`clinic-${field.key}`" class="text-[10px] font-semibold text-[#748196] dark:text-muted">
+        <label :for="`clinic-${field.key}`" class="text-[10px] font-semibold text-muted dark:text-muted">
           {{ field.label }}
         </label>
         <input
           :id="`clinic-${field.key}`"
           v-model="form[field.key]"
           :type="field.type"
-          class="h-[37px] w-full rounded-[7px] border border-[#e1e8ee] bg-surface px-[11px] text-[11px] text-[#506075] outline-none transition duration-200 focus:border-[#73cddd] dark:border-line dark:text-ink"
+          class="h-[37px] w-full rounded-[7px] border border-line bg-surface px-[11px] text-[11px] text-body outline-none transition duration-200 focus:border-brand-accent"
         >
       </div>
     </div>

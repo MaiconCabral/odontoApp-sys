@@ -10,15 +10,15 @@ const active = defineModel<SettingsTabId>('active', { required: true })
 
 <template>
   <aside
-    class="flex overflow-auto rounded-xl border border-[#e7edf3] bg-surface p-4 shadow-[0_4px_14px_rgba(42,64,91,.025)] dark:border-line sm:p-2 md:grid"
+    class="flex overflow-auto rounded-xl border border-line bg-surface p-4 shadow-[0_4px_14px_rgba(42,64,91,.025)] sm:p-2 md:grid"
     aria-label="Seções das configurações"
   >
     <button
       v-for="tab in tabs"
       :key="tab.id"
       type="button"
-      class="flex justify-between gap-2 whitespace-nowrap rounded-[7px] px-3 py-[11px] text-left text-[11px] hover:bg-[#eaf7fa] hover:font-bold hover:text-[#087f9f] dark:hover:bg-[#172b37] md:whitespace-normal"
-      :class="active === tab.id ? 'bg-[#eaf7fa] font-bold text-[#087f9f] dark:bg-[#123543] dark:text-[#6cd0e5]' : 'text-[#8290a1]'"
+      class="flex justify-between gap-2 whitespace-nowrap rounded-[7px] px-3 py-[11px] text-left text-[11px] hover:bg-brand-soft hover:font-bold hover:text-brand-text md:whitespace-normal"
+      :class="active === tab.id ? 'bg-brand-soft font-bold text-brand-text' : 'text-muted'"
       :aria-current="active === tab.id ? 'true' : undefined"
       @click="active = tab.id"
     >

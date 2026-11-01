@@ -1,9 +1,10 @@
 export function useTheme() {
-  const isDark = useState('theme-dark', () => false)
+  const colorMode = useColorMode()
+  const isDark = computed(() => colorMode.value === 'dark')
 
   function toggleTheme() {
-    isDark.value = !isDark.value
+    colorMode.preference = isDark.value ? 'light' : 'dark'
   }
 
-  return { isDark: readonly(isDark), toggleTheme }
+  return { isDark, toggleTheme }
 }

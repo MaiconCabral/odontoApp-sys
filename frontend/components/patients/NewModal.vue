@@ -78,7 +78,7 @@ function submit() {
         inputmode="numeric"
         autocomplete="off"
         placeholder="000.000.000-00"
-        :class="[field.controlClass, 'placeholder:text-[#abb5c0]']"
+        :class="[field.controlClass, 'placeholder:text-faint']"
         :aria-invalid="field.invalid"
         :aria-describedby="field.describedBy"
       >
@@ -91,7 +91,7 @@ function submit() {
         type="tel"
         autocomplete="off"
         placeholder="(11) 90000-0000"
-        :class="[field.controlClass, 'placeholder:text-[#abb5c0]']"
+        :class="[field.controlClass, 'placeholder:text-faint']"
         :aria-invalid="field.invalid"
         :aria-describedby="field.describedBy"
       >

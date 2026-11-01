@@ -37,7 +37,7 @@ const {
       :free-slots-today="agenda.freeSlotsToday"
     />
     <section
-      class="min-w-0 overflow-auto rounded-xl border border-[#e7edf3] bg-surface shadow-[0_4px_14px_rgba(42,64,91,.025)] dark:border-line"
+      class="min-w-0 overflow-auto rounded-xl border border-line bg-surface shadow-[0_4px_14px_rgba(42,64,91,.025)]"
       aria-label="Calendário de consultas"
     >
       <AgendaMonthGrid v-if="view === 'month'" :date="currentDate" :events="visibleEvents" />

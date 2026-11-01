@@ -12,7 +12,7 @@ const selectedProfessionals = defineModel<string[]>('selectedProfessionals', { r
 const selectedRooms = defineModel<string[]>('selectedRooms', { required: true })
 
 const toneClasses: Record<ProfessionalTone, string> = {
-  cyan: 'bg-[#55bdd0]',
+  cyan: 'bg-brand',
   amber: 'bg-[#e4ad4c]',
   green: 'bg-[#51bd92]',
 }
@@ -26,14 +26,14 @@ function toggleAllProfessionals() {
     : props.professionals.map(professional => professional.id)
 }
 
-const headingClass = 'col-span-2 mb-3 flex items-center justify-between text-[11px] text-[#526176] dark:text-body md:col-span-1'
-const addButtonClass = 'text-[#0a90ad]'
-const rowClass = 'my-[13px] flex items-center gap-2 text-[10px] text-[#748296] dark:text-muted'
-const checkboxClass = 'h-[13px] w-[13px] accent-[#0c93b2]'
+const headingClass = 'col-span-2 mb-3 flex items-center justify-between text-[11px] text-body md:col-span-1'
+const addButtonClass = 'text-brand-text'
+const rowClass = 'my-[13px] flex items-center gap-2 text-[10px] text-muted'
+const checkboxClass = 'h-[13px] w-[13px] accent-brand'
 </script>
 
 <template>
-  <aside class="grid grid-cols-2 gap-x-3 gap-y-1 rounded-xl border border-[#e7edf3] bg-surface p-4 shadow-[0_4px_14px_rgba(42,64,91,.025)] dark:border-line sm:px-[15px] sm:py-[17px] md:block">
+  <aside class="grid grid-cols-2 gap-x-3 gap-y-1 rounded-xl border border-line bg-surface p-4 shadow-[0_4px_14px_rgba(42,64,91,.025)] sm:px-[15px] sm:py-[17px] md:block">
     <div :class="headingClass">
       <strong>Profissionais</strong>
       <button type="button" :class="addButtonClass" aria-label="Adicionar profissional">
@@ -48,7 +48,7 @@ const checkboxClass = 'h-[13px] w-[13px] accent-[#0c93b2]'
         :indeterminate="someProfessionalsSelected"
         @change="toggleAllProfessionals"
       >
-      <span class="h-[7px] w-[7px] flex-none rounded-sm bg-[#0c91b0]" />
+      <span class="h-[7px] w-[7px] flex-none rounded-sm bg-brand" />
       Todos os profissionais
     </label>
     <label v-for="professional in professionals" :key="professional.id" :class="rowClass">
@@ -67,7 +67,7 @@ const checkboxClass = 'h-[13px] w-[13px] accent-[#0c93b2]'
     </div>
     <label v-for="room in rooms" :key="room.id" :class="rowClass">
       <input v-model="selectedRooms" type="checkbox" :class="checkboxClass" :value="room.id">
-      <span class="h-[7px] w-[7px] flex-none rounded-full border-2 border-[#94a2b2]" />
+      <span class="h-[7px] w-[7px] flex-none rounded-full border-2 border-faint" />
       {{ room.name }}
     </label>
 

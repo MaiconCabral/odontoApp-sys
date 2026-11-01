@@ -8,7 +8,7 @@ const props = defineProps<{
 }>()
 
 const toneClasses: Record<AgendaEventTone, string> = {
-  blue: 'border-[#138fae] bg-[#e4f7fa] text-[#147c96]',
+  blue: 'border-brand-accent bg-brand-soft text-brand-text',
   amber: 'border-[#dda646] bg-[#fff4dc] text-[#a3782c]',
   violet: 'border-[#8e83ca] bg-[#efedfb] text-[#7467af]',
 }
@@ -24,7 +24,7 @@ const eventsBySlot = computed(() => {
   return slots
 })
 
-const lineClass = 'border-[#edf1f4] dark:border-[#202e3d]'
+const lineClass = 'border-line-soft'
 </script>
 
 <template>
@@ -38,13 +38,13 @@ const lineClass = 'border-[#edf1f4] dark:border-[#202e3d]'
       v-for="day in days"
       :key="day.date"
       class="flex items-center justify-center gap-[5px] border-b border-r text-[10px]"
-      :class="[lineClass, day.isToday ? 'bg-[#f1fbfc] text-[#0786a5] dark:bg-[#123543] dark:text-[#6cd0e5]' : 'text-[#9aa6b4]']"
+      :class="[lineClass, day.isToday ? 'bg-brand-tint text-brand-text dark:bg-brand-soft' : 'text-muted']"
       :aria-current="day.isToday ? 'date' : undefined"
     >
       <span>{{ day.weekday }}</span>
       <strong
         class="text-[13px]"
-        :class="day.isToday ? 'grid h-6 w-6 place-items-center rounded-full bg-[#0d94b3] text-white' : 'text-[#647287] dark:text-body'"
+        :class="day.isToday ? 'grid h-6 w-6 place-items-center rounded-full bg-brand text-white' : 'text-body'"
       >
         {{ day.dayOfMonth }}
       </strong>
@@ -54,7 +54,7 @@ const lineClass = 'border-[#edf1f4] dark:border-[#202e3d]'
       <span
         v-for="hour in hours"
         :key="hour"
-        class="h-[54px] pr-2 pt-2 text-right text-[9px] text-[#a3aebb] dark:text-faint"
+        class="h-[54px] pr-2 pt-2 text-right text-[9px] text-faint"
       >
         {{ hour }}
       </span>
@@ -63,7 +63,7 @@ const lineClass = 'border-[#edf1f4] dark:border-[#202e3d]'
       <div
         v-for="hour in hours"
         :key="hour"
-        class="relative h-[54px] border-b border-[#f0f3f6] dark:border-[#202e3d]"
+        class="relative h-[54px] border-b border-line-soft"
       >
         <div
           v-for="event in eventsBySlot.get(`${day.date}|${hour}`)"

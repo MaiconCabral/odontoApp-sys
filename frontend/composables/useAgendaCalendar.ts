@@ -4,10 +4,10 @@ export function useAgendaCalendar(agenda: Agenda) {
   const sessionEvents = useSessionAgendaEvents()
   const view = ref<AgendaView>('week')
   const currentDate = ref(agenda.today)
-  const selectedProfessionals = ref(
-    agenda.professionals.filter(professional => professional.selected).map(professional => professional.id),
-  )
-  const selectedRooms = ref(agenda.rooms.filter(room => room.selected).map(room => room.id))
+
+  const filters = useAgendaFiltersStore()
+  filters.initialize(agenda)
+  const { selectedProfessionals, selectedRooms } = storeToRefs(filters)
 
   const rangeLabel = computed(() => formatRange(currentDate.value, view.value))
 

@@ -10,7 +10,6 @@ import {
   PanelLeftOpen,
   Settings,
   Sparkles,
-  Stethoscope,
   Users,
   X,
 } from 'lucide-vue-next'
@@ -35,12 +34,13 @@ const navIcons = {
 
 const route = useRoute()
 const workspace = useWorkspace()
+const { logout } = useAuth()
 
 // The mobile drawer always shows the full menu.
 const isCompact = computed(() => props.collapsed && !props.mobileOpen)
 
 const footerItemClass = computed(() => [
-  'flex w-full items-center gap-3 rounded-[9px] px-3 py-2.5 text-left text-[12px] text-[#929eae] transition duration-200 hover:bg-[#f1f8fa] hover:text-[#0b809f] dark:text-faint dark:hover:bg-[#172b37]',
+  'flex w-full items-center gap-3 rounded-[9px] px-3 py-2.5 text-left text-[12px] text-muted transition duration-200 hover:bg-brand-tint hover:text-brand-text dark:hover:bg-brand-soft',
   isCompact.value ? 'h-[42px] justify-center !px-0' : '',
 ])
 </script>
@@ -55,15 +55,10 @@ const footerItemClass = computed(() => [
     data-testid="sidebar"
   >
     <div class="flex h-[34px] items-center gap-2.5" :class="isCompact ? 'justify-center' : 'px-2.5'">
-      <div class="grid h-[30px] w-[30px] flex-none place-items-center rounded-[9px] bg-[#0b8db7] text-white shadow-[0_4px_12px_rgba(11,141,183,.2)]">
-        <Stethoscope :size="19" :stroke-width="2.5" />
-      </div>
-      <div v-if="!isCompact" class="font-display text-[21px] font-extrabold leading-[normal] tracking-[-1.2px] text-ink">
-        sorriso<span class="text-[#0b9ac2]">.</span>
-      </div>
+      <AppLogo :compact="isCompact" />
       <button
         type="button"
-        class="ml-auto grid h-[34px] w-[34px] place-items-center rounded-lg text-[#738095] transition duration-200 hover:bg-[#f1f5f9] hover:text-[#167d9d] dark:hover:bg-[#172b37] md:hidden"
+        class="ml-auto grid h-[34px] w-[34px] place-items-center rounded-lg text-muted transition duration-200 hover:bg-line-soft hover:text-brand-text dark:hover:bg-brand-soft md:hidden"
         aria-label="Fechar menu"
         @click="$emit('close')"
       >
@@ -72,23 +67,23 @@ const footerItemClass = computed(() => [
     </div>
 
     <div
-      class="mx-1 mb-[30px] mt-[29px] flex items-center gap-2.5 rounded-xl border border-[#e8edf3] bg-surface-soft dark:border-line"
+      class="mx-1 mb-[30px] mt-[29px] flex items-center gap-2.5 rounded-xl border border-line bg-surface-soft"
       :class="isCompact ? 'justify-center p-2' : 'p-2.5'"
     >
-      <div class="grid h-8 w-8 flex-none place-items-center rounded-[9px] bg-[#dff5fb] text-[11px] font-bold text-[#0a7392]">
+      <div class="grid h-8 w-8 flex-none place-items-center rounded-[9px] bg-brand-soft text-[11px] font-bold text-brand-text">
         {{ workspace.clinic.initials }}
       </div>
       <template v-if="!isCompact">
         <div class="flex min-w-0 flex-1 flex-col">
           <strong class="truncate text-[12px]">{{ workspace.clinic.name }}</strong>
-          <span class="mt-0.5 text-[10px] text-[#8b98a9]">{{ workspace.clinic.unit }}</span>
+          <span class="mt-0.5 text-[10px] text-muted">{{ workspace.clinic.unit }}</span>
         </div>
-        <ChevronDown :size="16" class="text-[#a1abba] dark:text-faint" />
+        <ChevronDown :size="16" class="text-faint" />
       </template>
     </div>
 
     <div
-      class="pb-[9px] font-bold uppercase tracking-[.1em] text-[#a0adbd] dark:text-faint"
+      class="pb-[9px] font-bold uppercase tracking-[.1em] text-faint"
       :class="isCompact ? 'text-center text-[8px]' : 'px-3 text-[10px]'"
     >
       Workspace
@@ -98,11 +93,11 @@ const footerItemClass = computed(() => [
         v-for="item in workspace.nav"
         :key="item.id"
         :to="item.path"
-        class="flex w-full items-center gap-3 rounded-[9px] py-2.5 text-left text-[13px] transition duration-200 hover:bg-[#f1f8fa] hover:text-[#0b809f] dark:hover:bg-[#172b37]"
+        class="flex w-full items-center gap-3 rounded-[9px] py-2.5 text-left text-[13px] transition duration-200 hover:bg-brand-tint hover:text-brand-text dark:hover:bg-brand-soft"
         :class="[
           item.path === route.path
-            ? 'bg-[#eaf7fa] font-bold text-[#087e9f] dark:bg-[#123543] dark:text-[#6cd0e5]'
-            : 'text-[#748195]',
+            ? 'bg-brand-soft font-bold text-brand-text'
+            : 'text-muted',
           isCompact ? 'h-[42px] justify-center' : 'px-3',
         ]"
         :aria-current="item.path === route.path ? 'page' : undefined"
@@ -118,7 +113,7 @@ const footerItemClass = computed(() => [
           <span>{{ item.label }}</span>
           <span
             v-if="item.count"
-            class="ml-auto grid h-[19px] min-w-5 place-items-center rounded-md bg-[#d9f1f6] text-[10px] text-[#0a86a8]"
+            class="ml-auto grid h-[19px] min-w-5 place-items-center rounded-md bg-brand-soft text-[10px] text-brand-text"
           >
             {{ item.count }}
           </span>
@@ -129,16 +124,16 @@ const footerItemClass = computed(() => [
     <div class="mt-auto">
       <div
         v-if="!isCompact"
-        class="mx-1 mb-[17px] mt-5 rounded-xl border border-[#d7eef3] bg-[linear-gradient(135deg,#f1fbfd,#fbfeff)] p-3.5 dark:border-[#254957] dark:bg-[#112731] dark:bg-none"
+        class="mx-1 mb-[17px] mt-5 rounded-xl border border-brand-line bg-brand-tint p-3.5"
       >
-        <div class="grid h-[30px] w-[30px] place-items-center rounded-lg bg-[#d9f3f7] text-[#0784a4]">
+        <div class="grid h-[30px] w-[30px] place-items-center rounded-lg bg-brand-soft text-brand-text">
           <Sparkles :size="16" />
         </div>
         <strong class="mt-[11px] block text-[12px]">Plano {{ workspace.plan.name }}</strong>
-        <p class="mb-2.5 mt-1 text-[11px] leading-[1.45] text-[#8290a2] dark:text-[#84aeb8]">
-          Seu trial termina em <b class="text-[#087c9a]">{{ workspace.plan.trialDaysLeft }} dias</b>.
+        <p class="mb-2.5 mt-1 text-[11px] leading-[1.45] text-muted">
+          Seu trial termina em <b class="text-brand-text">{{ workspace.plan.trialDaysLeft }} dias</b>.
         </p>
-        <button type="button" class="flex items-center gap-1 text-[11px] font-bold text-[#0784a4]">
+        <button type="button" class="flex items-center gap-1 text-[11px] font-bold text-brand-text">
           Ver detalhes <ArrowUpRight :size="13" />
         </button>
       </div>
@@ -147,7 +142,7 @@ const footerItemClass = computed(() => [
         <CircleHelp :size="18" class="flex-none" />
         <span v-if="!isCompact">Central de ajuda</span>
       </button>
-      <button type="button" :class="footerItemClass" :aria-label="isCompact ? 'Sair da conta' : undefined">
+      <button type="button" :class="footerItemClass" :aria-label="isCompact ? 'Sair da conta' : undefined" @click="logout">
         <LogOut :size="18" class="flex-none" />
         <span v-if="!isCompact">Sair da conta</span>
       </button>
@@ -155,7 +150,7 @@ const footerItemClass = computed(() => [
 
     <button
       type="button"
-      class="mt-[15px] hidden w-full items-center gap-[11px] py-2.5 text-[11px] text-[#a1adbc] transition duration-200 hover:text-[#0784a4] md:flex"
+      class="mt-[15px] hidden w-full items-center gap-[11px] py-2.5 text-[11px] text-faint transition duration-200 hover:text-brand-text md:flex"
       :class="isCompact ? 'justify-center' : 'px-3'"
       :aria-label="isCompact ? 'Expandir menu' : undefined"
       :aria-expanded="!isCompact"

@@ -5,8 +5,8 @@ import AppointmentModal from '~/components/appointments/NewModal.vue'
 import PatientModal from '~/components/patients/NewModal.vue'
 import { agendaMock } from '~/mocks/agenda'
 import { patientsMock } from '~/mocks/patients'
-import AgendaPage from '~/pages/agenda.vue'
-import PatientsPage from '~/pages/pacientes.vue'
+import AgendaPage from '~/pages/app/[tenant]/agenda.vue'
+import PatientsPage from '~/pages/app/[tenant]/pacientes.vue'
 
 function fieldByLabel(root: VueWrapper, label: string) {
   const element = root.findAll('label').find(item => item.text() === label)

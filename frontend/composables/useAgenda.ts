@@ -1,8 +1,7 @@
 import type { AgendaEvent } from '~/types/agenda'
-import { agendaMock } from '~/mocks/agenda'
 
 export function useAgenda() {
-  return useAsyncData('agenda', () => Promise.resolve(agendaMock))
+  return useAsyncData('agenda', () => agendaService.get())
 }
 
 // Appointments confirmed in this session, until the API exists.

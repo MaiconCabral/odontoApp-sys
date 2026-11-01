@@ -2,7 +2,7 @@ import { mountSuspended } from '@nuxt/test-utils/runtime'
 import type { VueWrapper } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 import { settingsMock } from '~/mocks/settings'
-import SettingsPage from '~/pages/configuracoes.vue'
+import SettingsPage from '~/pages/app/[tenant]/configuracoes.vue'
 
 function openTab(page: VueWrapper, label: string) {
   const tab = page.findAll('aside button').find(item => item.text().startsWith(label))

@@ -1,6 +1,8 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+const clientOnly = { ssr: false }
+
 export default defineNuxtConfig({
-  modules: ['@nuxtjs/tailwindcss'],
+  modules: ['@nuxtjs/tailwindcss', '@nuxtjs/color-mode', '@pinia/nuxt'],
   compatibilityDate: '2025-07-15',
   app: {
     head: {
@@ -16,10 +18,27 @@ export default defineNuxtConfig({
       ],
     },
   },
+  colorMode: {
+    classSuffix: '',
+    preference: 'system',
+    fallback: 'light',
+  },
   devtools: { enabled: true },
   devServer: {
     host: '127.0.0.1',
     port: 3000,
+  },
+  imports: {
+    dirs: ['services'],
+  },
+  // The panel and the auth screens depend on the session, so they render in the browser.
+  // SSR stays on by default for future public pages.
+  routeRules: {
+    '/app/**': clientOnly,
+    '/login': clientOnly,
+    '/cadastro': clientOnly,
+    '/recuperar-senha': clientOnly,
+    '/redefinir-senha': clientOnly,
   },
   runtimeConfig: {
     public: {

@@ -33,9 +33,13 @@ export default {
         muted: 'var(--color-muted)',
         faint: 'var(--color-faint)',
         brand: {
-          DEFAULT: '#0b8cad',
-          hover: '#087993',
-          text: '#0785a5',
+          DEFAULT: '#0284c7',
+          hover: '#0369a1',
+          accent: '#0ea5e9',
+          text: 'var(--color-brand-text)',
+          tint: 'var(--color-brand-tint)',
+          soft: 'var(--color-brand-soft)',
+          line: 'var(--color-brand-line)',
         },
       },
       fontFamily: {

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-const { isDark } = useTheme()
 const { activeModal } = useActiveModal()
 
 const isSidebarCollapsed = ref(false)
@@ -9,12 +8,6 @@ const route = useRoute()
 
 watch(() => route.path, () => {
   isMobileMenuOpen.value = false
-})
-
-useHead({
-  htmlAttrs: {
-    class: computed(() => (isDark.value ? 'dark' : '')),
-  },
 })
 </script>
 

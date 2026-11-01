@@ -1,6 +1,6 @@
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import SettingsPage from '~/pages/configuracoes.vue'
+import SettingsPage from '~/pages/app/[tenant]/configuracoes.vue'
 
 const { useSettingsMock } = vi.hoisted(() => ({ useSettingsMock: vi.fn() }))
 
