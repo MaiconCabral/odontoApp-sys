@@ -1,6 +1,7 @@
-import type { Agenda } from '~/types/agenda'
+import type { Agenda, AgendaRange } from '~/types/agenda'
 
 export const agendaService = {
-  // Agenda the user may see.
-  get: () => useApi().api<Agenda>('/api/agenda'),
+  // Agenda of a period, or of the default period when none is given.
+  get: (range?: AgendaRange | null) =>
+    useApi().api<Agenda>('/api/agenda', { query: range ?? undefined }),
 }

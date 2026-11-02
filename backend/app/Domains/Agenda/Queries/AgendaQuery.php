@@ -2,42 +2,68 @@
 
 namespace App\Domains\Agenda\Queries;
 
+use App\Domains\Agenda\Enums\AppointmentStatus;
+use App\Domains\Agenda\Enums\Procedure;
 use App\Domains\Agenda\Models\Appointment;
+use App\Domains\Agenda\Models\BusinessHour;
 use App\Domains\Agenda\Models\Room;
+use App\Domains\Agenda\Models\ScheduleBlock;
+use App\Domains\Agenda\Support\DaySchedule;
 use App\Domains\Identity\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
 class AgendaQuery
 {
-    private const HOURS = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+    private const DEFAULT_OPENING = '08:00';
 
-    private const PROCEDURES = ['Avaliação', 'Avaliação ortodôntica', 'Limpeza e prevenção', 'Restauração estética', 'Consulta de retorno'];
+    private const DEFAULT_CLOSING = '18:00';
 
-    private const MONTHS_BEFORE = 1;
-
-    private const MONTHS_AFTER = 2;
+    /** Receives the free slot counter. */
+    public function __construct(private readonly AvailableSlots $slots) {}
 
     /**
-     * Builds the agenda the viewer is allowed to see.
+     * Builds the agenda of a period that the viewer is allowed to see.
      *
      * @return array<string, mixed>
      */
-    public function for(User $viewer, ?int $requestedProfessionalId = null): array
+    public function for(User $viewer, CarbonImmutable $from, CarbonImmutable $to, ?int $requestedProfessionalId = null): array
     {
         // The viewer's role wins over any id sent by the client.
         $professionalId = $viewer->can('viewAll', Appointment::class) ? $requestedProfessionalId : $viewer->id;
         $professionals = $this->professionals($professionalId);
-        $events = $this->events($professionalId);
 
         return [
             'today' => today()->toDateString(),
-            'hours' => self::HOURS,
-            'procedures' => self::PROCEDURES,
-            'freeSlotsToday' => $this->freeSlotsToday($professionals, $events),
+            'from' => $from->toDateString(),
+            'to' => $to->toDateString(),
+            'hours' => $this->hours(),
+            'procedures' => Procedure::options(),
+            'freeSlotsToday' => $this->slots->countFree(CarbonImmutable::today(), $professionals->pluck('id')->all()),
             'professionals' => $professionals,
             'rooms' => $this->rooms(),
-            'events' => $events,
+            'events' => $this->events($from, $to, $professionalId),
+            'blocks' => $this->blocks($from, $to, $professionalId),
         ];
+    }
+
+    /**
+     * Rows of the day grid, every 30 minutes from the earliest opening to the latest closing.
+     *
+     * @return list<string>
+     */
+    private function hours(): array
+    {
+        $open = BusinessHour::query()->where('closed', false);
+        $opening = BusinessHour::hhmm($open->clone()->min('opens_at')) ?? self::DEFAULT_OPENING;
+        $closing = BusinessHour::hhmm($open->clone()->max('closes_at')) ?? self::DEFAULT_CLOSING;
+        $hours = [];
+
+        for ($time = CarbonImmutable::parse($opening); $time->format('H:i') < $closing; $time = $time->addMinutes(DaySchedule::SLOT_MINUTES)) {
+            $hours[] = $time->format('H:i');
+        }
+
+        return $hours;
     }
 
     /** Active users who attend patients. */
@@ -70,16 +96,13 @@ class AgendaQuery
             ]);
     }
 
-    /** Appointments in the loaded window, without cancelled ones. */
-    private function events(?int $professionalId): Collection
+    /** Appointments of the period, without cancelled and rejected ones. */
+    private function events(CarbonImmutable $from, CarbonImmutable $to, ?int $professionalId): Collection
     {
         return Appointment::query()
             ->with('patient:id,name')
-            ->where('status', '!=', Appointment::STATUS_CANCELLED)
-            ->whereBetween('starts_at', [
-                today()->subMonthsNoOverflow(self::MONTHS_BEFORE),
-                today()->addMonthsNoOverflow(self::MONTHS_AFTER)->endOfDay(),
-            ])
+            ->whereNotIn('status', [AppointmentStatus::Cancelled, AppointmentStatus::Rejected])
+            ->whereBetween('starts_at', [$from, $to])
             ->when($professionalId, fn ($query) => $query->where('professional_id', $professionalId))
             ->orderBy('starts_at')
             ->get()
@@ -88,18 +111,32 @@ class AgendaQuery
                 'patientName' => $appointment->patient->name,
                 'date' => $appointment->starts_at->toDateString(),
                 'hour' => $appointment->starts_at->format('H:i'),
-                'procedure' => $appointment->procedure,
-                'tone' => $appointment->tone,
-                'professionalId' => (string) $appointment->professional_id,
-                'roomId' => (string) $appointment->room_id,
+                'endHour' => $appointment->ends_at->format('H:i'),
+                'duration' => $appointment->procedure->minutes(),
+                'procedure' => $appointment->procedure->label(),
+                'procedureKey' => $appointment->procedure->value,
+                'status' => $appointment->status->value,
+                'statusLabel' => $appointment->status->label(),
+                'source' => $appointment->source,
+                'professionalId' => $appointment->professional_id ? (string) $appointment->professional_id : null,
+                'roomId' => $appointment->room_id ? (string) $appointment->room_id : null,
             ]);
     }
 
-    /** Free hours today for the listed professionals. */
-    private function freeSlotsToday(Collection $professionals, Collection $events): int
+    /** Holidays and days off of the period that matter to the viewer. */
+    private function blocks(CarbonImmutable $from, CarbonImmutable $to, ?int $professionalId): Collection
     {
-        $booked = $events->where('date', today()->toDateString())->count();
-
-        return max(0, count(self::HOURS) * $professionals->count() - $booked);
+        return ScheduleBlock::query()
+            ->overlapping($from, $to)
+            ->when($professionalId, fn ($query) => $query->where(fn ($query) => $query->whereNull('professional_id')->orWhere('professional_id', $professionalId)))
+            ->orderBy('starts_at')
+            ->get()
+            ->map(fn (ScheduleBlock $block) => [
+                'id' => (string) $block->id,
+                'professionalId' => $block->professional_id ? (string) $block->professional_id : null,
+                'startsAt' => $block->starts_at->format('Y-m-d H:i'),
+                'endsAt' => $block->ends_at->format('Y-m-d H:i'),
+                'reason' => $block->reason,
+            ]);
     }
 }

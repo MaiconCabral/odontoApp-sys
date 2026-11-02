@@ -22,12 +22,6 @@ export type ServicePreference = {
   enabled: boolean
 }
 
-export type OpeningHours = {
-  id: string
-  days: string
-  hours: string
-}
-
 export type Subscription = {
   status: string
   price: string
@@ -39,6 +33,5 @@ export type Settings = {
   tabs: SettingsTab[]
   clinic: ClinicData
   preferences: ServicePreference[]
-  openingHours: OpeningHours[]
   subscription: Subscription
 }

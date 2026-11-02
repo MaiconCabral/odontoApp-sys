@@ -5,7 +5,8 @@ defineProps<{
   eyebrow: string
   title: string
   description: string
-  submitLabel: string
+  submitLabel?: string
+  submitting?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -20,6 +21,7 @@ const titleId = useId()
 onMounted(() => dialog.value?.showModal())
 onBeforeUnmount(() => dialog.value?.close())
 
+// Closes the modal when the click lands on the backdrop, outside the content.
 function closeOnBackdrop(event: MouseEvent) {
   if (event.target === dialog.value) {
     emit('close')
@@ -67,11 +69,13 @@ function closeOnBackdrop(event: MouseEvent) {
           class="inline-flex items-center justify-center gap-2 rounded-lg border border-line bg-surface px-[15px] py-2.5 text-[12px] font-bold text-body transition duration-200"
           @click="emit('close')"
         >
-          Cancelar
+          {{ submitLabel ? 'Cancelar' : 'Fechar' }}
         </button>
         <button
+          v-if="submitLabel"
           type="submit"
-          class="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-2.5 py-2.5 text-[12px] font-bold text-white shadow-[0_5px_14px_rgba(2,132,199,.18)] transition duration-200 hover:-translate-y-px hover:bg-brand-hover sm:px-[15px]"
+          :disabled="submitting"
+          class="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-2.5 py-2.5 text-[12px] font-bold text-white shadow-[0_5px_14px_rgba(2,132,199,.18)] transition duration-200 hover:-translate-y-px hover:bg-brand-hover disabled:opacity-60 sm:px-[15px]"
         >
           <slot name="submit-icon" />
           {{ submitLabel }}

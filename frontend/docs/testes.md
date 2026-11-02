@@ -15,9 +15,15 @@ Playwright não é dependência do projeto. Os testes de navegador feitos até a
 
 - entra com a sessão de administrador de `tests/fixtures/session.ts`;
 - limpa os filtros da agenda, para não vazarem entre testes;
-- responde às chamadas de `$fetch` com os dados de `tests/fixtures/`, para que os services reais rodem. Uma chamada sem resposta definida falha o teste.
+- desfaz os `vi.spyOn` do teste anterior;
+- responde às chamadas GET de `$fetch` com os dados de `tests/fixtures/`, para que os services reais rodem. Uma chamada sem resposta definida falha o teste;
+- zera o período da agenda e a busca de pacientes.
 
-Para simular outra resposta, use `vi.spyOn` no service dentro do próprio arquivo de teste. Um spy no arquivo de setup não alcança a instância usada pelas páginas.
+Para simular outra resposta ou uma gravação (POST, PUT, DELETE), use `vi.spyOn` no service dentro do próprio arquivo de teste. Um spy no arquivo de setup não alcança a instância usada pelas páginas.
+
+Erros simulados num spy de service usam os campos em camelCase (`startsAt`, `professionalId`), porque é assim que `useApi` os entrega.
+
+Não use `vi.useFakeTimers()` em testes que clicam depois: o Vue descarta cliques com horário anterior ao do registro do evento, e o relógio falso bagunça essa comparação. Para esperar um debounce, aguarde com `setTimeout` real.
 
 Por isso, os testes já começam logados. Para testar um visitante, use o helper:
 

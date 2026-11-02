@@ -14,7 +14,7 @@ As regras gerais de código estão em [`.cursor/rules/frontend.md`](../../.curso
 
 ## Estado atual
 
-Autenticação, clínica, equipe e agenda (somente leitura) usam a API do `backend/`. Visão geral, pacientes, preferências, horários e assinatura ainda vêm de `mocks/`.
+Autenticação, clínica, equipe, agenda, pacientes, expediente e o pedido online usam a API do `backend/`. Visão geral, preferências e assinatura ainda vêm de `mocks/`.
 
 Para testar localmente:
 
@@ -26,11 +26,11 @@ A documentação do backend começa em [backend/docs/README.md](../../backend/do
 
 ## Ainda não implementado
 
-- Criação, edição e cancelamento de agendamentos na API. O modal atual só guarda a consulta na sessão do navegador.
-- Navegação da agenda fora da janela carregada (1 mês antes e 2 depois).
+- Notificações de confirmação e lembrete ao paciente.
+- Cadastro de procedimentos e salas pela interface.
 - Gestão global de clínicas e de planos.
 - Status rápido de consultas no dashboard.
-- Paginação real, histórico e prontuário de pacientes.
+- Histórico clínico e prontuário de pacientes.
 - Faturas e upgrade de plano com Stripe.
 - Agenda com FullCalendar e gráficos com ApexCharts.
 - Verificação de e-mail e aceite de termos/LGPD.

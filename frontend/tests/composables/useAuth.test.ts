@@ -1,7 +1,5 @@
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { AgendaEvent } from '~/types/agenda'
-import type { Patient } from '~/types/patients'
 import { adminSession, professionalSession } from '../fixtures/session'
 import { clearSession } from '../utils/session'
 
@@ -135,15 +133,18 @@ describe('useAuth', () => {
   it('does not leave clinic data for the next account on logout', async () => {
     const { data } = await useAsyncData('clinic-data', () => Promise.resolve('dados da clínica'))
 
-    useSessionPatients().value = [{ id: 'p1' } as Patient]
-    useSessionAgendaEvents().value = [{ id: 'e1' } as AgendaEvent]
+    useAgendaRange().value = { from: '2024-11-01', to: '2024-12-01' }
+    usePatientsQuery().value = { search: 'Mariana', page: 2 }
+    usePendingRequestsCount().value = 3
     useToast().showToast('Cadastro de Mariana concluído.')
-    useActiveModal().openModal('patient')
+    useActiveModal().openModal('patient', { patient: { id: 'p1' } })
 
     await useAuth().logout()
 
-    expect(useSessionPatients().value).toEqual([])
-    expect(useSessionAgendaEvents().value).toEqual([])
+    expect(useAgendaRange().value).toBeNull()
+    expect(usePatientsQuery().value).toEqual({ search: '', page: 1 })
+    expect(usePendingRequestsCount().value).toBe(0)
+    expect(useActiveModal().modalPayload.value).toBeNull()
     expect(useToast().message.value).toBeNull()
     expect(useActiveModal().activeModal.value).toBeNull()
     expect(data.value).not.toBe('dados da clínica')

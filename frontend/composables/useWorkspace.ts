@@ -11,6 +11,7 @@ const signedOut: Pick<Workspace, 'clinic' | 'user' | 'plan'> = {
 export function useWorkspace() {
   const auth = useAuthStore()
   const tenant = useTenantStore()
+  const pendingRequests = usePendingRequestsCount()
 
   return computed<Workspace>(() => {
     const user = auth.user ?? signedOut.user
@@ -21,7 +22,11 @@ export function useWorkspace() {
       plan: tenant.plan ?? signedOut.plan,
       nav: workspaceService.navEntries()
         .filter(entry => entry.roles.includes(user.role))
-        .map(({ segment, roles: _roles, ...entry }) => ({ ...entry, path: panelPath(segment) })),
+        .map(({ segment, roles: _roles, ...entry }) => ({
+          ...entry,
+          path: panelPath(segment),
+          count: entry.id === 'agenda' && pendingRequests.value > 0 ? pendingRequests.value : entry.count,
+        })),
     }
   })
 }

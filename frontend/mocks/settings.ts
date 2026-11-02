@@ -22,11 +22,6 @@ export const settingsMock: Omit<Settings, 'clinic'> = {
       enabled: true,
     },
   ],
-  openingHours: [
-    { id: 'weekdays', days: 'Segunda a sexta', hours: '08:00 às 18:00' },
-    { id: 'saturday', days: 'Sábado', hours: '08:00 às 12:00' },
-    { id: 'sunday', days: 'Domingo', hours: 'Fechado' },
-  ],
   subscription: {
     status: 'Trial ativo',
     price: 'R$ 249',

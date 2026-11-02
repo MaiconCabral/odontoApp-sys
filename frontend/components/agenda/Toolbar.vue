@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { ChevronLeft, ChevronRight, Filter } from 'lucide-vue-next'
+import { Ban, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import type { AgendaView } from '~/types/agenda'
 
 defineProps<{
   rangeLabel: string
+  canBlock?: boolean
 }>()
 
 defineEmits<{
   previous: []
   next: []
   today: []
+  block: []
 }>()
 
 const view = defineModel<AgendaView>('view', { required: true })
@@ -44,10 +46,12 @@ const iconButtonClass = 'grid h-[34px] w-[34px] place-items-center rounded-lg te
 
     <div class="flex flex-col-reverse items-end gap-2 sm:flex-row sm:items-center">
       <button
+        v-if="canBlock"
         type="button"
         class="inline-flex items-center gap-[7px] rounded-[7px] border border-line bg-surface px-[9px] py-[7px] text-[10px] text-body"
+        @click="$emit('block')"
       >
-        <Filter :size="15" /> Filtros
+        <Ban :size="15" /> Bloquear horário
       </button>
       <div class="flex rounded-lg border border-line bg-surface p-[3px]" role="group" aria-label="Visualização da agenda">
         <button

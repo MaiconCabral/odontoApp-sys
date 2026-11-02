@@ -38,7 +38,7 @@ const activeTab = ref<SettingsTabId>('clinic')
             <SettingsPreferencesCard :preferences="settings.preferences" />
           </div>
           <SettingsTeamCard v-if="activeTab === 'team'" />
-          <SettingsHoursCard v-else-if="activeTab === 'hours'" :opening-hours="settings.openingHours" />
+          <SettingsHoursCard v-else-if="activeTab === 'hours'" />
           <SettingsSubscriptionCard v-else-if="activeTab === 'subscription'" :subscription="settings.subscription" />
         </section>
       </div>

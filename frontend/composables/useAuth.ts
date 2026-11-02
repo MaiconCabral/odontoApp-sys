@@ -68,23 +68,26 @@ export function useAuth() {
 
   // Signs out and clears every clinic state.
   async function logout() {
-    const sessionPatients = useSessionPatients()
-    const sessionEvents = useSessionAgendaEvents()
     const { hideToast } = useToast()
     const { closeModal } = useActiveModal()
+    const agendaRange = useAgendaRange()
+    const patientsQuery = usePatientsQuery()
+    const pendingRequests = usePendingRequestsCount()
 
     await authService.logout()
 
     applySession(null)
     agendaFilters.reset()
-    sessionPatients.value = []
-    sessionEvents.value = []
     hideToast()
     closeModal()
     await navigateTo('/login')
 
     // Nothing from this clinic can remain for the next account in the same tab.
+    // The states are reset, not removed: a page still on screen may be reading them.
     clearNuxtData()
+    agendaRange.value = null
+    patientsQuery.value = { search: '', page: 1 }
+    pendingRequests.value = 0
   }
 
   return { loadSession, login, register, forgotPassword, resetPassword, logout }

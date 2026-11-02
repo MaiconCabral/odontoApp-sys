@@ -113,20 +113,103 @@ Regras:
 
 ### Agenda
 
-`GET /api/agenda?professional_id=2` está disponível para todos os papéis.
+`GET /api/agenda?from=2026-11-02&to=2026-11-30&professional_id=2` está disponível para todos os papéis.
+
+- Sem `from` e `to`, o período vai da segunda-feira da semana atual até seis semanas depois. O período máximo é de 62 dias.
+- `admin` e `reception` veem todos os profissionais e podem filtrar por `professional_id`. Para `professional`, o filtro enviado é ignorado e só vêm as próprias consultas.
+- Cancelados e recusados não aparecem em `events`.
+- `hours` são as linhas da grade, de 30 em 30 minutos, da abertura mais cedo ao fechamento mais tarde da semana.
 
 ```json
 {
   "today": "2026-11-02",
-  "hours": ["08:00", "09:00", "..."],
-  "procedures": ["Avaliação", "..."],
+  "from": "2026-11-02",
+  "to": "2026-12-13",
+  "hours": ["08:00", "08:30", "..."],
+  "procedures": [{ "key": "cleaning", "label": "Limpeza e prevenção", "duration": 60 }],
   "freeSlotsToday": 27,
   "professionals": [{ "id": "2", "name": "Dra. Ana Beatriz", "tone": "amber", "selected": true }],
   "rooms": [{ "id": "1", "name": "Sala 01 · Consultório", "selected": true }],
-  "events": [{ "id": "5", "patientName": "Camila Ferreira", "date": "2026-11-02", "hour": "09:00", "procedure": "Avaliação", "tone": "blue", "professionalId": "2", "roomId": "1" }]
+  "events": [{
+    "id": "5", "patientName": "Camila Ferreira", "date": "2026-11-03", "hour": "09:00", "endHour": "10:00",
+    "duration": 60, "procedure": "Limpeza e prevenção", "procedureKey": "cleaning",
+    "status": "scheduled", "statusLabel": "Agendado", "source": "internal", "professionalId": "2", "roomId": "1"
+  }],
+  "blocks": [{ "id": "1", "professionalId": null, "startsAt": "2026-11-16 00:00", "endsAt": "2026-11-16 23:59", "reason": "Feriado municipal" }]
 }
 ```
 
-- Os eventos cobrem de 1 mês antes a 2 meses depois de hoje e não incluem cancelados.
-- `admin` e `reception` veem todos os profissionais e podem filtrar por `professional_id`.
-- `professional` recebe só a própria agenda. O `professional_id` enviado é ignorado.
+### Consultas
+
+| Método e rota | Acesso | Corpo |
+| --- | --- | --- |
+| `GET /api/availability?date&procedure&professional_id&room_id&ignore` | Autenticado | Horários livres, como `{ "slots": [{ "time": "09:00", "professionalIds": ["2"] }] }` |
+| `POST /api/appointments` | Admin e recepção | `patient_id`, `professional_id`, `room_id`, `procedure`, `date`, `time`, `notes` |
+| `GET /api/appointments/{id}` | Admin, recepção e o profissional da consulta | |
+| `PUT /api/appointments/{id}` | Admin e recepção | Os mesmos campos da criação; remarca |
+| `POST /api/appointments/{id}/status` | Ver a tabela de status | `status`, `reason` |
+| `POST /api/appointments/{id}/accept` | Admin e recepção | `room_id` |
+| `GET /api/appointment-requests` | Admin e recepção | `{ "data": [consulta] }`, pedidos Solicitados por ordem de chegada |
+
+Em `availability`, `ignore` é o id da consulta sendo remarcada, para ela não conflitar consigo mesma.
+
+Formato da consulta:
+
+```json
+{
+  "id": "5", "status": "confirmed", "statusLabel": "Confirmado",
+  "procedure": "cleaning", "procedureLabel": "Limpeza e prevenção", "duration": 60,
+  "date": "2026-11-03", "hour": "09:00", "endHour": "10:00",
+  "source": "internal", "notes": null, "cancelReason": null, "requestedAt": "2026-11-02T10:00:00-03:00",
+  "patient": { "id": "3", "name": "Camila Ferreira", "phone": "(11) 99632-4510", "email": null },
+  "professional": { "id": "2", "name": "Dra. Ana Beatriz" },
+  "room": { "id": "1", "name": "Sala 01 · Consultório" },
+  "history": [{ "from": "scheduled", "fromLabel": "Agendado", "to": "confirmed", "toLabel": "Confirmado", "reason": null, "author": "Paula Nunes", "at": "..." }],
+  "actions": ["complete", "no_show", "cancel", "reschedule"]
+}
+```
+
+`actions` lista o que o usuário logado pode fazer agora: `accept`, `reject`, `confirm`, `complete`, `no_show`, `cancel` e `reschedule`.
+
+Status aceitos em `POST /status`:
+
+| `status` | De | Observação |
+| --- | --- | --- |
+| `confirmed` | Agendado | |
+| `completed`, `no_show` | Agendado, Confirmado | Só depois do início. O profissional pode, nas próprias consultas |
+| `cancelled` | Solicitado, Agendado, Confirmado | Exige `reason` |
+| `rejected` | Solicitado | Exige `reason` |
+
+Para aceitar um pedido, use `/accept`. Recusas de regra de horário estão em [agenda.md](agenda.md#disponibilidade).
+
+### Pacientes
+
+| Método e rota | Acesso |
+| --- | --- |
+| `GET /api/patients?search=&page=` | Admin e recepção |
+| `POST /api/patients`, `PUT /api/patients/{id}` | Admin e recepção |
+| `GET /api/patients/{id}`, `DELETE /api/patients/{id}` | Admin e recepção |
+
+- O corpo tem `name`, `phone` (com DDD), `email`, `cpf` (11 dígitos, único na clínica), `insurance` e `birth_date`.
+- A listagem é paginada de 20 em 20, com `meta.total` e `meta.last_page`. A busca procura por nome, dígitos do CPF ou dígitos do telefone.
+- Paciente com consultas não pode ser excluído (`422` em `errors.patient`).
+
+### Expediente e bloqueios
+
+| Método e rota | Acesso | Corpo |
+| --- | --- | --- |
+| `GET /api/business-hours` | Autenticado | |
+| `PUT /api/business-hours` | Admin | `days`: os 7 dias com `weekday` (1 = segunda), `closed`, `opens_at`, `closes_at`, `break_starts_at`, `break_ends_at` |
+| `GET /api/schedule-blocks` | Admin e recepção | Bloqueios a partir de hoje |
+| `POST`, `PUT /api/schedule-blocks/{id}` | Admin e recepção | `professional_id` (vazio = clínica inteira), `starts_at` e `ends_at` (`Y-m-d H:i`), `reason` |
+| `DELETE /api/schedule-blocks/{id}` | Admin e recepção | |
+
+## Página pública (subdomínio, sem sessão)
+
+| Método e rota | Limite | Uso |
+| --- | --- | --- |
+| `GET /api/public/booking` | 60/min | Clínica, procedimentos e profissionais que atendem |
+| `GET /api/public/availability?date&procedure&professional_id` | 60/min | `{ "slots": ["09:00", "09:30"] }`, de amanhã até 60 dias |
+| `POST /api/public/booking-requests` | 5/hora por IP | `name`, `phone`, `email`, `procedure`, `professional_id` (opcional), `date`, `time`, `notes`, `consent`, `website` |
+
+O pedido responde `201` com `{ "message": "Recebemos seu pedido..." }`. Um horário ocupado nesse meio-tempo volta como `422`, no campo do motivo.

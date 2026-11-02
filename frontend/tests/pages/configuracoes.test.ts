@@ -39,7 +39,8 @@ describe('Configurações', () => {
     await openTab(page, 'Horários')
 
     expect(page.text()).toContain('Horários de funcionamento')
-    expect(page.text()).toContain('08:00 às 12:00')
+    await flushPromises()
+    expect(page.text()).toContain('Sábado')
     expect(page.text()).toContain('Fechado')
   })
 

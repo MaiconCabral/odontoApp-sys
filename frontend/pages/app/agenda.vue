@@ -1,13 +1,25 @@
 <script setup lang="ts">
+import type { AgendaBlock } from '~/types/agenda'
+
 useHead({ title: 'Agenda' })
 
 const { openModal } = useActiveModal()
 const auth = useAuthStore()
 
-// Professionals only read their agenda. The API is what enforces it.
-const canSchedule = computed(() => auth.user?.role !== 'professional')
+// Professionals only read their agenda and finish their appointments. The API is what enforces it.
+const canManage = computed(() => auth.user?.role !== 'professional')
 
 const { data: agenda, error, pending, refresh } = await useAgenda()
+
+// Opens an appointment or a request with its actions.
+function openAppointment(id: string) {
+  openModal('appointment-details', { id })
+}
+
+// Opens a block to see it or delete it.
+function openBlock(block: AgendaBlock) {
+  openModal('block', { block })
+}
 </script>
 
 <template>
@@ -28,10 +40,17 @@ const { data: agenda, error, pending, refresh } = await useAgenda()
         eyebrow="Agenda clínica"
         title="Agenda de consultas"
         description="Organize o dia da sua equipe com clareza e tranquilidade."
-        :action-label="canSchedule ? 'Novo agendamento' : undefined"
+        :action-label="canManage ? 'Novo agendamento' : undefined"
         @action="openModal('appointment')"
       />
-      <AgendaBoard :agenda="agenda" />
+      <AgendaRequestsPanel v-if="canManage" @open="openAppointment" />
+      <AgendaBoard
+        :agenda="agenda"
+        :can-manage="canManage"
+        @select="openAppointment"
+        @select-block="openBlock"
+        @block="openModal('block')"
+      />
     </template>
   </div>
 </template>

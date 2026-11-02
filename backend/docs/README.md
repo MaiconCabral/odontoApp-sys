@@ -6,10 +6,11 @@ API do odontoApp em Laravel 12, consumida pelo Nuxt em `frontend/`.
 | --- | --- |
 | [API](api.md) | Endpoints, contratos de requisição e resposta, erros |
 | [Multi-tenancy e autenticação](multitenancy.md) | Banco por clínica, subdomínios, sessão, papéis, contas demo e produção |
+| [Agenda](agenda.md) | Disponibilidade, travas contra horário duplicado, status e pedido online |
 
 ## O que está implementado
 
-Etapa 1: autenticação, clínicas (tenants), usuários e agenda somente leitura.
+Etapa 1: autenticação, clínicas (tenants), usuários e agenda somente leitura. Etapa 2: agenda completa, pacientes e pedidos online.
 
 - **Clínicas:**
   - Cada clínica tem banco MySQL próprio e um subdomínio, com `stancl/tenancy` 3.
@@ -25,13 +26,18 @@ Etapa 1: autenticação, clínicas (tenants), usuários e agenda somente leitura
 - **Papéis:**
   - `admin`, `reception` e `professional`, aplicados por policies.
   - O papel `professional` vê só a própria agenda, filtrada pela API.
-- **Agenda:** `GET /api/agenda` monta salas, profissionais e agendamentos no formato que o frontend usa.
+- **Agenda:**
+  - consultas marcadas, remarcadas e com status (Solicitado, Agendado, Confirmado, Concluído, Faltou, Cancelado, Recusado), com histórico de cada mudança;
+  - expediente por dia da semana, com almoço, e bloqueios para feriados e folgas;
+  - travas no banco contra dois agendamentos no mesmo horário;
+  - `GET /api/agenda` devolve o período pedido (até 62 dias).
+- **Pedidos online:** o paciente pede um horário pela página pública da clínica, sem login, e a recepção aceita ou recusa.
+- **Pacientes:** CRUD com busca por nome, CPF ou telefone e paginação.
 - **Seeds:** criam os planos e duas clínicas de demonstração.
 
 Ficam para as próximas etapas:
 
-- criação, reagendamento e cancelamento de consultas, com trava anti-double-booking;
-- notificações em fila;
+- notificações em fila (confirmação e lembrete de 24h);
 - faturamento com Stripe;
 - gestão global de clínicas e de planos.
 
@@ -44,7 +50,7 @@ app/
 ├── Domains/
 │   ├── Tenancy/   Tenant, Plan, cadastro e edição da clínica, ClinicUrl
 │   ├── Identity/  User, UserRole, CRUD da equipe, AdminGuard, e-mail de senha
-│   └── Agenda/    Room, Patient, Appointment, AgendaQuery
+│   └── Agenda/    Consultas, pacientes, expediente, bloqueios, DaySchedule, AvailabilityChecker
 ├── Http/
 │   ├── Controllers/Api/  controllers finos
 │   ├── Requests/         validação (FormRequest) e conversão para DTO

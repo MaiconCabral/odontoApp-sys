@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Clock3, Plus } from 'lucide-vue-next'
+import { Clock3 } from 'lucide-vue-next'
 import type { AgendaProfessional, AgendaRoom, ProfessionalTone } from '~/types/agenda'
 
 const props = defineProps<{
@@ -20,6 +20,7 @@ const toneClasses: Record<ProfessionalTone, string> = {
 const allProfessionalsSelected = computed(() => selectedProfessionals.value.length === props.professionals.length)
 const someProfessionalsSelected = computed(() => selectedProfessionals.value.length > 0 && !allProfessionalsSelected.value)
 
+// Selects every professional, or none when all are selected.
 function toggleAllProfessionals() {
   selectedProfessionals.value = allProfessionalsSelected.value
     ? []
@@ -27,7 +28,6 @@ function toggleAllProfessionals() {
 }
 
 const headingClass = 'col-span-2 mb-3 flex items-center justify-between text-[11px] text-body md:col-span-1'
-const addButtonClass = 'text-brand-text'
 const rowClass = 'my-[13px] flex items-center gap-2 text-[10px] text-muted'
 const checkboxClass = 'h-[13px] w-[13px] accent-brand'
 </script>
@@ -36,9 +36,6 @@ const checkboxClass = 'h-[13px] w-[13px] accent-brand'
   <aside class="grid grid-cols-2 gap-x-3 gap-y-1 rounded-xl border border-line bg-surface p-4 shadow-[0_4px_14px_rgba(42,64,91,.025)] sm:px-[15px] sm:py-[17px] md:block">
     <div :class="headingClass">
       <strong>Profissionais</strong>
-      <button type="button" :class="addButtonClass" aria-label="Adicionar profissional">
-        <Plus :size="15" />
-      </button>
     </div>
     <label :class="rowClass">
       <input
@@ -61,9 +58,6 @@ const checkboxClass = 'h-[13px] w-[13px] accent-brand'
 
     <div :class="headingClass">
       <strong>Salas</strong>
-      <button type="button" :class="addButtonClass" aria-label="Adicionar sala">
-        <Plus :size="15" />
-      </button>
     </div>
     <label v-for="room in rooms" :key="room.id" :class="rowClass">
       <input v-model="selectedRooms" type="checkbox" :class="checkboxClass" :value="room.id">
@@ -75,7 +69,7 @@ const checkboxClass = 'h-[13px] w-[13px] accent-brand'
       <Clock3 :size="16" class="flex-none" />
       <div class="flex flex-col gap-[3px]">
         <strong class="text-[10px]">{{ freeSlotsToday }} horários livres</strong>
-        <span class="text-[9px] text-[#67ae96]">disponíveis hoje</span>
+        <span class="text-[9px] text-[#67ae96]">de 30 minutos, ainda hoje</span>
       </div>
     </div>
   </aside>

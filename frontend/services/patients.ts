@@ -1,5 +1,44 @@
-import { patientsMock } from '~/mocks/patients'
+import type { Patient, PatientForm, PatientList, PatientQuery } from '~/types/patients'
+
+type PatientPage = {
+  data: Patient[]
+  meta: { total: number, current_page: number, last_page: number }
+}
+
+// Form in the API field names.
+function toBody(form: PatientForm) {
+  return {
+    name: form.name,
+    cpf: form.cpf || null,
+    phone: form.phone,
+    email: form.email || null,
+    insurance: form.insurance || null,
+    birth_date: form.birthDate || null,
+  }
+}
 
 export const patientsService = {
-  list: () => Promise.resolve(patientsMock),
+  // One page of patients, filtered by the search.
+  list: async (query: PatientQuery = { search: '', page: 1 }): Promise<PatientList> => {
+    const response = await useApi().api<PatientPage>('/api/patients', {
+      query: { search: query.search || undefined, page: query.page },
+    })
+
+    return {
+      patients: response.data,
+      total: response.meta.total,
+      page: response.meta.current_page,
+      lastPage: response.meta.last_page,
+    }
+  },
+
+  // Adds a patient.
+  create: (form: PatientForm) => useApi().api<Patient>('/api/patients', { method: 'POST', body: toBody(form) }),
+
+  // Updates a patient.
+  update: (id: string, form: PatientForm) =>
+    useApi().api<Patient>(`/api/patients/${id}`, { method: 'PUT', body: toBody(form) }),
+
+  // Deletes a patient without appointments.
+  remove: (id: string) => useApi().api<void>(`/api/patients/${id}`, { method: 'DELETE' }),
 }
