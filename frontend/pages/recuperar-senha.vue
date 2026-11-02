@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ForgotPasswordPayload } from '~/types/auth'
 
-definePageMeta({ layout: 'auth', middleware: 'guest' })
+definePageMeta({ layout: 'auth', middleware: ['clinic-host', 'guest'] })
 useHead({ title: 'Recuperar senha' })
 
 const { forgotPassword } = useAuth()

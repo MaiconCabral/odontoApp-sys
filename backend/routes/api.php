@@ -1,14 +1,13 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\ClinicRegistrationController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/health', function () {
-    return response()->json([
-        'status' => 'ok',
-    ]);
-});
+foreach (config('tenancy.central_domains') as $domain) {
+    Route::domain($domain)->group(function () {
+        Route::get('/health', fn () => response()->json(['status' => 'ok']));
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+        Route::post('/clinics', [ClinicRegistrationController::class, 'store'])
+            ->middleware('throttle:clinic-registration');
+    });
+}

@@ -42,7 +42,9 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      apiBase: 'http://127.0.0.1:8000',
+      // {host} is replaced by the host in the browser, so each clinic calls its own subdomain.
+      apiBase: 'http://{host}:8000',
+      centralDomain: 'localhost',
     },
   },
   tailwindcss: {

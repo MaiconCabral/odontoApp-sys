@@ -2,9 +2,88 @@
 
 namespace Tests;
 
+use App\Domains\Tenancy\Models\Plan;
+use App\Domains\Tenancy\Models\Tenant;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Facade;
+use Illuminate\Testing\TestResponse;
 
 abstract class TestCase extends BaseTestCase
 {
-    //
+    /** @var list<Tenant> */
+    private array $createdTenants = [];
+
+    /** Deletes the clinics created by the test. */
+    protected function tearDown(): void
+    {
+        tenancy()->end();
+
+        foreach ($this->createdTenants as $tenant) {
+            $tenant->delete();
+        }
+
+        parent::tearDown();
+    }
+
+    /** Creates the trial plan once. */
+    protected function createPlan(): Plan
+    {
+        return Plan::query()->firstOrCreate(
+            ['code' => Plan::TRIAL_CODE],
+            ['name' => 'Pro', 'price_cents' => 24900, 'max_professionals' => 5],
+        );
+    }
+
+    /** Creates a clinic with its database and subdomain. */
+    protected function createClinic(string $slug = 'sorriso'): Tenant
+    {
+        $tenant = Tenant::create([
+            'name' => 'Clínica '.$slug,
+            'unit' => 'Unidade principal',
+            'plan_id' => $this->createPlan()->id,
+            'trial_ends_at' => now()->addDays(14),
+        ]);
+        $tenant->createDomain(['domain' => $slug]);
+
+        return $this->createdTenants[] = $tenant;
+    }
+
+    /**
+     * Sends a request the way the SPA does, from the clinic's own host.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    protected function clinicRequest(string $slug, string $method, string $uri, array $data = []): TestResponse
+    {
+        $this->resetRequestState();
+
+        return $this->withHeaders(['Origin' => "http://{$slug}.localhost:3000", 'Accept' => 'application/json'])
+            ->json($method, "http://{$slug}.localhost/api/{$uri}", $data);
+    }
+
+    /**
+     * Sends a request from the central domain.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    protected function centralRequest(string $method, string $uri, array $data = []): TestResponse
+    {
+        $this->resetRequestState();
+
+        return $this->withHeaders(['Origin' => 'http://localhost:3000', 'Accept' => 'application/json'])
+            ->json($method, "http://localhost/api/{$uri}", $data);
+    }
+
+    /**
+     * Clears what the previous request left in memory.
+     * A real request starts on a fresh process. Tests share one, so what the last request resolved is dropped here.
+     */
+    protected function resetRequestState(): void
+    {
+        tenancy()->end();
+        Auth::forgetGuards();
+        $this->app->forgetInstance('auth.password');
+        Facade::clearResolvedInstance('auth.password');
+    }
 }

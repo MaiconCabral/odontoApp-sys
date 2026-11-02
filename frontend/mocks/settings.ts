@@ -1,19 +1,13 @@
 import type { Settings } from '~/types/settings'
 
-export const settingsMock: Settings = {
+// What still has no API. The clinic and the team already come from the backend.
+export const settingsMock: Omit<Settings, 'clinic'> = {
   tabs: [
     { id: 'clinic', label: 'Clínica' },
-    { id: 'professionals', label: 'Profissionais' },
+    { id: 'team', label: 'Equipe' },
     { id: 'hours', label: 'Horários' },
     { id: 'subscription', label: 'Assinatura', badge: 'Pro' },
   ],
-  clinic: {
-    name: 'Sorriso Perfeito Odontologia',
-    cnpj: '12.345.678/0001-90',
-    phone: '(11) 3051-8090',
-    email: 'contato@sorrisoperfeito.com',
-    address: 'Rua Oscar Freire, 1240 · Jardins, São Paulo - SP',
-  },
   preferences: [
     {
       id: 'auto-confirmation',
@@ -27,11 +21,6 @@ export const settingsMock: Settings = {
       description: 'Avisar quando surgir um horário disponível',
       enabled: true,
     },
-  ],
-  professionals: [
-    { id: 'carlos', name: 'Dr. Carlos Mendes', specialty: 'Ortodontia' },
-    { id: 'ana', name: 'Dra. Ana Beatriz', specialty: 'Odontologia estética' },
-    { id: 'felipe', name: 'Dr. Felipe Rocha', specialty: 'Cirurgia' },
   ],
   openingHours: [
     { id: 'weekdays', days: 'Segunda a sexta', hours: '08:00 às 18:00' },

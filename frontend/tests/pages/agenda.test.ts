@@ -1,7 +1,9 @@
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import type { VueWrapper } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import AgendaPage from '~/pages/app/[tenant]/agenda.vue'
+import AgendaPage from '~/pages/app/agenda.vue'
+import { professionalSession, receptionSession } from '../fixtures/session'
+import { seedSession } from '../utils/session'
 
 function viewButton(page: VueWrapper, label: string) {
   const button = page.findAll('[aria-label="Visualização da agenda"] button').find(item => item.text() === label)
@@ -14,6 +16,16 @@ function viewButton(page: VueWrapper, label: string) {
 }
 
 describe('Agenda', () => {
+  it('offers scheduling to everyone except professionals', async () => {
+    expect((await mountSuspended(AgendaPage)).text()).toContain('Novo agendamento')
+
+    seedSession(receptionSession)
+    expect((await mountSuspended(AgendaPage)).text()).toContain('Novo agendamento')
+
+    seedSession(professionalSession)
+    expect((await mountSuspended(AgendaPage)).text()).not.toContain('Novo agendamento')
+  })
+
   it('renders the week with its events and marks today', async () => {
     const page = await mountSuspended(AgendaPage)
 

@@ -1,8 +1,10 @@
 import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { flushPromises } from '@vue/test-utils'
 import type { VueWrapper } from '@vue/test-utils'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { settingsMock } from '~/mocks/settings'
-import SettingsPage from '~/pages/app/[tenant]/configuracoes.vue'
+import SettingsPage from '~/pages/app/configuracoes.vue'
+import { clinicFixture } from '../fixtures/settings'
 
 function openTab(page: VueWrapper, label: string) {
   const tab = page.findAll('aside button').find(item => item.text().startsWith(label))
@@ -15,12 +17,17 @@ function openTab(page: VueWrapper, label: string) {
 }
 
 describe('Configurações', () => {
-  it('shows the professionals tab', async () => {
+  beforeEach(() => {
+    clearNuxtData('team')
+  })
+
+  it('shows the team tab', async () => {
     const page = await mountSuspended(SettingsPage)
 
-    await openTab(page, 'Profissionais')
+    await openTab(page, 'Equipe')
+    await flushPromises()
 
-    expect(page.find('aside [aria-current="true"]').text()).toBe('Profissionais')
+    expect(page.find('aside [aria-current="true"]').text()).toBe('Equipe')
     expect(page.find('[data-testid="clinic-tab"]').attributes('style')).toContain('display: none')
     expect(page.text()).toContain('Dr. Felipe Rocha')
     expect(page.text()).toContain('Odontologia estética')
@@ -76,11 +83,12 @@ describe('Configurações', () => {
   it('links every field to its label with the clinic data', async () => {
     const page = await mountSuspended(SettingsPage)
     const expected = {
-      'Nome da clínica': settingsMock.clinic.name,
-      'CNPJ': settingsMock.clinic.cnpj,
-      'Telefone principal': settingsMock.clinic.phone,
-      'E-mail de contato': settingsMock.clinic.email,
-      'Endereço': settingsMock.clinic.address,
+      'Nome da clínica': clinicFixture.name,
+      'Unidade': clinicFixture.unit,
+      'CNPJ': clinicFixture.cnpj,
+      'Telefone principal': clinicFixture.phone,
+      'E-mail de contato': clinicFixture.email,
+      'Endereço': clinicFixture.address,
     }
 
     for (const [label, value] of Object.entries(expected)) {
@@ -98,7 +106,32 @@ describe('Configurações', () => {
     await input.setValue('Outra clínica')
 
     expect((input.element as HTMLInputElement).value).toBe('Outra clínica')
-    expect(settingsMock.clinic.name).toBe('Sorriso Perfeito Odontologia')
+    expect(clinicFixture.name).toBe('Sorriso Perfeito Odontologia')
+  })
+
+  it('saves the clinic and updates the session', async () => {
+    const update = vi.spyOn(clinicService, 'update').mockResolvedValue({ ...clinicFixture, name: 'Clínica Nova' })
+    const page = await mountSuspended(SettingsPage)
+
+    await page.find('#clinic-name').setValue('Clínica Nova')
+    await page.find('[data-testid="clinic-tab"] form').trigger('submit')
+    await flushPromises()
+
+    expect(update).toHaveBeenCalledWith(expect.objectContaining({ name: 'Clínica Nova' }))
+    expect(useTenantStore().tenant?.name).toBe('Clínica Nova')
+    expect(useToast().message.value).toBe('Dados da clínica atualizados.')
+  })
+
+  it('shows the errors of the API on the clinic fields', async () => {
+    vi.spyOn(clinicService, 'update').mockRejectedValue({ data: { message: 'Inválido', errors: { cnpj: ['Informe um CNPJ válido.'] } } })
+
+    const page = await mountSuspended(SettingsPage)
+
+    await page.find('[data-testid="clinic-tab"] form').trigger('submit')
+    await flushPromises()
+
+    expect(page.find('#clinic-cnpj').attributes('aria-invalid')).toBe('true')
+    expect(page.text()).toContain('Informe um CNPJ válido.')
   })
 
   it('toggles a preference without changing the source data', async () => {

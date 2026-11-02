@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { RegisterPayload } from '~/types/auth'
 
-definePageMeta({ layout: 'auth', middleware: 'guest' })
+definePageMeta({ layout: 'auth', middleware: ['central-host', 'guest'] })
 useHead({ title: 'Cadastro' })
 
 const { register } = useAuth()

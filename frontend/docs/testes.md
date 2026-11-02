@@ -13,15 +13,20 @@ Playwright não é dependência do projeto. Os testes de navegador feitos até a
 
 `tests/setup.ts` roda antes de cada teste e:
 
-- entra com a sessão demo;
-- limpa os filtros da agenda, para não vazarem entre testes.
+- entra com a sessão de administrador de `tests/fixtures/session.ts`;
+- limpa os filtros da agenda, para não vazarem entre testes;
+- responde às chamadas de `$fetch` com os dados de `tests/fixtures/`, para que os services reais rodem. Uma chamada sem resposta definida falha o teste.
+
+Para simular outra resposta, use `vi.spyOn` no service dentro do próprio arquivo de teste. Um spy no arquivo de setup não alcança a instância usada pelas páginas.
 
 Por isso, os testes já começam logados. Para testar um visitante, use o helper:
 
 ```ts
-import { clearSession, demoTenantPath } from '../utils/session'
+import { professionalSession } from '../fixtures/session'
+import { clearSession, seedSession } from '../utils/session'
 
 clearSession()
+seedSession(professionalSession) // outro papel
 ```
 
 ## Rotas nos testes
@@ -31,16 +36,17 @@ Componentes que dependem da rota atual precisam recebê-la na montagem:
 ```ts
 await mountSuspended(Sidebar, {
   props: { collapsed: false, mobileOpen: false },
-  route: demoTenantPath,
+  route: '/app',
 })
 ```
 
-Importe as páginas do painel pelo novo caminho: `~/pages/app/[tenant]/agenda.vue`.
+Componentes que dependem do host usam `mockNuxtImport('useClinicHost', ...)`, porque o ambiente de teste roda sempre no mesmo domínio.
 
 ## O que cobrir
 
 - **Telas de autenticação:** erro de validação, erro da API, API fora do ar, carregamento e envio duplicado.
 - **Redirecionamento:** cada novo destino aceito precisa de teste em `tests/utils/auth.test.ts`, incluindo tentativas de sair para outro site.
+- **Papéis:** todo item de menu ou ação restrita precisa de teste com os três papéis. A restrição real é testada no backend.
 - **Logout:** todo estado novo com dados da clínica entra no teste "does not leave clinic data for the next account on logout".
 
 ## Confira também no navegador

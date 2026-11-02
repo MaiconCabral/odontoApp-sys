@@ -6,12 +6,12 @@
 | --- | --- |
 | `pages/` | Rotas da aplicação |
 | `layouts/` | `default` para o painel, `auth` para as telas de entrada |
-| `middleware/` | Controle de navegação: `auth`, `guest` e `tenant` |
+| `middleware/` | Controle de navegação: `auth`, `guest`, `role`, `clinic-host` e `central-host` |
 | `components/` | Componentes por módulo (`agenda/`, `auth/`, `patients/`...) e compartilhados (`app/`) |
 | `composables/` | Regras de negócio reutilizáveis |
 | `stores/` | Estado Pinia compartilhado entre rotas |
 | `services/` | Acesso aos dados; é a única camada que conhece mocks ou API |
-| `mocks/` | Dados simulados, enquanto a API não existe |
+| `mocks/` | Dados dos módulos que ainda não têm API |
 | `types/` | Tipos de dados e contratos |
 | `utils/` | Funções puras, como validações e formatação |
 
@@ -22,40 +22,41 @@ O caminho dos dados é: página ou componente → composable → service → moc
 | Rota | Acesso | Conteúdo |
 | --- | --- | --- |
 | `/` | Público | Redireciona para `/login` |
-| `/login` | Só sem sessão | Entrada |
-| `/cadastro` | Só sem sessão | Cadastro da clínica e do administrador |
-| `/recuperar-senha` | Só sem sessão | Pedido do link de redefinição |
-| `/redefinir-senha?token&email` | Só sem sessão | Nova senha |
-| `/app/[tenant]` | Com sessão | Visão geral |
-| `/app/[tenant]/agenda` | Com sessão | Agenda |
-| `/app/[tenant]/pacientes` | Com sessão | Pacientes |
-| `/app/[tenant]/configuracoes` | Com sessão | Configurações |
+| `/login` | Só sem sessão | No domínio central, pede o endereço da clínica. No subdomínio, é a entrada |
+| `/cadastro` | Domínio central | Cadastro da clínica e do administrador |
+| `/recuperar-senha` | Subdomínio, sem sessão | Pedido do link de redefinição |
+| `/redefinir-senha?token&email` | Subdomínio, sem sessão | Nova senha |
+| `/app` | Admin e recepção | Visão geral |
+| `/app/agenda` | Todos os papéis | Agenda |
+| `/app/pacientes` | Admin e recepção | Pacientes |
+| `/app/configuracoes` | Admin | Configurações |
 
 ### Regras das rotas do painel
 
-- A clínica é identificada pelo slug no caminho da URL, não por subdomínio.
-- Toda página nova do painel fica em `pages/app/[tenant]/`.
-- A proteção fica só na rota pai, `pages/app/[tenant].vue`, e vale para todas as páginas filhas. Não repita os middlewares `auth` e `tenant` nelas.
-- Nunca escreva links fixos para o painel, como `to="/agenda"`. Use `useTenantPath`:
+- A clínica é identificada pelo subdomínio, como `sorriso-perfeito.localhost`. `useClinicHost` lê o host e monta links entre o domínio central e as clínicas.
+- Toda página nova do painel fica em `pages/app/`.
+- A sessão fica na rota pai, `pages/app.vue`, e vale para todas as páginas filhas. Não repita o middleware `auth` nelas.
+- Páginas restritas declaram os papéis: `definePageMeta({ middleware: 'role', roles: ['admin'] })`.
+- Monte links do painel com `panelPath`:
 
 ```ts
-const tenantPath = useTenantPath()
-
-tenantPath()         // /app/sorriso-perfeito
-tenantPath('agenda') // /app/sorriso-perfeito/agenda
+panelPath()         // /app
+panelPath('agenda') // /app/agenda
 ```
 
-- Para adicionar um item ao menu, inclua-o em `mocks/workspace.ts` com o `segment` da rota. `useWorkspace` monta o caminho completo.
+- Para adicionar um item ao menu, inclua-o em `mocks/workspace.ts` com o `segment` da rota e os `roles` que o veem. `useWorkspace` filtra pelo papel e monta o caminho.
 
 ### Middlewares
 
 | Middleware | Comportamento |
 | --- | --- |
 | `auth` | Carrega a sessão uma vez. Sem sessão, vai para `/login?redirect=<destino>` |
-| `guest` | Com sessão, vai para o painel da clínica |
-| `tenant` | Se o slug da URL não for o da sessão, vai para o painel da clínica do usuário |
+| `guest` | Com sessão, vai para a página inicial do papel: agenda para profissionais, visão geral para os demais |
+| `role` | Se o papel não estiver em `meta.roles`, vai para a página inicial do papel |
+| `clinic-host` | No domínio central, vai para `/login` |
+| `central-host` | Em um subdomínio, leva a mesma rota para o domínio central |
 
-Eles só organizam a navegação. **Quem protege os dados é a API**, que deve validar a sessão e a clínica em cada requisição.
+Eles só organizam a navegação. **Quem protege os dados é a API**, que valida a sessão, a clínica e o papel em cada requisição. Veja [backend/docs/multitenancy.md](../../backend/docs/multitenancy.md).
 
 ## Renderização
 
@@ -79,7 +80,8 @@ A data e a visão da agenda (dia, semana, mês) continuam locais em `useAgendaCa
 ## Services
 
 - Composables não importam `mocks/`; eles chamam um service.
-- Para ligar um módulo à API, altere só o service, usando `useApi` para enviar os cookies.
+- Para ligar um módulo à API, altere só o service, usando `useApi`.
+- `useApi` chama a API no mesmo host do navegador, envia os cookies, cuida do CSRF e traduz os nomes de campo dos erros para camelCase. `NUXT_PUBLIC_API_BASE` usa `{host}` no lugar do host.
 - O diretório `services/` tem auto-import, configurado em `imports.dirs`.
 
 ```ts
@@ -95,6 +97,7 @@ export function useOverview() {
 Ao criar uma store ou um `useState` com dados da clínica ou de pacientes, inclua a limpeza nessa função. Hoje ela limpa:
 
 - sessão, clínica e filtros da agenda;
+- equipe e demais dados do `useAsyncData`;
 - pacientes e agendamentos criados na sessão;
 - toast e modal abertos, que podem conter nome de paciente;
 - cache do `useAsyncData`, com `clearNuxtData`.

@@ -2,11 +2,12 @@ import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { describe, expect, it } from 'vitest'
 import Sidebar from '~/components/layout/Sidebar.vue'
 import Topbar from '~/components/layout/Topbar.vue'
-import { demoTenantPath } from '../utils/session'
+import { professionalSession, receptionSession } from '../fixtures/session'
+import { seedSession } from '../utils/session'
 
 describe('Sidebar', () => {
   it('marks the current page in the navigation', async () => {
-    const sidebar = await mountSuspended(Sidebar, { props: { collapsed: false, mobileOpen: false }, route: demoTenantPath })
+    const sidebar = await mountSuspended(Sidebar, { props: { collapsed: false, mobileOpen: false }, route: '/app' })
 
     expect(sidebar.find('[aria-current="page"]').text()).toContain('Visão geral')
   })
@@ -16,11 +17,27 @@ describe('Sidebar', () => {
     const links = sidebar.findAll('nav a').map(link => link.attributes('href'))
 
     expect(links).toEqual([
-      demoTenantPath,
-      `${demoTenantPath}/agenda`,
-      `${demoTenantPath}/pacientes`,
-      `${demoTenantPath}/configuracoes`,
+      '/app',
+      '/app/agenda',
+      '/app/pacientes',
+      '/app/configuracoes',
     ])
+  })
+
+  it('shows a professional only the agenda', async () => {
+    seedSession(professionalSession)
+
+    const sidebar = await mountSuspended(Sidebar, { props: { collapsed: false, mobileOpen: false } })
+
+    expect(sidebar.findAll('nav a').map(link => link.attributes('href'))).toEqual(['/app/agenda'])
+  })
+
+  it('hides the settings from the reception', async () => {
+    seedSession(receptionSession)
+
+    const sidebar = await mountSuspended(Sidebar, { props: { collapsed: false, mobileOpen: false } })
+
+    expect(sidebar.findAll('nav a').map(link => link.attributes('href'))).toEqual(['/app', '/app/agenda', '/app/pacientes'])
   })
 
   it('hides the labels when collapsed but keeps them accessible', async () => {
@@ -39,7 +56,7 @@ describe('Sidebar', () => {
 
 describe('Topbar', () => {
   it('shows the current page and asks to open the menu', async () => {
-    const topbar = await mountSuspended(Topbar, { props: { menuOpen: false }, route: demoTenantPath })
+    const topbar = await mountSuspended(Topbar, { props: { menuOpen: false }, route: '/app' })
 
     expect(topbar.text()).toContain('Visão geral')
 

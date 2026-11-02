@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { agendaMock } from '~/mocks/agenda'
-import { clearSession, demoTenantPath } from '../utils/session'
+import { agendaMock } from '../fixtures/agenda'
+import { clearSession } from '../utils/session'
 
 describe('useWorkspace', () => {
   it('builds the navigation from the clinic in the session', () => {
     const workspace = useWorkspace()
 
     expect(workspace.value.clinic.name).toBe('Sorriso Perfeito')
-    expect(workspace.value.nav[1]?.path).toBe(`${demoTenantPath}/agenda`)
+    expect(workspace.value.nav[1]?.path).toBe('/app/agenda')
   })
 
   it('stays renderable after the session ends', () => {

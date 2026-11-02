@@ -1,105 +1,134 @@
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { demoSession } from '~/mocks/auth'
 import type { AgendaEvent } from '~/types/agenda'
 import type { Patient } from '~/types/patients'
-import { clearSession, demoTenantPath } from '../utils/session'
+import { adminSession, professionalSession } from '../fixtures/session'
+import { clearSession } from '../utils/session'
 
-const { navigateToMock } = vi.hoisted(() => ({
+const { navigateToMock, hostMock } = vi.hoisted(() => ({
   navigateToMock: vi.fn(),
+  hostMock: { isClinicHost: true },
 }))
 
 mockNuxtImport('navigateTo', () => navigateToMock)
+mockNuxtImport('useClinicHost', () => () => hostMock)
 
-const newClinic = {
-  name: 'Ana Souza',
-  email: 'ana.useauth@clinica.com',
-  password: 'senhaSegura1',
-  passwordConfirmation: 'senhaSegura1',
-  clinicName: 'Clínica São José',
-  unit: '',
-}
+const credentials = { email: 'demo@sorriso.app', password: 'Sorriso123' }
 
 describe('useAuth', () => {
   beforeEach(() => {
     navigateToMock.mockClear()
-    sessionStorage.clear()
+    hostMock.isClinicHost = true
     clearSession()
+    useAuthStore().isLoaded = false
+
+    vi.spyOn(authService, 'login').mockResolvedValue(adminSession)
+    vi.spyOn(authService, 'logout').mockResolvedValue()
+    vi.spyOn(authService, 'getSession').mockReset().mockResolvedValue(adminSession)
   })
 
-  it('signs in and opens the panel of the clinic', async () => {
-    await useAuth().login({ email: ' DEMO@sorriso.app ', password: 'Sorriso123' })
+  it('signs in and opens the panel', async () => {
+    await useAuth().login(credentials)
 
     expect(useAuthStore().isAuthenticated).toBe(true)
-    expect(useTenantStore().slug).toBe(demoSession.tenant.slug)
-    expect(navigateToMock).toHaveBeenCalledWith(demoTenantPath)
+    expect(useTenantStore().slug).toBe('sorriso-perfeito')
+    expect(navigateToMock).toHaveBeenCalledWith('/app')
+  })
+
+  it('opens the agenda for a professional', async () => {
+    vi.spyOn(authService, 'login').mockResolvedValue(professionalSession)
+
+    await useAuth().login(credentials)
+
+    expect(navigateToMock).toHaveBeenCalledWith('/app/agenda')
   })
 
   it('returns to the requested panel page after signing in', async () => {
-    await useAuth().login({ email: 'demo@sorriso.app', password: 'Sorriso123' }, `${demoTenantPath}/agenda`)
+    await useAuth().login(credentials, '/app/pacientes')
 
-    expect(navigateToMock).toHaveBeenCalledWith(`${demoTenantPath}/agenda`)
+    expect(navigateToMock).toHaveBeenCalledWith('/app/pacientes')
   })
 
   it('ignores a redirect to another site', async () => {
-    await useAuth().login({ email: 'demo@sorriso.app', password: 'Sorriso123' }, '//site.com')
+    await useAuth().login(credentials, '//site.com')
 
-    expect(navigateToMock).toHaveBeenCalledWith(demoTenantPath)
+    expect(navigateToMock).toHaveBeenCalledWith('/app')
   })
 
-  it('rejects wrong credentials without creating a session', async () => {
-    await expect(useAuth().login({ email: 'demo@sorriso.app', password: 'errada' })).rejects.toMatchObject({
-      data: { message: 'E-mail ou senha incorretos.' },
-    })
+  it('does not create a session when the credentials are refused', async () => {
+    vi.spyOn(authService, 'login').mockRejectedValue(new Error('refused'))
+
+    await expect(useAuth().login(credentials)).rejects.toThrow('refused')
 
     expect(useAuthStore().isAuthenticated).toBe(false)
     expect(navigateToMock).not.toHaveBeenCalled()
   })
 
-  it('registers a clinic, generates its slug and rejects a duplicated email', async () => {
-    await useAuth().register(newClinic)
-
-    expect(useTenantStore().tenant).toMatchObject({ slug: 'clinica-sao-jose', unit: 'Unidade principal', initials: 'CJ' })
-    expect(navigateToMock).toHaveBeenCalledWith('/app/clinica-sao-jose')
-
-    await expect(useAuth().register(newClinic)).rejects.toMatchObject({
-      data: { errors: { email: ['Este e-mail já está em uso.'] } },
+  it('sends a new clinic to the login on its own host', async () => {
+    vi.spyOn(authService, 'register').mockResolvedValue({
+      slug: 'clinica-sao-jose',
+      loginUrl: 'http://clinica-sao-jose.localhost:3000/login?cadastro=1',
     })
+
+    await useAuth().register({
+      name: 'Ana Souza',
+      email: 'ana@clinica.com',
+      password: 'senhaSegura1',
+      passwordConfirmation: 'senhaSegura1',
+      clinicName: 'Clínica São José',
+      unit: '',
+    })
+
+    expect(navigateToMock).toHaveBeenCalledWith('http://clinica-sao-jose.localhost:3000/login?cadastro=1', { external: true })
+    expect(useAuthStore().isAuthenticated).toBe(false)
   })
 
-  it('restores the stored session only once', async () => {
-    await useAuth().login({ email: 'demo@sorriso.app', password: 'Sorriso123' })
-    clearSession()
-    useAuthStore().isLoaded = false
-
+  it('loads the session only once', async () => {
     await useAuth().loadSession()
+    await useAuth().loadSession()
+
+    expect(authService.getSession).toHaveBeenCalledTimes(1)
     expect(useAuthStore().user?.email).toBe('demo@sorriso.app')
+  })
 
-    sessionStorage.clear()
+  it('does not call the API on the central domain', async () => {
+    hostMock.isClinicHost = false
+
     await useAuth().loadSession()
-    expect(useAuthStore().isAuthenticated).toBe(true)
+
+    expect(authService.getSession).not.toHaveBeenCalled()
+    expect(useAuthStore().isLoaded).toBe(true)
+    expect(useAuthStore().isAuthenticated).toBe(false)
   })
 
   it('treats a failure while loading the session as signed out', async () => {
-    sessionStorage.setItem('odonto-mock-session', '{broken')
-    useAuthStore().isLoaded = false
+    vi.spyOn(authService, 'getSession').mockRejectedValue(new Error('offline'))
 
     await useAuth().loadSession()
 
     expect(useAuthStore().isAuthenticated).toBe(false)
     expect(useAuthStore().isLoaded).toBe(true)
+    expect(useAuthStore().clinicNotFound).toBe(false)
+  })
+
+  it('flags a clinic that does not exist', async () => {
+    vi.spyOn(authService, 'getSession').mockRejectedValue(Object.assign(new Error('missing'), { statusCode: 404 }))
+
+    await useAuth().loadSession()
+
+    expect(useAuthStore().clinicNotFound).toBe(true)
   })
 
   it('clears the session and the agenda filters on logout', async () => {
-    await useAuth().login({ email: 'demo@sorriso.app', password: 'Sorriso123' })
+    await useAuth().login(credentials)
     useAgendaFiltersStore().selectedRooms = ['sala-1']
 
     await useAuth().logout()
 
+    expect(authService.logout).toHaveBeenCalled()
     expect(useAuthStore().isAuthenticated).toBe(false)
     expect(useTenantStore().tenant).toBeNull()
     expect(useAgendaFiltersStore().selectedRooms).toEqual([])
-    expect(sessionStorage.getItem('odonto-mock-session')).toBeNull()
     expect(navigateToMock).toHaveBeenLastCalledWith('/login')
   })
 
@@ -120,14 +149,10 @@ describe('useAuth', () => {
     expect(data.value).not.toBe('dados da clínica')
   })
 
-  it('resets the password only with a valid link', async () => {
-    const payload = { email: 'ana.useauth@clinica.com', password: 'novaSenha123', passwordConfirmation: 'novaSenha123' }
+  it('goes back to the login after resetting the password', async () => {
+    vi.spyOn(authService, 'resetPassword').mockResolvedValue()
 
-    await expect(useAuth().resetPassword({ ...payload, token: 'expirado' })).rejects.toMatchObject({
-      data: { errors: { token: expect.any(Array) } },
-    })
-
-    await useAuth().resetPassword({ ...payload, token: 'mock-reset-token' })
+    await useAuth().resetPassword({ token: 'abc', email: 'ana@clinica.com', password: 'novaSenha123', passwordConfirmation: 'novaSenha123' })
 
     expect(navigateToMock).toHaveBeenCalledWith({ path: '/login', query: { redefinida: '1' } })
   })

@@ -1,6 +1,6 @@
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { describe, expect, it } from 'vitest'
-import OverviewPage from '~/pages/app/[tenant]/index.vue'
+import OverviewPage from '~/pages/app/index.vue'
 
 describe('Visão geral', () => {
   it('renders every metric', async () => {

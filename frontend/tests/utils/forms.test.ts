@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { agendaMock } from '~/mocks/agenda'
+import { agendaMock } from '../fixtures/agenda'
 import { patientsMock } from '~/mocks/patients'
 import type { NewAppointmentForm } from '~/utils/appointments'
 import { isRoomTaken, validateNewAppointment } from '~/utils/appointments'

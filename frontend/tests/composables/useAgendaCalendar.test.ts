@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { agendaMock } from '~/mocks/agenda'
+import { agendaMock } from '../fixtures/agenda'
 
 describe('useAgendaCalendar', () => {
   it('starts on the week of today with the selected filters', () => {

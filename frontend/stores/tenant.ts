@@ -5,6 +5,7 @@ export const useTenantStore = defineStore('tenant', () => {
   const plan = ref<Plan | null>(null)
   const slug = computed(() => tenant.value?.slug ?? '')
 
+  // Sets the current clinic and plan.
   function setTenant(nextTenant: Tenant | null, nextPlan: Plan | null) {
     tenant.value = nextTenant
     plan.value = nextPlan

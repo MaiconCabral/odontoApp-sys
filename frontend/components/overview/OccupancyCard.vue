@@ -5,7 +5,7 @@ const props = defineProps<{
   percentage: number
 }>()
 
-const tenantPath = useTenantPath()
+
 
 const donutStyle = computed(() => ({
   background: `conic-gradient(#0284c7 0 ${props.percentage}%, var(--color-line) ${props.percentage}% 100%)`,
@@ -49,7 +49,7 @@ const donutStyle = computed(() => ({
       </span>
     </div>
 
-    <OverviewTextButton class="mt-5" :to="tenantPath('agenda')">
+    <OverviewTextButton class="mt-5" :to="panelPath('agenda')">
       Ver agenda completa
     </OverviewTextButton>
   </OverviewPanel>

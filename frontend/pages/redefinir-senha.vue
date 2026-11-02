@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { NewPasswordForm } from '~/utils/auth'
 
-definePageMeta({ layout: 'auth', middleware: 'guest' })
+definePageMeta({ layout: 'auth', middleware: ['clinic-host', 'guest'] })
 useHead({ title: 'Redefinir senha' })
 
 const route = useRoute()

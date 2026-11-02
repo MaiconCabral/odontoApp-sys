@@ -10,7 +10,12 @@ import ForgotPasswordPage from '~/pages/recuperar-senha.vue'
 import ResetPasswordPage from '~/pages/redefinir-senha.vue'
 import { clearSession } from '../utils/session'
 
-const { authMock } = vi.hoisted(() => ({
+const { authMock, hostMock } = vi.hoisted(() => ({
+  hostMock: {
+    isClinicHost: true,
+    centralUrl: (path: string) => `http://localhost:3000${path}`,
+    clinicUrl: (slug: string, path: string) => `http://${slug}.localhost:3000${path}`,
+  },
   authMock: {
     loadSession: vi.fn(),
     login: vi.fn(),
@@ -22,6 +27,7 @@ const { authMock } = vi.hoisted(() => ({
 }))
 
 mockNuxtImport('useAuth', () => () => authMock)
+mockNuxtImport('useClinicHost', () => () => hostMock)
 
 function validationError(message: string, errors: Record<string, string[]> = {}) {
   return Object.assign(new Error(message), { data: { message, errors } })
@@ -48,6 +54,7 @@ describe('auth pages', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     clearSession()
+    hostMock.isClinicHost = true
   })
 
   describe('login', () => {
@@ -65,14 +72,14 @@ describe('auth pages', () => {
     it('sends the credentials and the requested destination', async () => {
       authMock.login.mockResolvedValue(undefined)
 
-      const page = await mountSuspended(LoginPage, { route: '/login?redirect=/app/x/agenda' })
+      const page = await mountSuspended(LoginPage, { route: '/login?redirect=/app/agenda' })
 
       await fill(page, { 'E-mail': 'demo@sorriso.app', 'Senha': 'Sorriso123' })
       await submit(page)
 
       expect(authMock.login).toHaveBeenCalledWith(
         expect.objectContaining({ email: 'demo@sorriso.app', password: 'Sorriso123' }),
-        '/app/x/agenda',
+        '/app/agenda',
       )
     })
 
@@ -132,6 +139,42 @@ describe('auth pages', () => {
 
       expect(fieldByLabel(page, 'Senha').attributes('type')).toBe('text')
       expect(page.find('[aria-label="Ocultar senha"]').attributes('aria-pressed')).toBe('true')
+    })
+
+    it('asks for the clinic on the central domain', async () => {
+      hostMock.isClinicHost = false
+
+      const page = await mountSuspended(LoginPage, { route: '/login' })
+
+      expect(page.text()).toContain('Encontre sua clínica')
+      expect(page.find('input[type="password"]').exists()).toBe(false)
+    })
+
+    it('refuses an invalid clinic address', async () => {
+      hostMock.isClinicHost = false
+
+      const page = await mountSuspended(LoginPage, { route: '/login' })
+
+      await fill(page, { 'Endereço da clínica': 'evil.com/x' })
+      await submit(page)
+
+      expect(page.text()).toContain('Informe o endereço da clínica.')
+    })
+
+    it('explains a clinic that does not exist', async () => {
+      useAuthStore().clinicNotFound = true
+
+      const page = await mountSuspended(LoginPage, { route: '/login' })
+
+      expect(page.text()).toContain('Clínica não encontrada')
+      expect(page.find('a').attributes('href')).toBe('http://localhost:3000/login')
+    })
+
+    it('welcomes a new clinic with the e-mail filled in', async () => {
+      const page = await mountSuspended(LoginPage, { route: '/login?cadastro=1&email=ana@clinica.com' })
+
+      expect(page.find('[role="status"]').text()).toContain('Clínica criada')
+      expect((fieldByLabel(page, 'E-mail').element as HTMLInputElement).value).toBe('ana@clinica.com')
     })
 
     it('confirms a password that was just reset', async () => {

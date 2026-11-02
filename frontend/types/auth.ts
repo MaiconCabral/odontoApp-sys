@@ -1,8 +1,12 @@
+export type UserRole = 'admin' | 'professional' | 'reception'
+
 export type AuthUser = {
+  id: string
   name: string
   email: string
   initials: string
-  role: string
+  role: UserRole
+  roleLabel: string
 }
 
 export type Tenant = {
@@ -35,6 +39,11 @@ export type RegisterPayload = {
   passwordConfirmation: string
   clinicName: string
   unit: string
+}
+
+export type RegisteredClinic = {
+  slug: string
+  loginUrl: string
 }
 
 export type ForgotPasswordPayload = {

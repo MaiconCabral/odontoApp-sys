@@ -57,7 +57,7 @@ const iconButtonClass = 'grid h-[34px] w-[34px] place-items-center rounded-lg te
         </div>
         <div class="hidden flex-col gap-0.5 md:flex">
           <strong class="text-[11px] text-body">{{ workspace.user.name }}</strong>
-          <span class="text-[10px] text-muted">{{ workspace.user.role }}</span>
+          <span class="text-[10px] text-muted">{{ workspace.user.roleLabel }}</span>
         </div>
         <ChevronDown :size="15" class="hidden text-faint md:block" />
       </div>

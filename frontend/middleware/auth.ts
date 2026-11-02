@@ -1,3 +1,4 @@
+// Sends visitors to the login.
 // Organizes navigation only: the API is what must protect the data.
 export default defineNuxtRouteMiddleware(async (to) => {
   const auth = useAuthStore()

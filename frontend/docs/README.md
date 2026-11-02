@@ -6,22 +6,29 @@ As regras gerais de código estão em [`.cursor/rules/frontend.md`](../../.curso
 
 | Documento | Conteúdo |
 | --- | --- |
-| [Arquitetura](arquitetura.md) | Rotas por clínica, renderização, stores e services |
-| [Autenticação](autenticacao.md) | Fluxos, regras de formulário, segurança e troca do mock pela API |
+| [Arquitetura](arquitetura.md) | Subdomínios, rotas, papéis, renderização, stores e services |
+| [Autenticação](autenticacao.md) | Fluxos, regras de formulário e segurança |
+| [Integração com a API](integracao-api.md) | `useApi`, subdomínios, services, papéis e telas de clínica e equipe |
 | [Identidade visual](identidade-visual.md) | Cores, tema, tamanhos e direção das telas de entrada |
 | [Testes](testes.md) | Sessão de teste e o que cobrir |
 
 ## Estado atual
 
-> **A autenticação é simulada e não pode ir para produção com dados reais.** Nenhuma rota tem proteção real enquanto a API não existir.
+Autenticação, clínica, equipe e agenda (somente leitura) usam a API do `backend/`. Visão geral, pacientes, preferências, horários e assinatura ainda vêm de `mocks/`.
 
-Todos os dados do painel também vêm de `mocks/`.
+Para testar localmente:
 
-Para testar localmente, rode `npm run dev` e entre em `/login` com `demo@sorriso.app` / `Sorriso123`. Essa conta só existe no mock.
+1. Em `backend/`, rode `php artisan migrate:fresh --seed` e `php artisan serve`.
+2. Em `frontend/`, rode `npm run dev`.
+3. Abra `http://sorriso-perfeito.localhost:3000/login`. As contas estão em [backend/docs/multitenancy.md](../../backend/docs/multitenancy.md), e a senha é a de `SEED_DEMO_PASSWORD`, no `.env` do backend.
+
+A documentação do backend começa em [backend/docs/README.md](../../backend/docs/README.md).
 
 ## Ainda não implementado
 
-- API real de autenticação e de clínicas.
+- Criação, edição e cancelamento de agendamentos na API. O modal atual só guarda a consulta na sessão do navegador.
+- Navegação da agenda fora da janela carregada (1 mês antes e 2 depois).
+- Gestão global de clínicas e de planos.
 - Status rápido de consultas no dashboard.
 - Paginação real, histórico e prontuário de pacientes.
 - Faturas e upgrade de plano com Stripe.

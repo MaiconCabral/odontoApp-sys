@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest'
 import {
   parseApiError,
   safeRedirect,
-  tenantPath,
+  camelizeApiErrors,
+  homePath,
+  panelPath,
+  validateClinicSlug,
   validateForgotPassword,
   validateLogin,
   validateNewPassword,
@@ -82,7 +85,7 @@ describe('parseApiError', () => {
 
 describe('safeRedirect', () => {
   it('accepts panel paths', () => {
-    expect(safeRedirect('/app/sorriso-perfeito/agenda')).toBe('/app/sorriso-perfeito/agenda')
+    expect(safeRedirect('/app/agenda')).toBe('/app/agenda')
   })
 
   it.each([
@@ -101,9 +104,41 @@ describe('safeRedirect', () => {
   })
 })
 
-describe('tenantPath', () => {
+describe('panelPath', () => {
   it('builds the panel paths', () => {
-    expect(tenantPath('clinica')).toBe('/app/clinica')
-    expect(tenantPath('clinica', 'agenda')).toBe('/app/clinica/agenda')
+    expect(panelPath()).toBe('/app')
+    expect(panelPath('agenda')).toBe('/app/agenda')
+  })
+})
+
+describe('homePath', () => {
+  it('opens the agenda for professionals and the overview for the others', () => {
+    expect(homePath('professional')).toBe('/app/agenda')
+    expect(homePath('admin')).toBe('/app')
+    expect(homePath('reception')).toBe('/app')
+  })
+})
+
+describe('camelizeApiErrors', () => {
+  it('renames the fields and keeps the messages', () => {
+    const error = { data: { errors: { clinic_name: ['a'], email: ['b'] } } }
+
+    expect(camelizeApiErrors(error).data.errors).toEqual({ clinicName: ['a'], email: ['b'] })
+  })
+
+  it('returns other errors untouched', () => {
+    const error = new Error('offline')
+
+    expect(camelizeApiErrors(error)).toBe(error)
+  })
+})
+
+describe('validateClinicSlug', () => {
+  it.each(['sorriso-perfeito', ' Clinica2 '])('accepts %s', (slug) => {
+    expect(validateClinicSlug({ slug })).toEqual({})
+  })
+
+  it.each(['', 'a b', 'evil.com/', '-x', 'x-'])('rejects %o', (slug) => {
+    expect(validateClinicSlug({ slug }).slug).toBeDefined()
   })
 })

@@ -1,4 +1,4 @@
-export type SettingsTabId = 'clinic' | 'professionals' | 'hours' | 'subscription'
+export type SettingsTabId = 'clinic' | 'team' | 'hours' | 'subscription'
 
 export type SettingsTab = {
   id: SettingsTabId
@@ -8,6 +8,7 @@ export type SettingsTab = {
 
 export type ClinicData = {
   name: string
+  unit: string
   cnpj: string
   phone: string
   email: string
@@ -19,12 +20,6 @@ export type ServicePreference = {
   title: string
   description: string
   enabled: boolean
-}
-
-export type SettingsProfessional = {
-  id: string
-  name: string
-  specialty: string
 }
 
 export type OpeningHours = {
@@ -44,7 +39,6 @@ export type Settings = {
   tabs: SettingsTab[]
   clinic: ClinicData
   preferences: ServicePreference[]
-  professionals: SettingsProfessional[]
   openingHours: OpeningHours[]
   subscription: Subscription
 }

@@ -1,8 +1,12 @@
 <?php
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,5 +19,19 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->statefulApi();
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(fn (AuthenticationException $exception, Request $request) => $request->expectsJson()
+            ? response()->json(['message' => 'Sessão expirada. Entre novamente.'], 401)
+            : null);
+
+        $exceptions->render(fn (HttpException $exception, Request $request) => $request->expectsJson() && $exception->getStatusCode() === 403
+            ? response()->json(['message' => 'Você não tem permissão para esta ação.'], 403)
+            : null);
+
+        $exceptions->render(fn (HttpException $exception, Request $request) => $request->expectsJson() && $exception->getStatusCode() === 419
+            ? response()->json(['message' => 'Sua sessão expirou. Recarregue a página e tente novamente.'], 419)
+            : null);
+
+        $exceptions->render(fn (NotFoundHttpException $exception, Request $request) => $request->expectsJson()
+            ? response()->json(['message' => 'Registro não encontrado.'], 404)
+            : null);
     })->create();

@@ -5,9 +5,14 @@ definePageMeta({ layout: 'auth', middleware: 'guest' })
 useHead({ title: 'Entrar' })
 
 const route = useRoute()
+const auth = useAuthStore()
 const { login } = useAuth()
+const { isClinicHost, centralUrl } = useClinicHost()
 
-const form = reactive<LoginPayload>({ email: '', password: '' })
+const form = reactive<LoginPayload>({
+  email: typeof route.query.email === 'string' ? route.query.email : '',
+  password: '',
+})
 
 const { errors, formError, isSubmitting, submit } = useAuthForm(
   form,
@@ -17,9 +22,22 @@ const { errors, formError, isSubmitting, submit } = useAuthForm(
 </script>
 
 <template>
-  <div>
+  <AuthClinicFinder v-if="!isClinicHost" />
+
+  <div v-else-if="auth.clinicNotFound">
+    <AuthHeading title="Clínica não encontrada" description="Confira o endereço digitado ou procure sua clínica novamente." />
+
+    <a :href="centralUrl('/login')" class="text-[13px] font-semibold text-brand-text">
+      Procurar minha clínica
+    </a>
+  </div>
+
+  <div v-else>
     <AuthHeading title="Entrar na sua clínica" description="Use seu e-mail e senha para acessar o painel." />
 
+    <AuthAlert v-if="route.query.cadastro" tone="success">
+      Clínica criada. Entre com a senha que você acabou de definir.
+    </AuthAlert>
     <AuthAlert v-if="route.query.redefinida" tone="success">
       Senha redefinida. Entre com a nova senha.
     </AuthAlert>
@@ -56,9 +74,9 @@ const { errors, formError, isSubmitting, submit } = useAuthForm(
 
     <p class="mt-6 text-center text-[13px] text-muted">
       Ainda não tem conta?
-      <NuxtLink to="/cadastro" class="font-semibold text-brand-text">
+      <a :href="centralUrl('/cadastro')" class="font-semibold text-brand-text">
         Cadastre sua clínica
-      </NuxtLink>
+      </a>
     </p>
   </div>
 </template>

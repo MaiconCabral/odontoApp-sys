@@ -12,7 +12,7 @@ return [
         'http://localhost:3000',
     ],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => array_filter([env('CORS_ALLOWED_ORIGINS_PATTERN', '#^http://([a-z0-9-]+\.)?localhost(:\d+)?$#')]),
 
     'allowed_headers' => ['*'],
 

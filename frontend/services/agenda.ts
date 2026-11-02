@@ -1,5 +1,6 @@
-import { agendaMock } from '~/mocks/agenda'
+import type { Agenda } from '~/types/agenda'
 
 export const agendaService = {
-  get: () => Promise.resolve(agendaMock),
+  // Agenda the user may see.
+  get: () => useApi().api<Agenda>('/api/agenda'),
 }

@@ -54,6 +54,9 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    // {host} becomes the host of the clinic, as in sorriso-perfeito.localhost.
+    'frontend_url_template' => env('FRONTEND_URL_TEMPLATE', 'http://{host}:3000'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
@@ -65,7 +68,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => env('APP_TIMEZONE', 'America/Sao_Paulo'),
 
     /*
     |--------------------------------------------------------------------------
