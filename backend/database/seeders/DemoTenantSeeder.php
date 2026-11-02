@@ -2,13 +2,17 @@
 
 namespace Database\Seeders;
 
+use App\Domains\Agenda\Enums\AppointmentStatus;
+use App\Domains\Agenda\Enums\Procedure;
 use App\Domains\Agenda\Models\Appointment;
 use App\Domains\Agenda\Models\Patient;
 use App\Domains\Agenda\Models\Room;
+use App\Domains\Agenda\Models\ScheduleBlock;
 use App\Domains\Identity\Enums\UserRole;
 use App\Domains\Identity\Models\User;
 use App\Domains\Tenancy\Models\Plan;
 use App\Domains\Tenancy\Models\Tenant;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 use RuntimeException;
@@ -35,7 +39,15 @@ class DemoTenantSeeder extends Seeder
                 ['name' => 'Paula Nunes', 'email' => 'recepcao@sorriso.app', 'role' => UserRole::Reception, 'specialty' => null, 'attends' => false, 'tone' => 'cyan'],
             ],
             'rooms' => ['Sala 01 · Consultório', 'Sala 02 · Cirurgia'],
-            'patients' => ['Mariana Costa', 'Rafael Oliveira', 'Camila Ferreira', 'Juliana Almeida', 'Bruno Martins', 'Letícia Souza'],
+            'patients' => [
+                ['name' => 'Mariana Costa', 'cpf' => '000.000.000-01', 'phone' => '(11) 99843-2108', 'insurance' => 'SulAmérica'],
+                ['name' => 'Rafael Oliveira', 'cpf' => '000.000.000-02', 'phone' => '(11) 99127-7844', 'insurance' => 'Particular'],
+                ['name' => 'Camila Ferreira', 'cpf' => '000.000.000-03', 'phone' => '(11) 99632-4510', 'insurance' => 'Bradesco Saúde'],
+                ['name' => 'Lucas Martins', 'cpf' => '000.000.000-04', 'phone' => '(11) 98901-6288', 'insurance' => 'Amil'],
+                ['name' => 'Juliana Almeida', 'cpf' => '000.000.000-05', 'phone' => '(11) 99731-0972', 'insurance' => 'Particular'],
+                ['name' => 'Bruno Martins', 'cpf' => null, 'phone' => '(11) 98455-1203', 'insurance' => 'Particular'],
+                ['name' => 'Letícia Souza', 'cpf' => null, 'phone' => '(11) 97321-8840', 'insurance' => 'SulAmérica'],
+            ],
         ],
         [
             'id' => 'demo-clinica-horizonte',
@@ -53,13 +65,18 @@ class DemoTenantSeeder extends Seeder
                 ['name' => 'Dr. Tiago Freitas', 'email' => 'tiago@horizonte.app', 'role' => UserRole::Professional, 'specialty' => 'Endodontia', 'attends' => true, 'tone' => 'amber'],
             ],
             'rooms' => ['Consultório A'],
-            'patients' => ['Roberto Lima', 'Sofia Andrade', 'Eduardo Pires'],
+            'patients' => [
+                ['name' => 'Roberto Lima', 'cpf' => null, 'phone' => '(21) 99811-2030', 'insurance' => 'Particular'],
+                ['name' => 'Sofia Andrade', 'cpf' => null, 'phone' => '(21) 98822-4410', 'insurance' => 'Amil'],
+                ['name' => 'Eduardo Pires', 'cpf' => null, 'phone' => '(21) 97733-5520', 'insurance' => 'Particular'],
+            ],
         ],
     ];
 
-    private const PROCEDURES = ['Avaliação', 'Limpeza e prevenção', 'Restauração estética', 'Consulta de retorno'];
+    private const PROCEDURES = [Procedure::Evaluation, Procedure::Cleaning, Procedure::AestheticRestoration, Procedure::FollowUp];
 
-    private const EVENT_TONES = ['blue', 'amber', 'violet'];
+    // One start time per professional, outside the lunch break and inside Saturday morning.
+    private const START_TIMES = ['08:30', '10:00', '09:00'];
 
     /** Recreates the demo clinics. */
     public function run(): void
@@ -133,34 +150,108 @@ class DemoTenantSeeder extends Seeder
             ->values();
 
         $rooms = collect($clinic['rooms'])->map(fn (string $name) => Room::create(['name' => $name]));
-        $patients = collect($clinic['patients'])->map(fn (string $name) => Patient::create(['name' => $name]));
+        $patients = collect($clinic['patients'])->map(fn (array $patient) => Patient::create($patient));
 
         $this->seedAppointments($professionals, $rooms, $patients);
+        $this->seedRequests($professionals, $patients);
+        $this->seedBlocks($professionals);
     }
 
     /**
-     * Each professional gets one appointment per day for the next few days, at different hours.
+     * Creates the demo appointments.
+     * Each professional gets one appointment per weekday, from three days ago to ten days ahead.
+     * Past ones are completed or missed; upcoming ones are scheduled or confirmed.
      */
     private function seedAppointments(Collection $professionals, Collection $rooms, Collection $patients): void
     {
         $sequence = 0;
 
-        foreach (range(-2, 7) as $dayOffset) {
-            foreach ($professionals as $professionalIndex => $professional) {
-                $startsAt = today()->addDays($dayOffset)->setTime(9 + $professionalIndex * 2 + ($sequence % 2), 0);
+        foreach (range(-3, 10) as $dayOffset) {
+            $day = CarbonImmutable::today()->addDays($dayOffset);
 
-                Appointment::create([
+            if ($day->isSunday()) {
+                continue;
+            }
+
+            foreach ($professionals as $index => $professional) {
+                $procedure = self::PROCEDURES[$sequence % count(self::PROCEDURES)];
+                $startsAt = $day->setTimeFromTimeString(self::START_TIMES[$index % count(self::START_TIMES)]);
+
+                // Saturday closes at noon, so the long procedure moves to a shorter one.
+                if ($day->isSaturday() && $startsAt->addMinutes($procedure->minutes())->format('H:i') > '12:00') {
+                    $procedure = Procedure::FollowUp;
+                }
+
+                $appointment = new Appointment([
                     'patient_id' => $patients[$sequence % $patients->count()]->id,
                     'professional_id' => $professional->id,
-                    'room_id' => $rooms[$professionalIndex % $rooms->count()]->id,
+                    'room_id' => $rooms[$index % $rooms->count()]->id,
+                    'procedure' => $procedure,
                     'starts_at' => $startsAt,
-                    'ends_at' => $startsAt->copy()->addHour(),
-                    'procedure' => self::PROCEDURES[$sequence % count(self::PROCEDURES)],
-                    'tone' => self::EVENT_TONES[$sequence % count(self::EVENT_TONES)],
+                    'ends_at' => $startsAt->addMinutes($procedure->minutes()),
+                    'source' => Appointment::SOURCE_INTERNAL,
                 ]);
+                $appointment->moveTo(AppointmentStatus::Scheduled, null);
+                $this->advance($appointment, $startsAt, $sequence);
 
                 $sequence++;
             }
         }
+    }
+
+    /** Moves a demo appointment along the flow, so every status shows up in the agenda. */
+    private function advance(Appointment $appointment, CarbonImmutable $startsAt, int $sequence): void
+    {
+        if ($startsAt->isPast()) {
+            $appointment->moveTo($sequence % 5 === 0 ? AppointmentStatus::NoShow : AppointmentStatus::Completed, null);
+
+            return;
+        }
+
+        if ($sequence % 3 === 0) {
+            $appointment->moveTo(AppointmentStatus::Confirmed, null, 'Confirmado por telefone.');
+        }
+    }
+
+    /** Two patient requests from the public page, waiting for the reception. */
+    private function seedRequests(Collection $professionals, Collection $patients): void
+    {
+        foreach ([2 => '15:00', 3 => '16:00'] as $dayOffset => $time) {
+            $day = CarbonImmutable::today()->addWeekdays($dayOffset);
+            $startsAt = $day->setTimeFromTimeString($day->isSaturday() ? '10:30' : $time);
+            $procedure = Procedure::Evaluation;
+
+            $request = new Appointment([
+                'patient_id' => $patients[$dayOffset % $patients->count()]->id,
+                'professional_id' => $professionals[$dayOffset % $professionals->count()]->id,
+                'procedure' => $procedure,
+                'starts_at' => $startsAt,
+                'ends_at' => $startsAt->addMinutes($procedure->minutes()),
+                'source' => Appointment::SOURCE_PUBLIC,
+                'notes' => 'Pedido feito pela página de agendamento.',
+            ]);
+            $request->moveTo(AppointmentStatus::Requested, null);
+        }
+    }
+
+    /** A clinic holiday and a day off, both after the seeded appointments. */
+    private function seedBlocks(Collection $professionals): void
+    {
+        $holiday = CarbonImmutable::today()->addWeekdays(10);
+
+        ScheduleBlock::create([
+            'starts_at' => $holiday->startOfDay(),
+            'ends_at' => $holiday->endOfDay(),
+            'reason' => 'Feriado municipal',
+        ]);
+
+        $dayOff = CarbonImmutable::today()->addWeekdays(11);
+
+        ScheduleBlock::create([
+            'professional_id' => $professionals->last()->id,
+            'starts_at' => $dayOff->startOfDay(),
+            'ends_at' => $dayOff->endOfDay(),
+            'reason' => 'Folga',
+        ]);
     }
 }

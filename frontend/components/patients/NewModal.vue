@@ -1,63 +1,48 @@
 <script setup lang="ts">
 import { UserPlus } from 'lucide-vue-next'
-import type { NewPatientErrors, NewPatientForm } from '~/utils/patients'
+import type { Patient, PatientForm } from '~/types/patients'
 
-const { closeModal } = useActiveModal()
+const { closeModal, modalPayload } = useActiveModal()
 const { showToast } = useToast()
-const sessionPatients = useSessionPatients()
 
-const { data: list } = await usePatients()
+const editing = (modalPayload.value?.patient ?? null) as Patient | null
 
-const form = reactive<NewPatientForm>({
-  name: '',
-  cpf: '',
-  phone: '',
-  insurance: list.value?.insurances[0] ?? '',
+const form = reactive<PatientForm>({
+  name: editing?.name ?? '',
+  cpf: editing?.cpf ?? '',
+  phone: editing?.phone ?? '',
+  email: editing?.email ?? '',
+  insurance: editing?.insurance ?? INSURANCES[0] ?? '',
+  birthDate: editing?.birthDate ?? '',
 })
 
-const errors = ref<NewPatientErrors>({})
+const { errors, formError, isSubmitting, submit } = useAuthForm(form, validatePatient, async () => {
+  const body = { ...form, cpf: formatCpf(form.cpf) || form.cpf, phone: formatPhone(form.phone) || form.phone }
+  const saved = editing ? await patientsService.update(editing.id, body) : await patientsService.create(body)
 
-function submit() {
-  const patients = [...sessionPatients.value, ...(list.value?.patients ?? [])]
-
-  errors.value = validateNewPatient(form, patients)
-
-  if (Object.keys(errors.value).length > 0) {
-    return
-  }
-
-  const name = form.name.trim()
-
-  sessionPatients.value = [{
-    id: `session-patient-${sessionPatients.value.length + 1}`,
-    initials: patientInitials(name),
-    name,
-    tone: 'blue',
-    cpf: formatCpf(form.cpf),
-    phone: formatPhone(form.phone),
-    lastAppointment: 'Sem consultas',
-    insurance: form.insurance,
-    isPrivate: form.insurance === 'Particular',
-  }, ...sessionPatients.value]
-
-  showToast(`Cadastro de ${name} concluído.`)
+  showToast(editing ? `Cadastro de ${saved.name} atualizado.` : `Cadastro de ${saved.name} concluído.`)
+  await refreshNuxtData('patients')
   closeModal()
-}
+})
 </script>
 
 <template>
   <AppModal
-    v-if="list"
     eyebrow="Relacionamento"
-    title="Novo paciente"
-    description="Preencha os dados para cadastrar um paciente."
-    submit-label="Cadastrar paciente"
+    :title="editing ? 'Editar paciente' : 'Novo paciente'"
+    :description="editing ? 'Atualize os dados do paciente.' : 'Preencha os dados para cadastrar um paciente.'"
+    :submit-label="editing ? 'Salvar alterações' : 'Cadastrar paciente'"
+    :submitting="isSubmitting"
     @close="closeModal"
-    @submit="submit"
+    @submit="submit()"
   >
     <template #submit-icon>
       <UserPlus :size="17" />
     </template>
+
+    <p v-if="formError" role="alert" class="text-[11px] text-[#c2553f] sm:col-span-2">
+      {{ formError }}
+    </p>
 
     <AppFormField v-slot="field" label="Nome completo" :error="errors.name" full>
       <input
@@ -71,7 +56,7 @@ function submit() {
       >
     </AppFormField>
 
-    <AppFormField v-slot="field" label="CPF" :error="errors.cpf">
+    <AppFormField v-slot="field" label="CPF (opcional)" :error="errors.cpf">
       <input
         :id="field.id"
         v-model="form.cpf"
@@ -97,9 +82,25 @@ function submit() {
       >
     </AppFormField>
 
+    <AppFormField v-slot="field" label="E-mail (opcional)" :error="errors.email">
+      <input
+        :id="field.id"
+        v-model="form.email"
+        type="email"
+        autocomplete="off"
+        :class="field.controlClass"
+        :aria-invalid="field.invalid"
+        :aria-describedby="field.describedBy"
+      >
+    </AppFormField>
+
+    <AppFormField v-slot="field" label="Nascimento (opcional)" :error="errors.birthDate">
+      <input :id="field.id" v-model="form.birthDate" type="date" :class="field.controlClass" :aria-invalid="field.invalid">
+    </AppFormField>
+
     <AppFormField v-slot="field" label="Convênio" full>
       <select :id="field.id" v-model="form.insurance" :class="field.controlClass">
-        <option v-for="insurance in list.insurances" :key="insurance" :value="insurance">
+        <option v-for="insurance in INSURANCES" :key="insurance" :value="insurance">
           {{ insurance }}
         </option>
       </select>

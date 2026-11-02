@@ -1,10 +1,16 @@
 <script setup lang="ts">
 const { activeModal } = useActiveModal()
+const auth = useAuthStore()
 
 const isSidebarCollapsed = ref(false)
 const isMobileMenuOpen = ref(false)
 
 const route = useRoute()
+
+// The menu counts the requests waiting for the reception on every page.
+if (auth.user && auth.user.role !== 'professional') {
+  useAppointmentRequests()
+}
 
 watch(() => route.path, () => {
   isMobileMenuOpen.value = false
@@ -38,6 +44,12 @@ watch(() => route.path, () => {
 
     <Suspense v-if="activeModal === 'appointment'">
       <LazyAppointmentsNewModal />
+    </Suspense>
+    <Suspense v-else-if="activeModal === 'appointment-details'">
+      <LazyAppointmentsDetailsModal />
+    </Suspense>
+    <Suspense v-else-if="activeModal === 'block'">
+      <LazyAgendaBlockModal />
     </Suspense>
     <Suspense v-else-if="activeModal === 'patient'">
       <LazyPatientsNewModal />

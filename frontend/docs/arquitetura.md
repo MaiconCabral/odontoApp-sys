@@ -26,9 +26,10 @@ O caminho dos dados é: página ou componente → composable → service → moc
 | `/cadastro` | Domínio central | Cadastro da clínica e do administrador |
 | `/recuperar-senha` | Subdomínio, sem sessão | Pedido do link de redefinição |
 | `/redefinir-senha?token&email` | Subdomínio, sem sessão | Nova senha |
+| `/agendar` | Subdomínio, público | Pedido de agendamento do paciente |
 | `/app` | Admin e recepção | Visão geral |
-| `/app/agenda` | Todos os papéis | Agenda |
-| `/app/pacientes` | Admin e recepção | Pacientes |
+| `/app/agenda` | Todos os papéis | Agenda, pedidos pendentes e bloqueios |
+| `/app/pacientes` | Admin e recepção | Cadastro de pacientes |
 | `/app/configuracoes` | Admin | Configurações |
 
 ### Regras das rotas do painel
@@ -97,6 +98,7 @@ export function useOverview() {
 Ao criar uma store ou um `useState` com dados da clínica ou de pacientes, inclua a limpeza nessa função. Hoje ela limpa:
 
 - sessão, clínica e filtros da agenda;
+- período da agenda, busca de pacientes e contador de pedidos (zerados, não removidos, porque a página ainda na tela pode estar lendo esses estados);
 - equipe e demais dados do `useAsyncData`;
 - pacientes e agendamentos criados na sessão;
 - toast e modal abertos, que podem conter nome de paciente;

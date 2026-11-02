@@ -2,19 +2,36 @@ export type PatientTone = 'blue' | 'amber' | 'green' | 'violet' | 'pink'
 
 export type Patient = {
   id: string
-  initials: string
   name: string
+  initials: string
   tone: PatientTone
-  cpf: string
+  cpf: string | null
   phone: string
-  lastAppointment: string
-  insurance: string
+  email: string | null
+  birthDate: string | null
+  insurance: string | null
   isPrivate: boolean
+  notes: string | null
+  lastAppointment: string
 }
 
 export type PatientList = {
-  total: number
-  activeFilters: number
-  insurances: string[]
   patients: Patient[]
+  total: number
+  page: number
+  lastPage: number
+}
+
+export type PatientQuery = {
+  search: string
+  page: number
+}
+
+export type PatientForm = {
+  name: string
+  cpf: string
+  phone: string
+  email: string
+  insurance: string
+  birthDate: string
 }

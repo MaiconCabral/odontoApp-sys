@@ -1,10 +1,18 @@
-import type { AgendaEvent } from '~/types/agenda'
+import type { AgendaRange } from '~/types/agenda'
 
-export function useAgenda() {
-  return useAsyncData('agenda', () => agendaService.get())
+// Period asked to the API. Null keeps the default period of the server.
+export function useAgendaRange() {
+  return useState<AgendaRange | null>('agenda-range', () => null)
 }
 
-// Appointments confirmed in this session, until the API exists.
-export function useSessionAgendaEvents() {
-  return useState<AgendaEvent[]>('agenda-session-events', () => [])
+// Loads the agenda again whenever the period changes.
+export function useAgenda() {
+  const range = useAgendaRange()
+
+  return useAsyncData('agenda', () => agendaService.get(range.value), { watch: [range] })
+}
+
+// Reloads everything that shows appointments after a change.
+export async function refreshAgendaData() {
+  await refreshNuxtData(['agenda', 'appointment-requests'])
 }

@@ -1,10 +1,15 @@
-import type { Patient } from '~/types/patients'
+import type { PatientQuery } from '~/types/patients'
 
-export function usePatients() {
-  return useAsyncData('patients', () => patientsService.list())
+// Search and page of the patients list.
+export function usePatientsQuery() {
+  return useState<PatientQuery>('patients-query', () => ({ search: '', page: 1 }))
 }
 
-// Patients registered in this session, until the API exists.
-export function useSessionPatients() {
-  return useState<Patient[]>('session-patients', () => [])
+// Loads the patients list again when the search or the page changes.
+export function usePatients() {
+  const query = usePatientsQuery()
+
+  return useAsyncData('patients', () => patientsService.list(query.value), {
+    watch: [() => query.value.search, () => query.value.page],
+  })
 }

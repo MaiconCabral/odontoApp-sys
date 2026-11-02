@@ -73,6 +73,13 @@ const { errors, formError, isSubmitting, submit } = useAuthForm(
     </form>
 
     <p class="mt-6 text-center text-[13px] text-muted">
+      É paciente?
+      <NuxtLink to="/agendar" class="font-semibold text-brand-text">
+        Agende sua consulta
+      </NuxtLink>
+    </p>
+
+    <p class="mt-6 text-center text-[13px] text-muted">
       Ainda não tem conta?
       <a :href="centralUrl('/cadastro')" class="font-semibold text-brand-text">
         Cadastre sua clínica

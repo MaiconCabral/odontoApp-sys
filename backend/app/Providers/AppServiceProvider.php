@@ -3,7 +3,10 @@
 namespace App\Providers;
 
 use App\Domains\Agenda\Models\Appointment;
+use App\Domains\Agenda\Models\Patient;
 use App\Domains\Agenda\Policies\AppointmentPolicy;
+use App\Domains\Agenda\Policies\PatientPolicy;
+use App\Domains\Agenda\Policies\SchedulePolicy;
 use App\Domains\Identity\Models\User;
 use App\Domains\Identity\Policies\UserPolicy;
 use App\Domains\Tenancy\Models\Tenant;
@@ -34,6 +37,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Tenant::class, ClinicPolicy::class);
         Gate::policy(Appointment::class, AppointmentPolicy::class);
+        Gate::policy(Patient::class, PatientPolicy::class);
+        Gate::define('updateBusinessHours', [SchedulePolicy::class, 'updateBusinessHours']);
+        Gate::define('manageBlocks', [SchedulePolicy::class, 'manageBlocks']);
 
         $this->configureRateLimiting();
     }
@@ -44,6 +50,16 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('clinic-registration', fn (Request $request) => $this->limit(5, $request->ip()));
         RateLimiter::for('login', fn (Request $request) => $this->limit(5, $this->accountKey($request)));
         RateLimiter::for('password', fn (Request $request) => $this->limit(5, $this->accountKey($request)));
+        RateLimiter::for('public-read', fn (Request $request) => $this->limit(60, $this->visitorKey($request)));
+        RateLimiter::for('booking', fn (Request $request) => Limit::perHour(5)->by($this->visitorKey($request))->response(
+            fn (Request $request, array $headers) => new JsonResponse(['message' => 'Você já enviou vários pedidos. Tente de novo mais tarde ou ligue para a clínica.'], 429, $headers),
+        ));
+    }
+
+    /** Rate limit key per clinic and IP, for visitors without an account. */
+    private function visitorKey(Request $request): string
+    {
+        return implode('|', [tenant()?->getTenantKey(), $request->ip()]);
     }
 
     /** Per-minute limit with a Portuguese message. */

@@ -9,9 +9,9 @@ use Illuminate\Http\JsonResponse;
 
 class AgendaController extends Controller
 {
-    /** Returns the agenda of the signed-in user. */
+    /** Returns the agenda of the period for the signed-in user. */
     public function __invoke(AgendaRequest $request, AgendaQuery $agenda): JsonResponse
     {
-        return response()->json($agenda->for($request->user(), $request->professionalId()));
+        return response()->json($agenda->for($request->user(), $request->from(), $request->to(), $request->professionalId()));
     }
 }

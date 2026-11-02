@@ -1,68 +1,90 @@
 import { describe, expect, it } from 'vitest'
+import type { AgendaBlock, AppointmentForm } from '~/types/agenda'
+import {
+  blockSpanOnDay,
+  formatAppointmentDate,
+  gridOffset,
+  timeOf,
+  validateAppointment,
+  visibleRange,
+} from '~/utils/appointments'
+import { localToday, validateBookingContact } from '~/utils/booking'
+import { formatCpf, formatPhone, patientInitials, validatePatient } from '~/utils/patients'
 import { agendaMock } from '../fixtures/agenda'
-import { patientsMock } from '~/mocks/patients'
-import type { NewAppointmentForm } from '~/utils/appointments'
-import { isRoomTaken, validateNewAppointment } from '~/utils/appointments'
-import { formatCpf, formatPhone, patientInitials, validateNewPatient } from '~/utils/patients'
 
-const appointment: NewAppointmentForm = {
-  patientName: 'Mariana Costa',
-  procedure: 'Avaliação',
-  professionalId: 'felipe',
-  date: '2024-10-24',
-  hour: '15:00',
+const appointment: AppointmentForm = {
+  patientId: 'patient-1',
+  procedure: 'cleaning',
+  professionalId: 'carlos',
   roomId: 'room-1',
+  date: '2024-10-24',
+  time: '15:00',
+  notes: '',
 }
 
-describe('validateNewAppointment', () => {
-  const names = ['Mariana Costa']
-
-  it('accepts a free slot with a registered patient', () => {
-    expect(validateNewAppointment(appointment, names, agendaMock.events)).toEqual({})
+describe('validateAppointment', () => {
+  it('accepts a complete form', () => {
+    expect(validateAppointment(appointment)).toEqual({})
   })
 
-  it('requires a registered patient and a date', () => {
-    const errors = validateNewAppointment({ ...appointment, patientName: 'Fulano', date: '' }, names, agendaMock.events)
+  it('requires patient, time and the other choices', () => {
+    const errors = validateAppointment({ ...appointment, patientId: '', time: '', roomId: '' })
 
-    expect(errors.patientName).toBeDefined()
-    expect(errors.date).toBeDefined()
-  })
-
-  it('rejects a taken room and a busy professional', () => {
-    const errors = validateNewAppointment(
-      { ...appointment, hour: '10:00', professionalId: 'carlos' },
-      names,
-      agendaMock.events,
-    )
-
-    expect(errors.roomId).toBeDefined()
-    expect(errors.professionalId).toBeDefined()
+    expect(Object.keys(errors).sort()).toEqual(['patientId', 'roomId', 'time'])
   })
 })
 
-describe('isRoomTaken', () => {
-  it('checks date, hour and room together', () => {
-    expect(isRoomTaken(agendaMock.events, '2024-10-24', '10:00', 'room-1')).toBe(true)
-    expect(isRoomTaken(agendaMock.events, '2024-10-24', '10:00', 'room-2')).toBe(false)
+describe('agenda geometry', () => {
+  it('counts 30-minute rows from the first hour', () => {
+    expect(gridOffset(agendaMock.hours, '08:00')).toBe(0)
+    expect(gridOffset(agendaMock.hours, '10:30')).toBe(5)
+    expect(timeOf(18 * 60)).toBe('18:00')
+  })
+
+  it('cuts a block to the visible part of each day', () => {
+    const block: AgendaBlock = { id: 'b', professionalId: null, startsAt: '2024-10-24 14:00', endsAt: '2024-10-25 10:00', reason: 'Curso' }
+
+    expect(blockSpanOnDay(block, '2024-10-23', agendaMock.hours)).toBeNull()
+    expect(blockSpanOnDay(block, '2024-10-24', agendaMock.hours)).toEqual({ start: '14:00', end: '18:00' })
+    expect(blockSpanOnDay(block, '2024-10-25', agendaMock.hours)).toEqual({ start: '08:00', end: '10:00' })
+  })
+
+  it('knows the dates each view shows', () => {
+    expect(visibleRange('2024-10-24', 'day')).toEqual({ from: '2024-10-24', to: '2024-10-24' })
+    expect(visibleRange('2024-10-24', 'week')).toEqual({ from: '2024-10-21', to: '2024-10-27' })
+    expect(visibleRange('2024-10-24', 'month')).toEqual({ from: '2024-10-01', to: '2024-10-31' })
+  })
+
+  it('formats the date of an appointment', () => {
+    expect(formatAppointmentDate('2024-10-24', '10:00')).toBe('Qui, 24/10 às 10:00')
   })
 })
 
-describe('validateNewPatient', () => {
-  const valid = { name: 'Ana Souza', cpf: '123.456.789-01', phone: '(11) 91234-5678', insurance: 'Amil' }
+describe('validatePatient', () => {
+  const valid = { name: 'Ana Souza', cpf: '', phone: '(11) 91234-5678', email: '', insurance: 'Amil', birthDate: '' }
 
-  it('accepts valid data with or without formatting', () => {
-    expect(validateNewPatient(valid, patientsMock.patients)).toEqual({})
-    expect(validateNewPatient({ ...valid, cpf: '12345678901', phone: '1132345678' }, patientsMock.patients)).toEqual({})
+  it('accepts a patient without CPF and e-mail', () => {
+    expect(validatePatient(valid)).toEqual({})
+    expect(validatePatient({ ...valid, cpf: '12345678901', email: 'ana@email.com' })).toEqual({})
   })
 
   it('rejects missing or malformed fields', () => {
-    const errors = validateNewPatient({ ...valid, name: ' ', cpf: '123', phone: '99' }, patientsMock.patients)
+    const errors = validatePatient({ ...valid, name: ' ', cpf: '123', phone: '99', email: 'ana@' })
 
-    expect(Object.keys(errors).sort()).toEqual(['cpf', 'name', 'phone'])
+    expect(Object.keys(errors).sort()).toEqual(['cpf', 'email', 'name', 'phone'])
+  })
+})
+
+describe('validateBookingContact', () => {
+  const contact = { procedure: 'evaluation', professionalId: '', date: '2024-10-25', time: '09:00', name: 'Ana Souza', phone: '11912345678', email: '', notes: '', consent: true, website: '' }
+
+  it('requires the name, a phone with area code and the consent', () => {
+    expect(validateBookingContact(contact)).toEqual({})
+    expect(Object.keys(validateBookingContact({ ...contact, name: 'A', phone: '1234', consent: false })).sort()).toEqual(['consent', 'name', 'phone'])
   })
 
-  it('rejects a CPF that is already registered', () => {
-    expect(validateNewPatient({ ...valid, cpf: '00000000001' }, patientsMock.patients).cpf).toContain('Já existe')
+  it('reads today in the browser time zone', () => {
+    expect(localToday()).toMatch(/^\d{4}-\d{2}-\d{2}$/)
   })
 })
 

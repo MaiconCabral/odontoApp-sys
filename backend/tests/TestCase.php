@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use App\Domains\Identity\Models\User;
 use App\Domains\Tenancy\Models\Plan;
 use App\Domains\Tenancy\Models\Tenant;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
@@ -60,6 +61,12 @@ abstract class TestCase extends BaseTestCase
 
         return $this->withHeaders(['Origin' => "http://{$slug}.localhost:3000", 'Accept' => 'application/json'])
             ->json($method, "http://{$slug}.localhost/api/{$uri}", $data);
+    }
+
+    /** Signs a user in on the clinic host, the way the SPA does. */
+    protected function signIn(string $slug, User $user, string $password = 'Sorriso123'): void
+    {
+        $this->clinicRequest($slug, 'POST', 'login', ['email' => $user->email, 'password' => $password])->assertOk();
     }
 
     /**

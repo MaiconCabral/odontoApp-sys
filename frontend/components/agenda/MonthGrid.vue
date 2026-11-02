@@ -6,7 +6,20 @@ const props = defineProps<{
   events: AgendaEvent[]
 }>()
 
-const eventDates = computed(() => new Set(props.events.map(event => event.date)))
+const emit = defineEmits<{
+  openDay: [date: string]
+}>()
+
+const countByDate = computed(() => {
+  const counts = new Map<string, number>()
+
+  for (const event of props.events) {
+    counts.set(event.date, (counts.get(event.date) ?? 0) + 1)
+  }
+
+  return counts
+})
+
 const cells = computed(() => monthGrid(props.date))
 
 const lineClass = 'border-line-soft'
@@ -33,7 +46,15 @@ const lineClass = 'border-line-soft'
     >
       <template v-if="cell">
         {{ dayOfMonth(cell) }}
-        <i v-if="eventDates.has(cell)" class="mt-[13px] block h-[5px] w-[5px] rounded-full bg-brand" />
+        <button
+          v-if="countByDate.get(cell)"
+          type="button"
+          class="mt-2 block rounded bg-brand-soft px-1.5 py-0.5 text-[9px] font-semibold text-brand-text"
+          data-testid="day-count"
+          @click="emit('openDay', cell)"
+        >
+          {{ countByDate.get(cell) }} {{ countByDate.get(cell) === 1 ? 'consulta' : 'consultas' }}
+        </button>
       </template>
     </div>
   </div>
