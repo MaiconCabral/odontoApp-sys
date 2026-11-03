@@ -65,10 +65,6 @@ export function weekdayLabel(iso: string): string {
   return WEEKDAY_LABELS[weekdayIndex(iso)] ?? ''
 }
 
-export function dayOfMonth(iso: string): number {
-  return toDate(iso).getUTCDate()
-}
-
 export function shiftDate(iso: string, view: AgendaView, direction: 1 | -1): string {
   if (view === 'month') {
     return addMonths(iso, direction)

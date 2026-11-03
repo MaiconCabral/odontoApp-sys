@@ -67,8 +67,22 @@ Os valores em dinheiro chegam em centavos. Use `formatMoney`, `toCents` e `cents
 
 - `useAgenda()` carrega o período de `useAgendaRange()`. Enquanto o período for `null`, vale o período padrão da API (a semana atual e as cinco seguintes).
 - `useAgendaCalendar` pede um período novo só quando a semana, o dia ou o mês na tela saem do período carregado.
-- A grade usa linhas de 30 minutos; cada consulta ocupa a altura da duração, com a cor do status (`STATUS_CLASSES`, em `utils/appointments.ts`). Consultas no mesmo horário ficam lado a lado.
-- Bloqueios aparecem hachurados. Admin e recepção clicam neles para excluir.
+- **Calendário (`components/agenda/Calendar.vue`):** usa o FullCalendar 6.1.22 (`@fullcalendar/core`, `vue3`, `daygrid`, `timegrid` e `interaction`, todos MIT e com a versão fixada).
+  - O cabeçalho do FullCalendar fica desligado. A `AgendaToolbar` e o `useAgendaCalendar` continuam donos da data e da visão, e o calendário segue as duas com `changeView`.
+  - Visões: `timeGridDay`, `timeGridWeek` e `dayGridMonth` (`CALENDAR_VIEWS`, em `utils/calendar.ts`).
+  - Configuração: `pt-br`, semana começando na segunda e linhas de 30 minutos. O início e o fim vêm de `hours` da API (`slotBounds`), e "hoje" vem de `agenda.today`.
+  - **Mapeamento (`utils/calendar.ts`):** `toCalendarEvents` e `toCalendarBlocks` convertem o payload da API.
+    - O conteúdo do evento usa a cor do status (`STATUS_CLASSES`) e o selo de pagamento.
+    - `eventDidMount` põe o `aria-label` ("Camila Ferreira, 10:00, Agendado, Pago").
+    - Bloqueios são eventos de fundo hachurados; admin e recepção clicam neles para excluir.
+  - **Mês:** o clique num dia abre a visão de dia.
+  - **Arrastar e soltar:**
+    - só para admin e recepção, e só consultas agendadas ou confirmadas; a duração não muda, porque o procedimento a define;
+    - ao soltar, o `AgendaBoard` pergunta "Remarcar consulta?";
+    - ao confirmar, chama `appointmentsService.update`, a mesma remarcação do formulário, que confere conflitos e avisa o paciente por e-mail;
+    - se a remarcação for cancelada ou recusada pela API, o evento volta para o lugar (`revert`) e o erro aparece no toast.
+  - **Tema:** as variáveis `--fc-*` apontam para os tokens, em `assets/css/main.css`. Essas regras ficam fora do `@layer`, porque o Tailwind descartaria classes `fc-*` que só existem em tempo de execução.
+- **Gráficos da visão geral:** `OverviewWeeklyChart` (barras, com hoje em destaque) e `OverviewOccupancyCard` (`radialBar`) usam o `AppChart`, com ApexCharts.
 - Os modais ficam no layout `default` e abrem com `useActiveModal().openModal(nome, payload)`:
 
   | Modal | Payload | Uso |

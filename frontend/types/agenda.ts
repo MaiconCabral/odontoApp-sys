@@ -72,13 +72,6 @@ export type AgendaRange = {
   to: string
 }
 
-export type AgendaDay = {
-  date: string
-  weekday: string
-  dayOfMonth: number
-  isToday: boolean
-}
-
 export type AppointmentHistoryEntry = {
   from: AppointmentStatus | null
   fromLabel: string | null

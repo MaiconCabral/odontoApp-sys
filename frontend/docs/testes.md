@@ -69,6 +69,13 @@ Componentes que dependem do host usam `mockNuxtImport('useClinicHost', ...)`, po
   - Veja `tests/pages/paciente.test.ts`. As regras de face e o rótulo acessível do dente estão em `tests/utils/odontogram.test.ts`.
 - **Lista de espera e link do e-mail:** `tests/pages/lista-espera.test.ts` e o bloco "from the waiting list link" de `tests/pages/agendar.test.ts`.
 - **Pagamentos e relatórios:** `tests/pages/financeiro.test.ts`. Valores com `formatMoney` trazem espaço não separável depois de "R$"; compare com a função `text()` do arquivo, que o troca por espaço comum.
+- **Agenda (FullCalendar):**
+  - `tests/setup.ts` troca o `@fullcalendar/vue3` pelo stub de `tests/stubs/fullcalendar.ts`;
+  - o stub desenha cada evento como um botão com o mesmo `aria-label`, `data-start`, `data-end` e `data-editable`, e repassa o clique para `eventClick`;
+  - a visão e a data aparecem em `data-view` e `data-date`;
+  - para simular arrastar, chame `props('options').eventDrop(...)` no componente `FullCalendarStub` (veja `drop()` em `tests/pages/agenda.test.ts`);
+  - o mapeamento puro fica em `tests/utils/calendar.test.ts`.
+  - Confira no navegador: arrastar para um horário livre, arrastar para um ocupado (o evento volta), tema escuro e celular.
 - **Gráficos:** `tests/setup.ts` troca o `vue3-apexcharts` por um stub, porque o happy-dom não desenha. Teste os dados (`series`, `label`), não o desenho.
 - **Páginas com a mesma chave de `useAsyncData`:** desmonte a página no fim do teste (`page.unmount()`). Senão, a próxima página reaproveita o handler da anterior.
 - **Painel da plataforma:** `tests/pages/admin.test.ts`, com o `useClinicHost` simulado. O middleware `platform-auth` é testado chamando a função direto.

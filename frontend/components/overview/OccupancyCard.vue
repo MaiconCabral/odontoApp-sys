@@ -1,14 +1,24 @@
 <script setup lang="ts">
+import type { ApexOptions } from 'apexcharts'
 import { Ellipsis } from 'lucide-vue-next'
 
 const props = defineProps<{
   percentage: number
 }>()
 
+const { isDark } = useTheme()
 
-
-const donutStyle = computed(() => ({
-  background: `conic-gradient(#0369a1 0 ${props.percentage}%, var(--color-line) ${props.percentage}% 100%)`,
+// Booked part in the brand color over a track in the line color of the theme.
+const options = computed<ApexOptions>(() => ({
+  colors: ['#0369a1'],
+  plotOptions: {
+    radialBar: {
+      hollow: { size: '68%' },
+      track: { background: isDark.value ? '#27272a' : '#e2e8f0' },
+      dataLabels: { show: false },
+    },
+  },
+  stroke: { lineCap: 'round' },
 }))
 </script>
 
@@ -23,13 +33,9 @@ const donutStyle = computed(() => ({
     </template>
 
     <div class="grid place-items-center pb-5 pt-[27px]">
-      <div
-        class="grid h-[134px] w-[134px] place-items-center rounded-full"
-        role="img"
-        :aria-label="`${percentage}% da agenda ocupada`"
-        :style="donutStyle"
-      >
-        <div class="flex h-[99px] w-[99px] flex-col items-center justify-center rounded-full bg-surface">
+      <div class="relative grid h-[160px] w-[160px] place-items-center">
+        <AppChart class="absolute inset-0" type="radialBar" :series="[percentage]" :options="options" :height="180" :label="`${percentage}% da agenda ocupada`" />
+        <div class="pointer-events-none relative flex flex-col items-center justify-center" aria-hidden="true">
           <strong class="font-display text-[25px] font-extrabold leading-[normal] tracking-[-1px]">{{ percentage }}%</strong>
           <span class="text-[10px] text-muted">ocupada</span>
         </div>

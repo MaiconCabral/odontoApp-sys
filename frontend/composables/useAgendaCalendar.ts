@@ -1,7 +1,7 @@
 import type { MaybeRefOrGetter } from 'vue'
-import type { Agenda, AgendaDay, AgendaView } from '~/types/agenda'
+import type { Agenda, AgendaView } from '~/types/agenda'
 
-// Agenda days to show, with filters and navigation. Asks a new period when the view leaves the loaded one.
+// Period of the agenda, with filters and navigation. Asks a new period when the view leaves the loaded one.
 export function useAgendaCalendar(source: MaybeRefOrGetter<Agenda>) {
   const agenda = computed(() => toValue(source))
   const range = useAgendaRange()
@@ -14,16 +14,6 @@ export function useAgendaCalendar(source: MaybeRefOrGetter<Agenda>) {
 
   const rangeLabel = computed(() => formatRange(currentDate.value, view.value))
 
-  const days = computed<AgendaDay[]>(() => {
-    const dates = view.value === 'week' ? weekDates(currentDate.value) : [currentDate.value]
-
-    return dates.map(date => ({
-      date,
-      weekday: weekdayLabel(date),
-      dayOfMonth: dayOfMonth(date),
-      isToday: date === agenda.value.today,
-    }))
-  })
 
   // Requests have no room yet, so they stay visible whatever rooms are selected.
   const visibleEvents = computed(() =>
@@ -66,7 +56,6 @@ export function useAgendaCalendar(source: MaybeRefOrGetter<Agenda>) {
     selectedProfessionals,
     selectedRooms,
     rangeLabel,
-    days,
     visibleEvents,
     visibleBlocks,
     goToPrevious,

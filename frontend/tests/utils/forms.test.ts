@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import type { AgendaBlock, AppointmentForm } from '~/types/agenda'
+import type { AppointmentForm } from '~/types/agenda'
 import {
-  blockSpanOnDay,
   formatAppointmentDate,
-  gridOffset,
   timeOf,
   validateAppointment,
   visibleRange,
@@ -11,7 +9,6 @@ import {
 import { localToday, validateBookingContact } from '~/utils/booking'
 import { centsToInput, formatMoney, toCents } from '~/utils/money'
 import { formatCpf, formatPhone, patientInitials, validatePatient } from '~/utils/patients'
-import { agendaMock } from '../fixtures/agenda'
 
 const appointment: AppointmentForm = {
   patientId: 'patient-1',
@@ -36,18 +33,8 @@ describe('validateAppointment', () => {
 })
 
 describe('agenda geometry', () => {
-  it('counts 30-minute rows from the first hour', () => {
-    expect(gridOffset(agendaMock.hours, '08:00')).toBe(0)
-    expect(gridOffset(agendaMock.hours, '10:30')).toBe(5)
+  it('turns minutes into a time', () => {
     expect(timeOf(18 * 60)).toBe('18:00')
-  })
-
-  it('cuts a block to the visible part of each day', () => {
-    const block: AgendaBlock = { id: 'b', professionalId: null, startsAt: '2024-10-24 14:00', endsAt: '2024-10-25 10:00', reason: 'Curso' }
-
-    expect(blockSpanOnDay(block, '2024-10-23', agendaMock.hours)).toBeNull()
-    expect(blockSpanOnDay(block, '2024-10-24', agendaMock.hours)).toEqual({ start: '14:00', end: '18:00' })
-    expect(blockSpanOnDay(block, '2024-10-25', agendaMock.hours)).toEqual({ start: '08:00', end: '10:00' })
   })
 
   it('knows the dates each view shows', () => {

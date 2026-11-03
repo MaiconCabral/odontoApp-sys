@@ -18,6 +18,9 @@ vi.mock('vue3-apexcharts', async () => {
   }
 })
 
+// FullCalendar needs a real layout; the stub keeps the events, labels and handlers.
+vi.mock('@fullcalendar/vue3', async () => ({ default: (await import('./stubs/fullcalendar')).FullCalendarStub }))
+
 // Answers at the network level, so the real services run in the page tests.
 const apiResponses: Record<string, unknown> = {
   '/api/agenda': agendaMock,

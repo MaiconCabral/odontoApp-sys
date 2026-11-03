@@ -205,7 +205,7 @@ const canManagePayments = computed(() => auth.user?.role === 'admin' || auth.use
       </p>
 
       <Suspense v-if="canManagePayments">
-        <AppointmentsPaymentsSection :appointment-id="details.id" :status="details.status" @changed="refreshNuxtData('agenda')" />
+        <AppointmentsPaymentsSection :appointment-id="details.id" :status="details.status" @changed="refreshAgendaData()" />
       </Suspense>
 
       <section v-if="details.notifications" class="sm:col-span-2" aria-label="Avisos ao paciente">

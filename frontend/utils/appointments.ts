@@ -60,11 +60,6 @@ export function timeOf(minutes: number): string {
   return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`
 }
 
-// Rows of the day grid between its first hour and a time.
-export function gridOffset(hours: string[], time: string): number {
-  return (minutesOf(time) - minutesOf(hours[0] ?? '00:00')) / SLOT_MINUTES
-}
-
 // Dates the current view shows.
 export function visibleRange(date: string, view: AgendaView): AgendaRange {
   if (view === 'day') {
@@ -74,23 +69,6 @@ export function visibleRange(date: string, view: AgendaView): AgendaRange {
   const dates = view === 'week' ? weekDates(date) : monthGrid(date).filter((cell): cell is string => cell !== null)
 
   return { from: dates[0] ?? date, to: dates[dates.length - 1] ?? date }
-}
-
-// Part of a block inside one day of the grid, or null when it does not touch the day.
-export function blockSpanOnDay(block: AgendaBlock, date: string, hours: string[]): { start: string, end: string } | null {
-  const [startDate = '', startTime = '00:00'] = block.startsAt.split(' ')
-  const [endDate = '', endTime = '23:59'] = block.endsAt.split(' ')
-  const gridStart = hours[0] ?? '00:00'
-  const gridEnd = timeOf(minutesOf(hours[hours.length - 1] ?? '23:30') + SLOT_MINUTES)
-
-  if (date < startDate || date > endDate) {
-    return null
-  }
-
-  const start = date === startDate && startTime > gridStart ? startTime : gridStart
-  const end = date === endDate && endTime < gridEnd ? endTime : gridEnd
-
-  return start < end ? { start, end } : null
 }
 
 // Short date and time, as "Ter, 03/11 às 15:00".

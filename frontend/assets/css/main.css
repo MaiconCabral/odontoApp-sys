@@ -98,3 +98,44 @@
     }
   }
 }
+
+/* FullCalendar follows the theme tokens; the event colors come from STATUS_CLASSES in the event content.
+   Outside @layer on purpose: Tailwind would drop rules whose fc-* classes only exist at runtime. */
+.agenda-calendar .fc {
+  --fc-border-color: var(--color-line-soft);
+  --fc-page-bg-color: var(--color-surface);
+  --fc-neutral-bg-color: var(--color-surface-soft);
+  --fc-today-bg-color: var(--color-brand-tint);
+  --fc-now-indicator-color: var(--tone-red-solid);
+  --fc-bg-event-color: var(--color-line);
+  --fc-bg-event-opacity: 0.6;
+  font-size: 11px;
+  color: var(--color-body);
+}
+
+.agenda-calendar .fc .fc-col-header-cell-cushion,
+.agenda-calendar .fc .fc-daygrid-day-number,
+.agenda-calendar .fc .fc-timegrid-slot-label-cushion {
+  color: var(--color-muted);
+  text-decoration: none;
+}
+
+/* The content draws the event; FullCalendar only positions it. */
+.agenda-calendar .fc .agenda-event {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.agenda-calendar .fc .agenda-event:focus-visible {
+  outline: 2px solid theme('colors.brand.accent');
+  outline-offset: 1px;
+}
+
+.agenda-calendar .fc .agenda-block {
+  background-image: repeating-linear-gradient(135deg, transparent 0 6px, var(--color-line-soft) 6px 12px);
+}
+
+.agenda-calendar .fc .fc-timegrid-slot {
+  height: 30px;
+}
