@@ -73,6 +73,7 @@ export function useAuth() {
     const agendaRange = useAgendaRange()
     const patientsQuery = usePatientsQuery()
     const pendingRequests = usePendingRequestsCount()
+    const notifications = useNotifications()
 
     await authService.logout()
 
@@ -88,6 +89,7 @@ export function useAuth() {
     agendaRange.value = null
     patientsQuery.value = { search: '', page: 1 }
     pendingRequests.value = 0
+    notifications.reset()
   }
 
   return { loadSession, login, register, forgotPassword, resetPassword, logout }

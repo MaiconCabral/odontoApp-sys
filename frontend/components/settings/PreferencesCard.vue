@@ -1,11 +1,36 @@
 <script setup lang="ts">
-import type { ServicePreference } from '~/types/settings'
+import type { ClinicPreferences, ServicePreference } from '~/types/settings'
 
 const props = defineProps<{
   preferences: ServicePreference[]
 }>()
 
+const { showToast } = useToast()
 const items = ref(props.preferences.map(preference => ({ ...preference })))
+const saving = ref(false)
+
+// The three toggles as the API expects them; the API always receives all of them.
+function currentValues(): ClinicPreferences {
+  return Object.fromEntries(items.value.map(item => [item.id, item.enabled])) as ClinicPreferences
+}
+
+// Flips the toggle right away and saves; puts it back when the API refuses.
+async function toggle(item: ServicePreference) {
+  item.enabled = !item.enabled
+  saving.value = true
+
+  try {
+    await settingsService.updatePreferences(currentValues())
+    showToast('Preferências salvas.')
+  }
+  catch {
+    item.enabled = !item.enabled
+    showToast('Não foi possível salvar a preferência. Tente novamente.')
+  }
+  finally {
+    saving.value = false
+  }
+}
 </script>
 
 <template>
@@ -25,11 +50,12 @@ const items = ref(props.preferences.map(preference => ({ ...preference })))
       <button
         type="button"
         role="switch"
-        class="h-5 w-[35px] flex-none rounded-[15px] p-0.5"
+        class="h-5 w-[35px] flex-none rounded-[15px] p-0.5 disabled:cursor-wait disabled:opacity-70"
         :class="item.enabled ? 'bg-brand' : 'bg-line'"
         :aria-checked="item.enabled"
         :aria-labelledby="`preference-${item.id}`"
-        @click="item.enabled = !item.enabled"
+        :disabled="saving"
+        @click="toggle(item)"
       >
         <i
           class="block h-4 w-4 rounded-full bg-white transition duration-200"

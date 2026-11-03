@@ -2,9 +2,8 @@ import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
 import type { VueWrapper } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { settingsMock } from '~/mocks/settings'
 import SettingsPage from '~/pages/app/configuracoes.vue'
-import { clinicFixture } from '../fixtures/settings'
+import { clinicFixture, preferencesFixture } from '../fixtures/settings'
 
 function openTab(page: VueWrapper, label: string) {
   const tab = page.findAll('aside button').find(item => item.text().startsWith(label))
@@ -44,14 +43,28 @@ describe('Configurações', () => {
     expect(page.text()).toContain('Fechado')
   })
 
-  it('shows the subscription tab with the trial from the workspace', async () => {
+  it('shows the subscription tab with the plan of the clinic', async () => {
     const page = await mountSuspended(SettingsPage)
 
     await openTab(page, 'Assinatura')
 
-    for (const text of ['Plano Pro', 'Seu trial termina em 14 dias.', 'Trial ativo', 'R$ 249', '/mês', 'Lembretes automáticos', 'Gerenciar assinatura']) {
+    for (const text of ['Plano Pro', 'Seu trial termina em 14 dias.', 'Trial ativo', 'R$ 249', '/mês', 'Até 5 profissionais', 'Lembretes automáticos', 'Gerenciar assinatura']) {
       expect(page.text()).toContain(text)
     }
+  })
+
+  it('opens the plans from the subscription card', async () => {
+    const page = await mountSuspended(SettingsPage)
+
+    await openTab(page, 'Assinatura')
+    await page.findAll('button').find(item => item.text() === 'Gerenciar assinatura')?.trigger('click')
+
+    const plans = page.find('[aria-label="Planos disponíveis"]')
+
+    expect(plans.text()).toContain('Free')
+    expect(plans.text()).toContain('R$ 599')
+    expect(plans.text()).toContain('Profissionais ilimitados')
+    expect(plans.find('[aria-current="true"]').text()).toContain('Pro')
   })
 
   it('keeps unsaved clinic edits when switching tabs', async () => {
@@ -135,15 +148,36 @@ describe('Configurações', () => {
     expect(page.text()).toContain('Informe um CNPJ válido.')
   })
 
-  it('toggles a preference without changing the source data', async () => {
+  it('shows the preferences saved by the clinic', async () => {
+    const page = await mountSuspended(SettingsPage)
+    const switches = page.findAll('[role="switch"]')
+
+    expect(page.text()).toContain('Lembrete 24h antes')
+    expect(switches.map(item => item.attributes('aria-checked'))).toEqual(['true', 'false', 'true'])
+  })
+
+  it('saves a preference as soon as it is toggled', async () => {
+    const update = vi.spyOn(settingsService, 'updatePreferences').mockResolvedValue({ ...preferencesFixture, reminder24h: false })
     const page = await mountSuspended(SettingsPage)
     const toggle = page.find('[role="switch"]')
 
-    expect(toggle.attributes('aria-checked')).toBe('true')
-
     await toggle.trigger('click')
+    await flushPromises()
 
     expect(toggle.attributes('aria-checked')).toBe('false')
-    expect(settingsMock.preferences[0]?.enabled).toBe(true)
+    expect(update).toHaveBeenCalledWith({ autoConfirmation: false, waitingList: true, reminder24h: false })
+    expect(useToast().message.value).toBe('Preferências salvas.')
+  })
+
+  it('puts the preference back when saving fails', async () => {
+    vi.spyOn(settingsService, 'updatePreferences').mockRejectedValue(new Error('offline'))
+    const page = await mountSuspended(SettingsPage)
+    const toggle = page.find('[role="switch"]')
+
+    await toggle.trigger('click')
+    await flushPromises()
+
+    expect(toggle.attributes('aria-checked')).toBe('true')
+    expect(useToast().message.value).toBe('Não foi possível salvar a preferência. Tente novamente.')
   })
 })

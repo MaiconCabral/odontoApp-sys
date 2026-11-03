@@ -18,3 +18,8 @@ export function toCents(value: string): number | null {
 export function centsToInput(cents: number): string {
   return (cents / 100).toFixed(2).replace('.', ',')
 }
+
+// Monthly price of a plan as "R$ 249", without cents.
+export function formatPlanPrice(cents: number): string {
+  return `R$ ${Math.round(cents / 100).toLocaleString('pt-BR')}`
+}

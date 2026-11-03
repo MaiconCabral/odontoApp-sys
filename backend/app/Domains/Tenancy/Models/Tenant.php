@@ -12,6 +12,13 @@ class Tenant extends BaseTenant implements TenantWithDatabase
 {
     use HasDatabase, HasDomains;
 
+    /** Service preferences kept in the data column, with their defaults. */
+    public const PREFERENCES = [
+        'auto_confirmation' => true,
+        'waiting_list' => true,
+        'reminder_24h' => true,
+    ];
+
     /** Casts the trial end to a date. */
     protected function casts(): array
     {
@@ -62,5 +69,37 @@ class Tenant extends BaseTenant implements TenantWithDatabase
         }
 
         return max(0, (int) ceil(now()->diffInDays($this->trial_ends_at)));
+    }
+
+    /** Trial while it runs, expired after it, active once there is no trial. */
+    public function subscriptionStatus(): string
+    {
+        if (! $this->trial_ends_at) {
+            return 'active';
+        }
+
+        return $this->trial_ends_at->isFuture() ? 'trial' : 'expired';
+    }
+
+    /**
+     * Service preferences, falling back to the defaults.
+     *
+     * @return array<string, bool>
+     */
+    public function preferences(): array
+    {
+        $preferences = [];
+
+        foreach (self::PREFERENCES as $key => $default) {
+            $preferences[$key] = (bool) ($this->getAttribute($key) ?? $default);
+        }
+
+        return $preferences;
+    }
+
+    /** Whether the clinic sends the 24h reminder. */
+    public function sendsReminders(): bool
+    {
+        return $this->preferences()['reminder_24h'];
     }
 }

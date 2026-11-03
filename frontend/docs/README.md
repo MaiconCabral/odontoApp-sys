@@ -20,9 +20,11 @@ Usam a API do `backend/`:
 - agenda, pacientes, expediente e o pedido online;
 - procedimentos e salas;
 - avisos ao paciente e a página `/consulta`;
-- visão geral.
+- visão geral;
+- preferências de atendimento e assinatura, em Configurações;
+- sino de avisos para a equipe, no topo.
 
-Preferências e assinatura ainda vêm de `mocks/`.
+`mocks/settings.ts` guarda só textos fixos: abas, títulos das preferências e itens extras de cada plano. Os valores vêm da API. Detalhes em [integracao-api.md](integracao-api.md#configurações--preferências-e-assinatura).
 
 Para testar localmente:
 
@@ -38,7 +40,8 @@ A documentação do backend começa em [backend/docs/README.md](../../backend/do
 - Gestão global de clínicas e de planos.
 - Status rápido de consultas no dashboard.
 - Histórico clínico e prontuário de pacientes.
-- Faturas e upgrade de plano com Stripe.
+- Faturas e upgrade de plano com Stripe. Hoje "Gerenciar assinatura" só mostra os planos e o contato.
+- Regras de "Confirmação automática" e "Lista de espera". As duas preferências são salvas, mas nada ainda as usa.
 - Agenda com FullCalendar e gráficos com ApexCharts.
 - Verificação de e-mail e aceite de termos/LGPD.
 

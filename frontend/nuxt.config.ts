@@ -47,6 +47,8 @@ export default defineNuxtConfig({
       // {host} is replaced by the host in the browser, so each clinic calls its own subdomain.
       apiBase: 'http://{host}:8000',
       centralDomain: 'localhost',
+      // Where "Falar com a gente" leads in the plans modal (mailto: or WhatsApp). Empty hides the button.
+      salesContactUrl: '',
     },
   },
   tailwindcss: {

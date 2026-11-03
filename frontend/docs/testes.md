@@ -58,7 +58,10 @@ Componentes que dependem do host usam `mockNuxtImport('useClinicHost', ...)`, po
 - **Páginas públicas com token** (`/consulta`): token válido, sem token e expirado (`404`), e as ações liberadas por `canConfirm` e `canCancel`. Veja `tests/pages/consulta.test.ts`.
 - **Valores em dinheiro:** use `utils/money.ts` e teste a conversão em `tests/utils/forms.test.ts`.
 
-As respostas padrão de `/api/overview`, `/api/procedures` e `/api/rooms` estão em `tests/fixtures/agenda.ts` (`overviewFixture`, `proceduresFixture`, `roomsFixture`).
+- **Ações salvas ao clicar** (preferências): o valor enviado à API e a volta ao estado anterior quando a API falha. Veja `tests/pages/configuracoes.test.ts`.
+- **Sino:** a bolinha só com aviso não lido, a lista vazia, marcar como lido e a abertura da consulta. Veja `tests/components/notifications.test.ts`.
+
+As respostas padrão de `/api/overview`, `/api/procedures` e `/api/rooms` estão em `tests/fixtures/agenda.ts` (`overviewFixture`, `proceduresFixture`, `roomsFixture`). As de `/api/clinic/preferences`, `/api/clinic/subscription` e `/api/notifications` estão em `tests/fixtures/settings.ts` (`preferencesFixture`, `subscriptionFixture`, `notificationsFixture`). O `beforeEach` de `tests/setup.ts` limpa os avisos do sino com `useNotifications().reset()`.
 
 ## Confira também no navegador
 

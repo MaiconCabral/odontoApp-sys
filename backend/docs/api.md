@@ -84,8 +84,24 @@ Formato da sessão:
 | --- | --- | --- |
 | `GET /api/clinic` | Admin | |
 | `PUT /api/clinic` | Admin | `name`, `unit`, `cnpj`, `phone`, `email`, `address` |
+| `GET /api/clinic/preferences` | Admin | |
+| `PUT /api/clinic/preferences` | Admin | `auto_confirmation`, `waiting_list`, `reminder_24h` (booleanos, obrigatórios) |
+| `GET /api/clinic/subscription` | Admin | |
 
 Formato da resposta: `{ "name", "unit", "cnpj", "phone", "email", "address" }`. Os campos opcionais podem vir `null`.
+
+- Preferências: `{ "autoConfirmation", "waitingList", "reminder24h" }`. Detalhes em [notificacoes.md](notificacoes.md#preferências-da-clínica).
+- Assinatura: `{ "status": "trial" | "active" | "expired", "trialDaysLeft", "trialEndsAt", "plan", "plans" }`. Cada plano vem como `{ "code", "name", "priceCents", "maxProfessionals" }`, e `maxProfessionals` é `null` quando não há limite. Ainda não há cobrança online.
+
+### Avisos da equipe (sino)
+
+| Método e rota | Acesso | Corpo |
+| --- | --- | --- |
+| `GET /api/notifications` | Com sessão | |
+| `POST /api/notifications/{id}/read` | Com sessão | |
+| `POST /api/notifications/read-all` | Com sessão | |
+
+A listagem traz os últimos 20 avisos do próprio usuário: `{ "data": [{ "id", "type", "title", "body", "appointmentId", "date", "read", "createdAt" }], "meta": { "unreadCount" } }`. As duas ações respondem `204`. Um aviso de outro usuário responde `404`.
 
 ### Equipe
 

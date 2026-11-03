@@ -40,7 +40,8 @@ Toda chamada passa por `useApi().api(path, options)`, que:
 | `usersService` | `/api/users` | Converte o formulário para snake_case |
 | `proceduresService` | `/api/procedures` | Converte o preço digitado (`"450,00"`) para `price_cents` |
 | `roomsService` | `/api/rooms` | |
-| `settingsService` | `GET /api/clinic` e mock | Preferências e assinatura ainda são mock |
+| `settingsService` | `/api/clinic`, `/api/clinic/preferences`, `/api/clinic/subscription` | Carrega as três em paralelo; textos fixos em `mocks/settings.ts` |
+| `notificationsService` | `/api/notifications` | Lista, marca um como lido e marca todos |
 | `overviewService` | `GET /api/overview` | Admin e recepção |
 
 Os valores em dinheiro chegam em centavos. Use `formatMoney`, `toCents` e `centsToInput`, de `utils/money.ts`, para exibir e editar.
@@ -102,6 +103,34 @@ Os valores em dinheiro chegam em centavos. Use `formatMoney`, `toCents` e `cents
 - `trend` (`up`, `down`, `flat`) define a seta e a cor das métricas e do gráfico semanal.
 - Clicar num paciente de "Próximos pacientes" abre o modal `appointment-details`.
 
+## Sino de avisos
+
+- **Componente:** `components/layout/NotificationsMenu.vue`, usado na `Topbar`. Os avisos ficam em `useNotificationsState()` (`useState('staff-notifications')`). `useNotifications()` expõe `load`, `markRead`, `markAllRead` e `reset`.
+- **Atualização:**
+  - carrega ao montar, a cada 60 segundos e sempre que o sino é aberto;
+  - se a API falhar, o sino mantém os últimos avisos e tenta de novo na próxima consulta.
+- **Bolinha vermelha:** só aparece com `unreadCount > 0`. O `aria-label` do botão diz quantos avisos não foram lidos.
+- **Clique num aviso:**
+  - marca como lido na hora, sem esperar a API; se a API falhar, a lista é recarregada;
+  - abre o modal `appointment-details` da consulta, que fica no layout e funciona em qualquer página.
+- **Fechar:** clique fora do menu.
+- **Quem recebe cada aviso:** veja [backend/docs/notificacoes.md](../../backend/docs/notificacoes.md#avisos-para-a-equipe-sino).
+
+## Configurações → Preferências e Assinatura
+
+- **Preferências (`SettingsPreferencesCard`):**
+  - os botões salvam ao clicar, sem botão de salvar, com `settingsService.updatePreferences`. O corpo enviado leva as três preferências;
+  - o botão muda na hora; se a API recusar, ele volta ao estado anterior e aparece um toast de erro;
+  - os botões ficam desabilitados enquanto o envio está em andamento;
+  - a ordem e os textos vêm de `preferenceTexts`, em `mocks/settings.ts`, e `toPreferenceList` junta os textos com os valores da API.
+- **Assinatura (`SettingsSubscriptionCard`):**
+  - mostra o plano da API, o preço formatado por `formatPlanPrice` ("R$ 249") e a situação ("Trial ativo", "Ativa" ou "Trial expirado");
+  - os itens do plano juntam o limite de profissionais da API com `planExtras`, em `mocks/settings.ts`;
+  - a etiqueta da aba Assinatura usa o nome do plano.
+- **Planos (`SettingsSubscriptionModal`):**
+  - abre em "Gerenciar assinatura" e lista os planos, com o atual marcado (`aria-current`);
+  - o botão "Falar com a gente" abre `NUXT_PUBLIC_SALES_CONTACT_URL`; se a variável estiver vazia, o botão não aparece. Não há cobrança online.
+
 ## Telas desta etapa
 
 - **Login (`pages/login.vue`):** no domínio central, mostra `AuthClinicFinder`, que pede o endereço da clínica. Para um subdomínio inexistente, mostra "Clínica não encontrada". Depois do cadastro, mostra a confirmação com o e-mail já preenchido.
@@ -125,6 +154,8 @@ Os valores em dinheiro chegam em centavos. Use `formatMoney`, `toCents` e `cents
 # frontend/.env
 NUXT_PUBLIC_API_BASE=http://{host}:8000
 NUXT_PUBLIC_CENTRAL_DOMAIN=localhost
+# Link do "Falar com a gente" nos planos (mailto: ou WhatsApp). Vazio esconde o botão.
+NUXT_PUBLIC_SALES_CONTACT_URL=
 ```
 
 Abra por `localhost` ou `<slug>.localhost`, nunca por `127.0.0.1`.

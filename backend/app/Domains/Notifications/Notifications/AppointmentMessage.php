@@ -3,7 +3,9 @@
 namespace App\Domains\Notifications\Notifications;
 
 use App\Domains\Notifications\Enums\PatientMessage;
+use App\Domains\Notifications\Enums\StaffMessage;
 use App\Domains\Notifications\Models\NotificationLog;
+use App\Domains\Notifications\StaffNotifier;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -82,12 +84,18 @@ class AppointmentMessage extends Notification implements ShouldBeEncrypted, Shou
         return $mail->salutation("Até breve,\n{$details['clinic']}");
     }
 
-    /** Marks the log row as failed when the queue gives up. */
+    /** Marks the log row as failed when the queue gives up, and warns the staff about reminders. */
     public function failed(Throwable $exception): void
     {
         NotificationLog::query()->whereKey($this->logId)->update([
             'status' => NotificationLog::STATUS_FAILED,
             'error' => mb_substr($exception->getMessage(), 0, 250),
         ]);
+
+        $appointment = NotificationLog::query()->find($this->logId)?->appointment;
+
+        if ($this->message === PatientMessage::Reminder && $appointment) {
+            app(StaffNotifier::class)->send($appointment, StaffMessage::ReminderFailed);
+        }
     }
 }

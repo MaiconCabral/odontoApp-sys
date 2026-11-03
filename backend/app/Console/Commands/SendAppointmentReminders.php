@@ -16,6 +16,12 @@ class SendAppointmentReminders extends Command
     public function handle(SendDueReminders $reminders): int
     {
         Tenant::query()->cursor()->each(function (Tenant $tenant) use ($reminders) {
+            if (! $tenant->sendsReminders()) {
+                $this->line("{$tenant->name}: lembretes desligados.");
+
+                return;
+            }
+
             $sent = $tenant->run(fn () => $reminders->handle());
 
             $this->line("{$tenant->name}: {$sent} lembrete(s).");

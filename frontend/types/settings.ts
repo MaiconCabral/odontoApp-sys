@@ -15,18 +15,37 @@ export type ClinicData = {
   address: string
 }
 
+export type ClinicPreferences = {
+  autoConfirmation: boolean
+  waitingList: boolean
+  reminder24h: boolean
+}
+
 export type ServicePreference = {
-  id: string
+  id: keyof ClinicPreferences
   title: string
   description: string
   enabled: boolean
 }
 
-export type Subscription = {
-  status: string
+export type SubscriptionStatus = 'trial' | 'active' | 'expired'
+
+export type PlanCode = 'free' | 'pro' | 'enterprise'
+
+export type Plan = {
+  code: PlanCode
+  name: string
   price: string
-  period: string
   features: string[]
+}
+
+export type Subscription = {
+  status: SubscriptionStatus
+  statusLabel: string
+  trialDaysLeft: number
+  plan: Plan
+  plans: Plan[]
+  period: string
 }
 
 export type Settings = {

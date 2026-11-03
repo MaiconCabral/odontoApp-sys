@@ -1,6 +1,6 @@
 import { beforeEach, vi } from 'vitest'
 import { agendaMock, businessHoursFixture, overviewFixture, patientListFixture, proceduresFixture, publicBookingFixture, roomsFixture } from './fixtures/agenda'
-import { clinicFixture, teamFixture } from './fixtures/settings'
+import { clinicFixture, notificationsFixture, preferencesFixture, subscriptionFixture, teamFixture } from './fixtures/settings'
 import { seedSession } from './utils/session'
 
 // Answers at the network level, so the real services run in the page tests.
@@ -16,6 +16,9 @@ const apiResponses: Record<string, unknown> = {
   '/api/public/booking': publicBookingFixture,
   '/api/public/availability': { slots: ['09:00', '09:30', '14:00'] },
   '/api/clinic': clinicFixture,
+  '/api/clinic/preferences': preferencesFixture,
+  '/api/clinic/subscription': subscriptionFixture,
+  '/api/notifications': notificationsFixture,
   '/api/overview': overviewFixture,
   '/api/procedures': { data: proceduresFixture },
   '/api/rooms': { data: roomsFixture },
@@ -29,6 +32,7 @@ beforeEach(() => {
   useAgendaFiltersStore().reset()
   useAgendaRange().value = null
   usePatientsQuery().value = { search: '', page: 1 }
+  useNotifications().reset()
 
   vi.stubGlobal('$fetch', vi.fn(async (path: string) => {
     if (path in apiResponses) {

@@ -7,8 +7,10 @@ use App\Domains\Agenda\Models\Room;
 use App\Domains\Identity\Models\User;
 use App\Domains\Notifications\Actions\SendDueReminders;
 use App\Domains\Notifications\Enums\PatientMessage;
+use App\Domains\Notifications\Enums\StaffMessage;
 use App\Domains\Notifications\Models\NotificationLog;
 use App\Domains\Notifications\Notifications\AppointmentMessage;
+use App\Domains\Notifications\Notifications\StaffAlert;
 use App\Domains\Notifications\PatientNotifier;
 use App\Domains\Notifications\Support\PatientLinks;
 use Carbon\CarbonImmutable;
@@ -173,6 +175,30 @@ describe('reminders', function () {
             ->assertSuccessful();
     });
 
+    it('skips the clinics that turned the reminder off', function () {
+        $this->clinic->update(['reminder_24h' => false]);
+
+        $this->artisan('appointments:send-reminders')
+            ->expectsOutputToContain('Clínica sorriso: lembretes desligados.')
+            ->assertSuccessful();
+
+        Notification::assertNothingSent();
+    });
+
+    it('warns the staff when a reminder fails', function () {
+        $log = $this->clinic->run(fn () => NotificationLog::create([
+            'appointment_id' => $this->tomorrow->id,
+            'type' => PatientMessage::Reminder,
+            'channel' => 'mail',
+            'status' => NotificationLog::STATUS_QUEUED,
+        ]));
+
+        $this->clinic->run(fn () => (new AppointmentMessage(PatientMessage::Reminder, [], ['mail'], $log->id))->failed(new RuntimeException('SMTP fora')));
+
+        expect($this->clinic->run(fn () => $log->fresh()->status))->toBe(NotificationLog::STATUS_FAILED);
+        Notification::assertSentTo($this->receptionist, StaffAlert::class, fn (StaffAlert $alert) => $alert->message === StaffMessage::ReminderFailed);
+    });
+
     it('sends a new reminder after the appointment moves', function () {
         $this->clinic->run(fn () => app(SendDueReminders::class)->handle());
 
@@ -221,7 +247,9 @@ describe('patient links', function () {
         expect($history->changed_by)->toBeNull()
             ->and($history->reason)->toBe('Confirmado pelo paciente pelo link.');
 
-        Notification::assertNothingSent();
+        Notification::assertNothingSentTo($this->patient);
+        Notification::assertSentToTimes($this->receptionist, StaffAlert::class, 1);
+        Notification::assertSentTo($this->ana, StaffAlert::class, fn (StaffAlert $alert) => $alert->message === StaffMessage::ConfirmedByPatient);
     });
 
     it('cancels and frees the time', function () {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Bell, ChevronDown, ChevronRight, Menu, Moon, Sun } from 'lucide-vue-next'
+import { ChevronDown, ChevronRight, Menu, Moon, Sun } from 'lucide-vue-next'
 
 defineProps<{
   menuOpen: boolean
@@ -47,10 +47,7 @@ const iconButtonClass = 'grid h-[34px] w-[34px] place-items-center rounded-lg te
         <Sun v-if="isDark" :size="18" />
         <Moon v-else :size="18" />
       </button>
-      <button type="button" :class="[iconButtonClass, 'relative']" aria-label="Notificações">
-        <Bell :size="18" />
-        <span class="absolute right-[7px] top-[7px] h-[5px] w-[5px] rounded-full border-[1.5px] border-white bg-[#ec6d58]" />
-      </button>
+      <LayoutNotificationsMenu :button-class="iconButtonClass" />
       <div class="flex items-center gap-[9px] border-line md:border-l md:pl-3">
         <div class="grid h-[31px] w-[31px] place-items-center rounded-[9px] bg-brand-soft text-[10px] font-bold text-brand-text">
           {{ workspace.user.initials }}

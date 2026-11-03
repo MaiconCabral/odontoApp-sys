@@ -6,14 +6,19 @@ use App\Domains\Agenda\Enums\AppointmentStatus;
 use App\Domains\Agenda\Models\Appointment;
 use App\Domains\Identity\Models\User;
 use App\Domains\Notifications\Enums\PatientMessage;
+use App\Domains\Notifications\Enums\StaffMessage;
 use App\Domains\Notifications\PatientNotifier;
+use App\Domains\Notifications\StaffNotifier;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ChangeAppointmentStatus
 {
-    /** Receives the patient notifier. */
-    public function __construct(private readonly PatientNotifier $notifier) {}
+    /** Receives the patient and staff notifiers. */
+    public function __construct(
+        private readonly PatientNotifier $notifier,
+        private readonly StaffNotifier $staff,
+    ) {}
 
     /** Applies a status change allowed by the flow and records it. */
     public function handle(Appointment $appointment, AppointmentStatus $next, ?string $reason, ?User $author): Appointment
@@ -37,6 +42,15 @@ class ChangeAppointmentStatus
 
             if ($author && $next === AppointmentStatus::Rejected) {
                 $this->notifier->send($appointment, PatientMessage::Rejected);
+            }
+
+            // Without an author the patient answered through the link, and the clinic is told.
+            if (! $author && $next === AppointmentStatus::Cancelled) {
+                $this->staff->send($appointment, StaffMessage::CancelledByPatient);
+            }
+
+            if (! $author && $next === AppointmentStatus::Confirmed) {
+                $this->staff->send($appointment, StaffMessage::ConfirmedByPatient);
             }
 
             return $appointment;

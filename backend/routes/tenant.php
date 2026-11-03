@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AgendaController;
 use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\AvailabilityController;
 use App\Http\Controllers\Api\ClinicController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\OverviewController;
 use App\Http\Controllers\Api\PasswordController;
 use App\Http\Controllers\Api\PatientController;
@@ -58,6 +59,13 @@ Route::prefix('api')
 
             Route::get('clinic', [ClinicController::class, 'show']);
             Route::put('clinic', [ClinicController::class, 'update']);
+            Route::get('clinic/preferences', [ClinicController::class, 'preferences']);
+            Route::put('clinic/preferences', [ClinicController::class, 'updatePreferences']);
+            Route::get('clinic/subscription', [ClinicController::class, 'subscription']);
+
+            Route::get('notifications', [NotificationController::class, 'index']);
+            Route::post('notifications/read-all', [NotificationController::class, 'readAll']);
+            Route::post('notifications/{notification}/read', [NotificationController::class, 'read'])->whereUuid('notification');
 
             Route::apiResource('users', UserController::class);
             Route::apiResource('patients', PatientController::class);

@@ -42,7 +42,7 @@ Action (dentro de DB::transaction)
 
 ## Lembrete de 24h
 
-O comando `appointments:send-reminders` roda a cada 15 minutos (`routes/console.php`, com `withoutOverlapping`). Ele percorre todas as clínicas e, em cada uma:
+O comando `appointments:send-reminders` roda a cada 15 minutos (`routes/console.php`, com `withoutOverlapping`). Ele percorre todas as clínicas e pula as que desligaram a preferência "Lembrete 24h antes" (`reminder_24h`, em Configurações → Clínica). Em cada clínica com o lembrete ligado:
 
 1. busca as consultas Agendadas ou Confirmadas que começam entre agora + 1h e agora + 24h e ainda não têm `reminder_sent_at`;
 2. marca `reminder_sent_at` com `update ... whereNull` antes de enviar, para que duas execuções nunca mandem o mesmo lembrete;
@@ -52,7 +52,32 @@ Regras:
 
 - Uma consulta marcada com menos de 1h de antecedência não recebe lembrete.
 - Remarcar zera `reminder_sent_at`, e o lembrete vale para a nova data.
-- O comando mostra quantos lembretes enviou por clínica.
+- O comando mostra quantos lembretes enviou por clínica, ou "lembretes desligados".
+
+## Preferências da clínica
+
+`GET` e `PUT /api/clinic/preferences` (somente admin). Os valores ficam na coluna JSON `data` do tenant, no banco central, e todos começam ligados.
+
+| Campo da API (`PUT`) | Resposta | Efeito hoje |
+| --- | --- | --- |
+| `reminder_24h` | `reminder24h` | Liga ou desliga o lembrete de 24h da clínica |
+| `auto_confirmation` | `autoConfirmation` | Só é salvo; a regra ainda não existe |
+| `waiting_list` | `waitingList` | Só é salvo; a lista de espera ainda não existe |
+
+## Avisos para a equipe (sino)
+
+O sino no topo mostra avisos gravados na tabela `notifications` do banco da clínica, pelo canal `database` do Laravel. Cada aviso pertence a um usuário.
+
+| Tipo (`StaffMessage`) | Quando | Quem recebe |
+| --- | --- | --- |
+| `booking_requested` | Pedido online gravado (`RequestAppointment`) | Admins e recepção |
+| `cancelled_by_patient` | Paciente cancelou pelo link (`ChangeAppointmentStatus` sem autor) | Admins, recepção e o profissional da consulta |
+| `confirmed_by_patient` | Paciente confirmou pelo link | Admins, recepção e o profissional da consulta |
+| `reminder_failed` | O lembrete falhou depois das tentativas da fila (`AppointmentMessage::failed`) | Admins, recepção e o profissional da consulta |
+
+- Só usuários ativos recebem. O aviso é gravado depois do commit (`StaffNotifier`, com `DB::afterCommit`), sem fila.
+- Endpoints, com sessão: `GET /api/notifications` (últimos 20 e `meta.unreadCount`), `POST /api/notifications/{id}/read` e `POST /api/notifications/read-all`.
+- O frontend consulta a cada 60 segundos. Clicar num aviso marca como lido e abre os detalhes da consulta.
 
 ## Links do paciente
 

@@ -1,33 +1,33 @@
-import type { Settings } from '~/types/settings'
+import type { ClinicPreferences, PlanCode, SettingsTab } from '~/types/settings'
 
-// What still has no API. The clinic and the team already come from the backend.
-export const settingsMock: Omit<Settings, 'clinic'> = {
-  tabs: [
-    { id: 'clinic', label: 'Clínica' },
-    { id: 'team', label: 'Equipe' },
-    { id: 'procedures', label: 'Procedimentos' },
-    { id: 'rooms', label: 'Salas' },
-    { id: 'hours', label: 'Horários' },
-    { id: 'subscription', label: 'Assinatura', badge: 'Pro' },
-  ],
-  preferences: [
-    {
-      id: 'auto-confirmation',
-      title: 'Confirmação automática',
-      description: 'Enviar lembrete 24 horas antes da consulta',
-      enabled: true,
-    },
-    {
-      id: 'waiting-list',
-      title: 'Lista de espera',
-      description: 'Avisar quando surgir um horário disponível',
-      enabled: true,
-    },
-  ],
-  subscription: {
-    status: 'Trial ativo',
-    price: 'R$ 249',
-    period: '/mês',
-    features: ['Agenda completa', 'Até 5 profissionais', 'Lembretes automáticos'],
+// Fixed texts of the settings. The values come from the backend.
+export const settingsTabs: SettingsTab[] = [
+  { id: 'clinic', label: 'Clínica' },
+  { id: 'team', label: 'Equipe' },
+  { id: 'procedures', label: 'Procedimentos' },
+  { id: 'rooms', label: 'Salas' },
+  { id: 'hours', label: 'Horários' },
+  { id: 'subscription', label: 'Assinatura' },
+]
+
+export const preferenceTexts: Record<keyof ClinicPreferences, { title: string, description: string }> = {
+  reminder24h: {
+    title: 'Lembrete 24h antes',
+    description: 'Enviar ao paciente um e-mail para confirmar ou cancelar a consulta',
   },
+  autoConfirmation: {
+    title: 'Confirmação automática',
+    description: 'Aceitar os pedidos de agendamento sem passar pela recepção',
+  },
+  waitingList: {
+    title: 'Lista de espera',
+    description: 'Avisar quando surgir um horário disponível',
+  },
+}
+
+// What each plan offers beyond the number of professionals.
+export const planExtras: Record<PlanCode, string[]> = {
+  free: ['Agenda completa'],
+  pro: ['Agenda completa', 'Lembretes automáticos'],
+  enterprise: ['Agenda completa', 'Lembretes automáticos', 'Suporte prioritário'],
 }

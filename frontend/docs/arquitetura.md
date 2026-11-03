@@ -99,7 +99,7 @@ export function useOverview() {
 Ao criar uma store ou um `useState` com dados da clínica ou de pacientes, inclua a limpeza nessa função. Hoje ela limpa:
 
 - sessão, clínica e filtros da agenda;
-- período da agenda, busca de pacientes e contador de pedidos (zerados, não removidos, porque a página ainda na tela pode estar lendo esses estados);
+- período da agenda, busca de pacientes, contador de pedidos e avisos do sino (zerados, não removidos, porque a página ainda na tela pode estar lendo esses estados);
 - equipe e demais dados do `useAsyncData`;
 - pacientes e agendamentos criados na sessão;
 - toast e modal abertos, que podem conter nome de paciente;
