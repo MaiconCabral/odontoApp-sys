@@ -25,7 +25,8 @@ Usam a API do `backend/`:
 - sino de avisos para a equipe, no topo;
 - ficha do paciente com consultas, prontuário, odontograma e anexos;
 - lista de espera, com o link do e-mail que preenche o `/agendar`;
-- pagamentos na consulta e relatórios com exportação CSV.
+- pagamentos na consulta e relatórios com exportação CSV;
+- painel da plataforma em `/admin`, no domínio central.
 
 `mocks/settings.ts` guarda só textos fixos: abas, títulos das preferências e itens extras de cada plano. Os valores vêm da API. Detalhes em [integracao-api.md](integracao-api.md#configurações--preferências-e-assinatura).
 
@@ -40,7 +41,6 @@ A documentação do backend começa em [backend/docs/README.md](../../backend/do
 ## Ainda não implementado
 
 - Avisos por WhatsApp.
-- Gestão global de clínicas e de planos.
 - Status rápido de consultas no dashboard.
 - Faturas e upgrade de plano com Stripe. Hoje "Gerenciar assinatura" só mostra os planos e o contato.
 - Regra de "Confirmação automática". A preferência é salva, mas nada ainda a usa.

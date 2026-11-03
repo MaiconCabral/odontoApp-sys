@@ -48,6 +48,7 @@ API do odontoApp em Laravel 12, consumida pelo Nuxt em `frontend/`.
 - **Preferências da clínica:** lembrete de 24h, confirmação automática e lista de espera. O lembrete e a lista de espera mudam o comportamento; a confirmação automática só é salva. Detalhes em [notificacoes.md](notificacoes.md#preferências-da-clínica).
 - **Área clínica:** ficha do paciente com as consultas, prontuário (anotações só de acréscimo), odontograma, anexos em disco privado por clínica e lista de espera com aviso por e-mail. Detalhes em [prontuario.md](prontuario.md).
 - **Financeiro:** pagamentos lançados na consulta (parciais, com estorno), "Recebido hoje" na visão geral e relatórios por dia, profissional ou procedimento. Detalhes em [financeiro.md](financeiro.md).
+- **Painel da plataforma:** administradores próprios no domínio central (`/admin`), lista de clínicas com uso, troca de plano, fim do trial, suspensão e cadastro de planos. Detalhes em [plataforma.md](plataforma.md).
 - **Limite do plano:** `max_professionals` é aplicado ao criar ou ativar profissionais ([api.md](api.md#equipe)).
 - **Assinatura:** `GET /api/clinic/subscription` devolve o plano atual, a situação (`trial`, `active` ou `expired`, calculada por `trial_ends_at`) e os planos disponíveis. Ainda não há cobrança.
 - **Visão geral:** consultas, faturamento estimado, comparecimento, novos pacientes, semana, ocupação e próximos pacientes, calculados do banco.
@@ -57,7 +58,6 @@ Ficam para as próximas etapas:
 
 - canal de WhatsApp (o ponto de extensão já existe);
 - faturamento com Stripe;
-- gestão global de clínicas e de planos.
 
 ## Estrutura
 

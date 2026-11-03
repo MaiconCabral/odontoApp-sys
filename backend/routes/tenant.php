@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\SessionController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\WaitlistController;
+use App\Http\Middleware\EnsureClinicIsActive;
 use App\Http\Middleware\EnsureUserIsActive;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain;
@@ -43,6 +44,7 @@ Route::prefix('api')
         PreventAccessFromCentralDomains::class,
         InitializeTenancyBySubdomain::class,
         'api',
+        EnsureClinicIsActive::class,
     ])
     ->group(function () {
         Route::post('login', [SessionController::class, 'store'])->middleware('throttle:login');
@@ -53,9 +55,12 @@ Route::prefix('api')
             Route::get('booking', [PublicBookingController::class, 'show'])->middleware('throttle:public-read');
             Route::get('availability', [PublicBookingController::class, 'availability'])->middleware('throttle:public-read');
             Route::post('booking-requests', [PublicBookingController::class, 'store'])->middleware('throttle:booking');
-            Route::get('appointments/{token}', [PatientLinkController::class, 'show'])->middleware('throttle:public-read');
-            Route::post('appointments/{token}/confirm', [PatientLinkController::class, 'confirm'])->middleware('throttle:patient-link');
-            Route::post('appointments/{token}/cancel', [PatientLinkController::class, 'cancel'])->middleware('throttle:patient-link');
+            // Patients may still answer for what is booked, even when the clinic is suspended.
+            Route::withoutMiddleware(EnsureClinicIsActive::class)->group(function () {
+                Route::get('appointments/{token}', [PatientLinkController::class, 'show'])->middleware('throttle:public-read');
+                Route::post('appointments/{token}/confirm', [PatientLinkController::class, 'confirm'])->middleware('throttle:patient-link');
+                Route::post('appointments/{token}/cancel', [PatientLinkController::class, 'cancel'])->middleware('throttle:patient-link');
+            });
         });
 
         Route::middleware(['auth:sanctum', EnsureUserIsActive::class])->group(function () {

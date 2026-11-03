@@ -1,6 +1,7 @@
 import { beforeEach, vi } from 'vitest'
 import { agendaMock, businessHoursFixture, overviewFixture, patientListFixture, proceduresFixture, publicBookingFixture, roomsFixture } from './fixtures/agenda'
 import { attachmentsFixture, notesFixture, odontogramFixture, patientAppointmentsFixture, paymentsFixture, reportFixture, waitlistFixture } from './fixtures/clinical'
+import { platformClinicFixture, platformPlansFixture } from './fixtures/platform'
 import { clinicFixture, notificationsFixture, preferencesFixture, subscriptionFixture, teamFixture } from './fixtures/settings'
 import { seedSession } from './utils/session'
 
@@ -36,6 +37,10 @@ const apiResponses: Record<string, unknown> = {
   '/api/appointments/event-2/payments': paymentsFixture,
   '/api/appointments/event-4/payments': { ...paymentsFixture, paidCents: 0, balanceCents: 20000, paymentStatus: 'pending', payments: [] },
   '/api/reports': reportFixture,
+  '/api/platform/session': { admin: { id: '1', name: 'Equipe', email: 'equipe@plataforma.app' } },
+  '/api/platform/clinics': { data: [platformClinicFixture], meta: { total: 1, current_page: 1, last_page: 1 } },
+  '/api/platform/clinics/c1': platformClinicFixture,
+  '/api/platform/plans': { data: platformPlansFixture },
   '/api/public/booking': publicBookingFixture,
   '/api/public/availability': { slots: ['09:00', '09:30', '14:00'] },
   '/api/clinic': clinicFixture,

@@ -28,6 +28,8 @@ O caminho dos dados é: página ou componente → composable → service → moc
 | `/redefinir-senha?token&email` | Subdomínio, sem sessão | Nova senha |
 | `/agendar` | Subdomínio, público | Pedido de agendamento do paciente. Aceita `date`, `time`, `professional_id` e `procedure_id` na query (link da lista de espera) |
 | `/consulta?token` | Subdomínio, público | Paciente confirma ou cancela pelo link do e-mail |
+| `/admin/login` | Domínio central | Entrada do painel da plataforma |
+| `/admin`, `/admin/clinicas/[id]`, `/admin/planos` | Domínio central, admin da plataforma (`platform-auth`) | Clínicas e planos. Layout `platform` |
 | `/app` | Admin e recepção | Visão geral, com dados da API |
 | `/app/agenda` | Todos os papéis | Agenda, pedidos pendentes e bloqueios |
 | `/app/pacientes` | Admin e recepção | Cadastro de pacientes |

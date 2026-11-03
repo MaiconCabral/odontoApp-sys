@@ -35,6 +35,7 @@ Toda chamada passa por `useApi().api(path, options)`, que:
 | `patientsService` | `/api/patients` | Busca e paginação no servidor; `get` e `appointments` para a ficha |
 | `clinicalService` | `/api/patients/{id}/notes`, `odontogram`, `attachments`, `/api/attachments/{id}` | Envio em `FormData`; `downloadUrl` monta o link de download com `useApi().url` |
 | `waitlistService` | `/api/waitlist` | Converte o formulário para snake_case |
+| `platformService` | `/api/platform/*` (domínio central) | Sessão do painel, clínicas e planos |
 | `financeService` | `/api/appointments/{id}/payments`, `/api/payments/{id}/void`, `/api/reports` | O valor digitado passa por `toCents` |
 | `scheduleService` | `/api/business-hours`, `/api/schedule-blocks` | Expediente e bloqueios |
 | `publicBookingService` | `/api/public/booking`, `availability`, `booking-requests` | Página `/agendar`, sem sessão |
@@ -160,6 +161,17 @@ Os valores em dinheiro chegam em centavos. Use `formatMoney`, `toCents` e `cents
   - é desenhado de novo ao trocar o tema;
   - recebe `label`, o texto lido por leitores de tela no lugar do desenho.
   - Versões fixadas: `apexcharts@8.3.1` e `vue3-apexcharts@1.11.3`.
+
+## Painel da plataforma (`/admin`)
+
+- **Onde fica:** só no domínio central. O middleware `platform-auth` manda um host de clínica para o domínio central e quem não tem sessão para `/admin/login`.
+- **Sessão:** `usePlatformSession` (`useState('platform-admin')`), separada da sessão da clínica: outro domínio, guard e tabela. O `logout` limpa os dados com `clearNuxtData`.
+- **Login:** depois do login, `safePanelRedirect`, em `utils/platform.ts`, só aceita voltar para caminhos de `/admin`.
+- **Páginas:**
+  - `/admin`: clínicas, com busca, filtros por plano e situação, e paginação;
+  - `/admin/clinicas/[id]`: uso da clínica e o formulário de plano, fim do trial e suspensão;
+  - `/admin/planos`: criar, editar e excluir planos. A exclusão pede um segundo clique e mostra a mensagem da API quando o plano está em uso.
+- **Clínica suspensa:** o login da clínica mostra a mensagem da API ("Clínica suspensa. Fale com o suporte.").
 
 ## Sino de avisos
 

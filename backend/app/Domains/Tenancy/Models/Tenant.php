@@ -71,6 +71,12 @@ class Tenant extends BaseTenant implements TenantWithDatabase
         return max(0, (int) ceil(now()->diffInDays($this->trial_ends_at)));
     }
 
+    /** Whether the platform suspended the clinic. The date lives in the data column. */
+    public function isSuspended(): bool
+    {
+        return $this->getAttribute('suspended_at') !== null;
+    }
+
     /** Trial while it runs, expired after it, active once there is no trial. */
     public function subscriptionStatus(): string
     {

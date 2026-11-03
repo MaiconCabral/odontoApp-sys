@@ -15,7 +15,13 @@ class AuthenticateTenantSession extends AuthenticateSession
     /** Checks the session clinic before Sanctum loads the user. */
     public function handle(Request $request, Closure $next): Response
     {
-        if (! tenancy()->initialized || ! $request->hasSession()) {
+        // The central domain has no clinic users: a clinic session cookie sent there must not make
+        // Sanctum look for a "users" table in the central database. Platform admins use their own guard.
+        if (! tenancy()->initialized) {
+            return $next($request);
+        }
+
+        if (! $request->hasSession()) {
             return parent::handle($request, $next);
         }
 
