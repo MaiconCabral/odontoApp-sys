@@ -5,6 +5,7 @@ import type {
   AppointmentAction,
   AppointmentForm,
   AppointmentStatus,
+  PaymentStatus,
 } from '~/types/agenda'
 import { monthGrid, weekdayLabel, weekDates } from '~/utils/agenda'
 import type { FormErrors } from '~/utils/auth'
@@ -19,6 +20,14 @@ export const STATUS_CLASSES: Record<AppointmentStatus, string> = {
   no_show: 'border-tone-red-line bg-tone-red-bg text-tone-red-text',
   cancelled: 'border-line bg-surface-soft text-faint line-through',
   rejected: 'border-line bg-surface-soft text-faint line-through',
+}
+
+// Payment mark of an agenda event; nothing for free or unpaid appointments.
+export const PAYMENT_LABELS: Record<PaymentStatus, string> = {
+  none: '',
+  pending: '',
+  partial: 'Pago em parte',
+  paid: 'Pago',
 }
 
 export const ACTION_LABELS: Record<AppointmentAction, string> = {

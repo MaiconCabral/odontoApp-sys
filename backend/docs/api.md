@@ -211,6 +211,10 @@ Status aceitos em `POST /status`:
 
 Para aceitar um pedido, use `/accept`. Recusas de regra de horário estão em [agenda.md](agenda.md#disponibilidade).
 
+### Pagamentos e relatórios
+
+Rotas de `appointments/{id}/payments`, `payments/{id}/void` e `reports`, com regras e formatos, em [financeiro.md](financeiro.md). Consultas, eventos da agenda e consultas da ficha trazem `paymentStatus` (`none`, `pending`, `partial` ou `paid`).
+
 ### Pacientes
 
 | Método e rota | Acesso |

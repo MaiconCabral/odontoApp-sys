@@ -78,6 +78,10 @@ async function run(action: AppointmentAction) {
 
 const buttonClass = 'inline-flex items-center justify-center rounded-lg border border-line bg-surface px-3 py-2 text-[11px] font-bold text-body transition duration-200 hover:border-brand-accent disabled:opacity-60'
 const dangerActions: AppointmentAction[] = ['cancel', 'reject', 'no_show']
+
+// Admins and reception record payments; the API enforces it.
+const auth = useAuthStore()
+const canManagePayments = computed(() => auth.user?.role === 'admin' || auth.user?.role === 'reception')
 </script>
 
 <template>
@@ -199,6 +203,10 @@ const dangerActions: AppointmentAction[] = ['cancel', 'reject', 'no_show']
       <p v-if="actionError" role="alert" class="text-[11px] text-tone-red-text sm:col-span-2">
         {{ actionError }}
       </p>
+
+      <Suspense v-if="canManagePayments">
+        <AppointmentsPaymentsSection :appointment-id="details.id" :status="details.status" @changed="refreshNuxtData('agenda')" />
+      </Suspense>
 
       <section v-if="details.notifications" class="sm:col-span-2" aria-label="Avisos ao paciente">
         <h3 class="mb-2 text-[10px] font-bold uppercase tracking-[.06em] text-muted">

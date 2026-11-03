@@ -15,6 +15,8 @@ export type Metric = {
   period: string
   icon: MetricIcon
   tone: MetricTone
+  // Second line under the value, like the estimate under what was received.
+  detail?: string
 }
 
 export type WeeklyBar = {

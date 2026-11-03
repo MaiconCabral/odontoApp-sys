@@ -103,6 +103,7 @@ class AgendaQuery
     {
         return Appointment::query()
             ->with(['patient:id,name', 'procedure:id,name'])
+            ->withPaidCents()
             ->whereNotIn('status', [AppointmentStatus::Cancelled, AppointmentStatus::Rejected])
             ->whereBetween('starts_at', [$from, $to])
             ->when($professionalId, fn ($query) => $query->where('professional_id', $professionalId))
@@ -122,6 +123,7 @@ class AgendaQuery
                 'source' => $appointment->source,
                 'professionalId' => $appointment->professional_id ? (string) $appointment->professional_id : null,
                 'roomId' => $appointment->room_id ? (string) $appointment->room_id : null,
+                'paymentStatus' => $appointment->paymentStatus(),
             ]);
     }
 

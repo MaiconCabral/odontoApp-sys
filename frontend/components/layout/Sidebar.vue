@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   ArrowUpRight,
+  ChartColumn,
   CalendarDays,
   ChevronDown,
   CircleHelp,
@@ -31,6 +32,7 @@ const navIcons = {
   agenda: CalendarDays,
   patients: Users,
   waitlist: Hourglass,
+  reports: ChartColumn,
   settings: Settings,
 } satisfies Record<NavIcon, unknown>
 

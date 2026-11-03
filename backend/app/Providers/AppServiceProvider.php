@@ -10,6 +10,8 @@ use App\Domains\Agenda\Policies\AppointmentPolicy;
 use App\Domains\Agenda\Policies\CatalogPolicy;
 use App\Domains\Agenda\Policies\PatientPolicy;
 use App\Domains\Agenda\Policies\SchedulePolicy;
+use App\Domains\Finance\Models\Payment;
+use App\Domains\Finance\Policies\PaymentPolicy;
 use App\Domains\Identity\Models\User;
 use App\Domains\Identity\Policies\UserPolicy;
 use App\Domains\Notifications\Models\NotificationLog;
@@ -47,6 +49,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Patient::class, PatientPolicy::class);
         Gate::policy(Procedure::class, CatalogPolicy::class);
         Gate::policy(Room::class, CatalogPolicy::class);
+        Gate::policy(Payment::class, PaymentPolicy::class);
         Gate::define('updateBusinessHours', [SchedulePolicy::class, 'updateBusinessHours']);
         Gate::define('manageBlocks', [SchedulePolicy::class, 'manageBlocks']);
 

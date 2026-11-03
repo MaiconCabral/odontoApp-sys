@@ -35,6 +35,7 @@ Toda chamada passa por `useApi().api(path, options)`, que:
 | `patientsService` | `/api/patients` | Busca e paginação no servidor; `get` e `appointments` para a ficha |
 | `clinicalService` | `/api/patients/{id}/notes`, `odontogram`, `attachments`, `/api/attachments/{id}` | Envio em `FormData`; `downloadUrl` monta o link de download com `useApi().url` |
 | `waitlistService` | `/api/waitlist` | Converte o formulário para snake_case |
+| `financeService` | `/api/appointments/{id}/payments`, `/api/payments/{id}/void`, `/api/reports` | O valor digitado passa por `toCents` |
 | `scheduleService` | `/api/business-hours`, `/api/schedule-blocks` | Expediente e bloqueios |
 | `publicBookingService` | `/api/public/booking`, `availability`, `booking-requests` | Página `/agendar`, sem sessão |
 | `patientLinksService` | `/api/public/appointments/{token}` | Página `/consulta`, sem sessão |
@@ -139,6 +140,26 @@ Os valores em dinheiro chegam em centavos. Use `formatMoney`, `toCents` e `cents
   - busca o paciente; quando abre pela ficha, o paciente já vem escolhido e não pode ser trocado;
   - procedimentos e profissionais vêm de `useAgenda()`.
 - **Link do e-mail:** `/agendar` lê a query e abre direto na etapa de horários. Só aceita procedimento e profissional que a clínica oferece e data dentro da janela; o horário só fica escolhido se ainda estiver livre.
+
+## Pagamentos e relatórios
+
+- **Pagamentos (`AppointmentsPaymentsSection`, dentro do modal da consulta):**
+  - só para admin e recepção;
+  - mostra preço, pago, quanto falta e a lista de pagamentos;
+  - "Registrar pagamento" abre o formulário já com o que falta;
+  - "Estornar" pede o motivo e só aparece quando `canVoid` (admin);
+  - depois de registrar ou estornar, a agenda é recarregada para atualizar o selo "Pago" ou "Pago em parte" do evento (`PAYMENT_LABELS`, em `utils/appointments.ts`).
+- **Visão geral:** o cartão de dinheiro mostra "Recebido hoje" e, abaixo, o `detail` com o previsto.
+- **Relatórios (`pages/app/relatorios.vue`, só admin):**
+  - período por atalho (este mês, mês passado, 30 ou 90 dias) ou datas livres;
+  - agrupamento por profissional, procedimento ou dia;
+  - cartões com os totais, gráfico de barras e tabela;
+  - "Exportar CSV" usa `toCsv`, de `utils/csv.ts`: `;` como separador, vírgula decimal e BOM, para o Excel em português abrir com acentos.
+- **Gráficos (`AppChart`, em `components/app/Chart.vue`):**
+  - carrega o `vue3-apexcharts` só no navegador e lê as cores dos tokens do tema;
+  - é desenhado de novo ao trocar o tema;
+  - recebe `label`, o texto lido por leitores de tela no lugar do desenho.
+  - Versões fixadas: `apexcharts@8.3.1` e `vue3-apexcharts@1.11.3`.
 
 ## Sino de avisos
 

@@ -6,6 +6,7 @@ use App\Domains\Agenda\Enums\AppointmentStatus;
 use App\Domains\Agenda\Models\Appointment;
 use App\Domains\Agenda\Models\Patient;
 use App\Domains\Agenda\Support\DaySchedule;
+use App\Domains\Finance\Models\Payment;
 use App\Domains\Identity\Models\User;
 use App\Support\Initials;
 use Carbon\CarbonImmutable;
@@ -75,10 +76,15 @@ class OverviewQuery
 
         [$attendance, $previousAttendance] = $this->attendance($today);
         $newPatients = $this->newPatients($today);
+        [$received, $receivedYesterday] = $this->received($today);
 
         return [
             $this->metric('appointments', 'Consultas hoje', (string) (int) ($todayRow->total ?? 0), (int) ($todayRow->total ?? 0), (int) ($yesterdayRow->total ?? 0), 'vs. ontem', 'calendar', 'blue'),
-            $this->metric('revenue', 'Faturamento estimado', self::money((int) ($todayRow->revenue ?? 0)), (int) ($todayRow->revenue ?? 0), (int) ($yesterdayRow->revenue ?? 0), 'vs. ontem', 'billing', 'green'),
+            [
+                ...$this->metric('revenue', 'Recebido hoje', self::money($received), $received, $receivedYesterday, 'vs. ontem', 'billing', 'green'),
+                // The estimate by the price of today's appointments stays as a second line.
+                'detail' => 'Previsto '.self::money((int) ($todayRow->revenue ?? 0)),
+            ],
             $this->attendanceMetric($attendance, $previousAttendance),
             $this->metric('new-patients', 'Novos pacientes', (string) $newPatients[0], $newPatients[0], $newPatients[1], 'este mês', 'patients', 'violet'),
         ];
@@ -106,6 +112,25 @@ class OverviewQuery
         };
 
         return [$rate('current'), $rate('previous')];
+    }
+
+    /**
+     * Valid payments recorded for today and for yesterday, by payment date.
+     *
+     * @return array{0: int, 1: int}
+     */
+    private function received(CarbonImmutable $today): array
+    {
+        $sums = Payment::query()
+            ->valid()
+            // The date cast stores a time too, so the days are compared with DATE().
+            ->whereDate('paid_at', '>=', $today->subDay()->toDateString())
+            ->whereDate('paid_at', '<=', $today->toDateString())
+            ->selectRaw('DATE(paid_at) as day, SUM(amount_cents) as total')
+            ->groupBy('day')
+            ->pluck('total', 'day');
+
+        return [(int) ($sums[$today->toDateString()] ?? 0), (int) ($sums[$today->subDay()->toDateString()] ?? 0)];
     }
 
     /**

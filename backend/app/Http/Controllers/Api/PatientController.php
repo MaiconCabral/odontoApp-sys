@@ -53,6 +53,7 @@ class PatientController extends Controller
 
         $appointments = $patient->appointments()
             ->with(['professional', 'procedure', 'room'])
+            ->withPaidCents()
             ->latest('starts_at')
             ->paginate(self::PER_PAGE);
 

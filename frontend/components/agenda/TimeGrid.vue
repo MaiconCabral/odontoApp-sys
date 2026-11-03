@@ -132,12 +132,13 @@ const lineClass = 'border-line-soft'
         class="absolute z-[2] flex flex-col gap-[2px] overflow-hidden rounded border-l-[3px] px-1.5 py-1 text-left transition duration-200 hover:brightness-95"
         :class="STATUS_CLASSES[event.status]"
         :style="eventStyle(event, eventsByDay.get(day.date) ?? [])"
-        :aria-label="`${event.patientName}, ${event.hour}, ${event.statusLabel}`"
+        :aria-label="[event.patientName, event.hour, event.statusLabel, PAYMENT_LABELS[event.paymentStatus ?? 'none']].filter(Boolean).join(', ')"
         @click="emit('select', event.id)"
       >
         <strong class="truncate text-[9px]">{{ event.patientName }}</strong>
         <span class="truncate text-[8px]">{{ event.hour }} · {{ event.procedure }}</span>
         <span v-if="event.status === 'requested'" class="text-[8px] font-bold">{{ event.statusLabel }}</span>
+        <span v-if="PAYMENT_LABELS[event.paymentStatus ?? 'none']" class="text-[8px] font-bold" aria-hidden="true">{{ PAYMENT_LABELS[event.paymentStatus ?? 'none'] }}</span>
       </button>
     </div>
   </div>

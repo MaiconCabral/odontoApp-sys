@@ -1,3 +1,4 @@
+import type { PaymentSummary, Report } from '~/types/finance'
 import type { AppointmentDetails } from '~/types/agenda'
 import type { ClinicalNote, Odontogram, PatientAttachment } from '~/types/clinical'
 import type { WaitlistEntry } from '~/types/waitlist'
@@ -74,4 +75,28 @@ export const waitlistFixture: { data: WaitlistEntry[] } = {
       createdAt: '2024-10-06T10:00:00-03:00',
     },
   ],
+}
+
+// Answer of /api/appointments/event-2/payments: R$ 200, half paid by Pix.
+export const paymentsFixture: PaymentSummary = {
+  priceCents: 20000,
+  paidCents: 10000,
+  balanceCents: 10000,
+  paymentStatus: 'partial',
+  payments: [
+    { id: 'p1', amountCents: 10000, method: 'pix', methodLabel: 'Pix', paidAt: '2024-10-24', notes: null, recordedBy: 'Paula Nunes', voided: false, voidReason: null, voidedBy: null, canVoid: true },
+  ],
+}
+
+// Answer of /api/reports grouped by professional.
+export const reportFixture: Report = {
+  from: '2024-10-01',
+  to: '2024-10-31',
+  group: 'professional',
+  rows: [
+    { key: 'carlos', label: 'Dr. Carlos Mendes', appointments: 12, completed: 9, noShow: 1, absenceRate: 10, expectedCents: 180000, receivedCents: 150000 },
+    { key: 'ana', label: 'Dra. Ana Beatriz; "Estética"', appointments: 5, completed: 4, noShow: 0, absenceRate: 0, expectedCents: 90000, receivedCents: 90000 },
+  ],
+  totals: { appointments: 17, completed: 13, noShow: 1, absenceRate: 7.1, expectedCents: 270000, receivedCents: 240000 },
+  byMethod: [{ method: 'pix', methodLabel: 'Pix', receivedCents: 240000 }],
 }

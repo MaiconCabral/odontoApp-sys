@@ -24,7 +24,8 @@ Usam a API do `backend/`:
 - preferências de atendimento e assinatura, em Configurações;
 - sino de avisos para a equipe, no topo;
 - ficha do paciente com consultas, prontuário, odontograma e anexos;
-- lista de espera, com o link do e-mail que preenche o `/agendar`.
+- lista de espera, com o link do e-mail que preenche o `/agendar`;
+- pagamentos na consulta e relatórios com exportação CSV.
 
 `mocks/settings.ts` guarda só textos fixos: abas, títulos das preferências e itens extras de cada plano. Os valores vêm da API. Detalhes em [integracao-api.md](integracao-api.md#configurações--preferências-e-assinatura).
 

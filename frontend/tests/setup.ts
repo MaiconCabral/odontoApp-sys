@@ -1,8 +1,21 @@
 import { beforeEach, vi } from 'vitest'
 import { agendaMock, businessHoursFixture, overviewFixture, patientListFixture, proceduresFixture, publicBookingFixture, roomsFixture } from './fixtures/agenda'
-import { attachmentsFixture, notesFixture, odontogramFixture, patientAppointmentsFixture, waitlistFixture } from './fixtures/clinical'
+import { attachmentsFixture, notesFixture, odontogramFixture, patientAppointmentsFixture, paymentsFixture, reportFixture, waitlistFixture } from './fixtures/clinical'
 import { clinicFixture, notificationsFixture, preferencesFixture, subscriptionFixture, teamFixture } from './fixtures/settings'
 import { seedSession } from './utils/session'
+
+// happy-dom cannot draw charts. The stub keeps the props, so tests read what would be drawn.
+vi.mock('vue3-apexcharts', async () => {
+  const { defineComponent, h } = await import('vue')
+
+  return {
+    default: defineComponent({
+      name: 'ApexChartStub',
+      props: ['type', 'series', 'options', 'height'],
+      setup: props => () => h('div', { 'data-testid': 'apex-chart', 'data-type': props.type }),
+    }),
+  }
+})
 
 // Answers at the network level, so the real services run in the page tests.
 const apiResponses: Record<string, unknown> = {
@@ -20,6 +33,9 @@ const apiResponses: Record<string, unknown> = {
   '/api/patients/patient-1/odontogram': odontogramFixture,
   '/api/patients/patient-1/attachments': attachmentsFixture,
   '/api/waitlist': waitlistFixture,
+  '/api/appointments/event-2/payments': paymentsFixture,
+  '/api/appointments/event-4/payments': { ...paymentsFixture, paidCents: 0, balanceCents: 20000, paymentStatus: 'pending', payments: [] },
+  '/api/reports': reportFixture,
   '/api/public/booking': publicBookingFixture,
   '/api/public/availability': { slots: ['09:00', '09:30', '14:00'] },
   '/api/clinic': clinicFixture,

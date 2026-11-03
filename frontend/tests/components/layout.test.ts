@@ -21,6 +21,7 @@ describe('Sidebar', () => {
       '/app/agenda',
       '/app/pacientes',
       '/app/lista-espera',
+      '/app/relatorios',
       '/app/configuracoes',
     ])
   })

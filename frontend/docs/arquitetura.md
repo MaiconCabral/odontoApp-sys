@@ -33,6 +33,7 @@ O caminho dos dados é: página ou componente → composable → service → moc
 | `/app/pacientes` | Admin e recepção | Cadastro de pacientes |
 | `/app/pacientes/[id]` | Todos os papéis; a API decide quem vê cada paciente | Ficha com consultas, prontuário, odontograma e anexos |
 | `/app/lista-espera` | Admin e recepção | Lista de espera |
+| `/app/relatorios` | Admin | Relatórios por período, com exportação CSV |
 | `/app/configuracoes` | Admin | Clínica, equipe, horários, procedimentos, salas e demais configurações |
 
 ### Regras das rotas do painel

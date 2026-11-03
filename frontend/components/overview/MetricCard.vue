@@ -40,6 +40,9 @@ const trends = {
     <div class="mt-[17px] font-display text-[22px] font-extrabold leading-[normal] tracking-[-.8px] text-heading sm:mt-[15px] sm:text-[25px]">
       {{ metric.value }}
     </div>
+    <div v-if="metric.detail" class="mt-1 text-[10px] text-muted">
+      {{ metric.detail }}
+    </div>
     <div class="mt-[11px] flex items-center gap-[3px] text-[11px] font-bold" :class="trends[metric.trend].class">
       <component :is="trends[metric.trend].icon" :size="13" :aria-label="trends[metric.trend].label" />
       {{ metric.change }}

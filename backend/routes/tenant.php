@@ -13,8 +13,10 @@ use App\Http\Controllers\Api\PasswordController;
 use App\Http\Controllers\Api\PatientAttachmentController;
 use App\Http\Controllers\Api\PatientController;
 use App\Http\Controllers\Api\PatientLinkController;
+use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProcedureController;
 use App\Http\Controllers\Api\PublicBookingController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\RoomController;
 use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\SessionController;
@@ -95,6 +97,10 @@ Route::prefix('api')
             Route::put('appointments/{appointment}', [AppointmentController::class, 'update']);
             Route::post('appointments/{appointment}/status', [AppointmentController::class, 'status']);
             Route::post('appointments/{appointment}/accept', [AppointmentController::class, 'accept']);
+            Route::get('appointments/{appointment}/payments', [PaymentController::class, 'index']);
+            Route::post('appointments/{appointment}/payments', [PaymentController::class, 'store']);
+            Route::post('payments/{payment}/void', [PaymentController::class, 'void']);
+            Route::get('reports', ReportController::class);
 
             Route::get('business-hours', [ScheduleController::class, 'hours']);
             Route::put('business-hours', [ScheduleController::class, 'updateHours']);

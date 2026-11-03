@@ -56,7 +56,8 @@ it('greets the user and counts today against yesterday', function () {
     expect($overview['greeting'])->toBe('Bom dia, Carlos')
         ->and($overview['agendaDate'])->toBe('12 de novembro de 2026')
         ->and($metrics['appointments'])->toMatchArray(['value' => '3', 'change' => '50,0%', 'trend' => 'up'])
-        ->and($metrics['revenue'])->toMatchArray(['value' => 'R$ 800', 'change' => '100,0%', 'trend' => 'up'])
+        // Nothing was paid yet; the estimate by price stays in the detail line.
+        ->and($metrics['revenue'])->toMatchArray(['label' => 'Recebido hoje', 'value' => 'R$ 0', 'detail' => 'Previsto R$ 800'])
         // This month: 7 completed and 1 missed. Last month: 1 and 1.
         ->and($metrics['attendance']['value'])->toBe('87,5%')
         ->and($metrics['attendance']['change'])->toBe('37,5 p.p.');

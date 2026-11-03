@@ -2,6 +2,9 @@ export type AgendaView = 'day' | 'week' | 'month'
 
 export type ProfessionalTone = 'cyan' | 'amber' | 'green'
 
+// "none" is a free appointment.
+export type PaymentStatus = 'none' | 'pending' | 'partial' | 'paid'
+
 export type AppointmentStatus = 'requested' | 'scheduled' | 'confirmed' | 'completed' | 'no_show' | 'cancelled' | 'rejected'
 
 export type AppointmentAction = 'accept' | 'reject' | 'confirm' | 'complete' | 'no_show' | 'cancel' | 'reschedule'
@@ -40,6 +43,7 @@ export type AgendaEvent = {
   source: 'internal' | 'public'
   professionalId: string | null
   roomId: string | null
+  paymentStatus?: PaymentStatus
 }
 
 export type AgendaBlock = {
@@ -112,6 +116,9 @@ export type AppointmentDetails = {
   professional: { id: string, name: string } | null
   room: { id: string, name: string } | null
   priceCents?: number
+  paidCents?: number
+  balanceCents?: number
+  paymentStatus?: PaymentStatus
   patientHasEmail?: boolean
   notifications?: NotificationEntry[]
   history?: AppointmentHistoryEntry[]

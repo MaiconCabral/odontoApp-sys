@@ -68,6 +68,9 @@ Componentes que dependem do host usam `mockNuxtImport('useClinicHost', ...)`, po
   - envio de anexos, com recusa antes do envio.
   - Veja `tests/pages/paciente.test.ts`. As regras de face e o rótulo acessível do dente estão em `tests/utils/odontogram.test.ts`.
 - **Lista de espera e link do e-mail:** `tests/pages/lista-espera.test.ts` e o bloco "from the waiting list link" de `tests/pages/agendar.test.ts`.
+- **Pagamentos e relatórios:** `tests/pages/financeiro.test.ts`. Valores com `formatMoney` trazem espaço não separável depois de "R$"; compare com a função `text()` do arquivo, que o troca por espaço comum.
+- **Gráficos:** `tests/setup.ts` troca o `vue3-apexcharts` por um stub, porque o happy-dom não desenha. Teste os dados (`series`, `label`), não o desenho.
+- **Páginas com a mesma chave de `useAsyncData`:** desmonte a página no fim do teste (`page.unmount()`). Senão, a próxima página reaproveita o handler da anterior.
 - **Formulários enviados a um service:** passe uma cópia (`{ ...form }`). O componente limpa o formulário depois de salvar, e um spy guardaria a referência já limpa.
 - **Classes em `utils/`:** o Tailwind lê `utils/**/*.ts` (`content` em `tailwind.config.ts`). Escreva cada classe por inteiro; classes montadas com texto, como `replace('fill-', 'bg-')`, não são geradas.
 

@@ -3,6 +3,7 @@
 namespace App\Domains\Agenda\Models;
 
 use App\Domains\Agenda\Enums\AppointmentStatus;
+use App\Domains\Finance\Models\Payment;
 use App\Domains\Identity\Models\User;
 use App\Domains\Notifications\Models\NotificationLog;
 use Database\Factories\AppointmentFactory;
@@ -98,6 +99,44 @@ class Appointment extends Model
     public function notificationLogs(): HasMany
     {
         return $this->hasMany(NotificationLog::class)->latest('id');
+    }
+
+    /** Payments of this appointment, voided ones included, newest first. */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class)->latest('id');
+    }
+
+    /**
+     * "none" for a free appointment, else "pending", "partial" or "paid", from the valid payments.
+     * Uses the paid_cents sum when the query loaded it (withSum), so lists do not query per row.
+     */
+    public function paymentStatus(): string
+    {
+        $paid = $this->paidCents();
+
+        return match (true) {
+            $this->price_cents === 0 => 'none',
+            $paid <= 0 => 'pending',
+            $paid < $this->price_cents => 'partial',
+            default => 'paid',
+        };
+    }
+
+    /** Sum of the valid payments, from withSum when loaded. */
+    public function paidCents(): int
+    {
+        if (array_key_exists('paid_cents', $this->attributes)) {
+            return (int) $this->attributes['paid_cents'];
+        }
+
+        return (int) $this->payments()->valid()->sum('amount_cents');
+    }
+
+    /** Loads the sum of the valid payments as paid_cents. */
+    public function scopeWithPaidCents(Builder $query): Builder
+    {
+        return $query->withSum(['payments as paid_cents' => fn ($payments) => $payments->whereNull('voided_at')], 'amount_cents');
     }
 
     /** Appointments that hold their time in the agenda. */
