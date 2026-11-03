@@ -32,7 +32,9 @@ Toda chamada passa por `useApi().api(path, options)`, que:
 | `authService` | sessão, login, cadastro, senha, logout | `getSession` devolve `null` em 401 ou 403 |
 | `agendaService` | `GET /api/agenda` | Recebe o período (`from`, `to`) |
 | `appointmentsService` | `/api/appointments`, `/api/availability`, `/api/appointment-requests` | Criar, remarcar, status, aceite e horários livres |
-| `patientsService` | `/api/patients` | Busca e paginação no servidor |
+| `patientsService` | `/api/patients` | Busca e paginação no servidor; `get` e `appointments` para a ficha |
+| `clinicalService` | `/api/patients/{id}/notes`, `odontogram`, `attachments`, `/api/attachments/{id}` | Envio em `FormData`; `downloadUrl` monta o link de download com `useApi().url` |
+| `waitlistService` | `/api/waitlist` | Converte o formulário para snake_case |
 | `scheduleService` | `/api/business-hours`, `/api/schedule-blocks` | Expediente e bloqueios |
 | `publicBookingService` | `/api/public/booking`, `availability`, `booking-requests` | Página `/agendar`, sem sessão |
 | `patientLinksService` | `/api/public/appointments/{token}` | Página `/consulta`, sem sessão |
@@ -102,6 +104,41 @@ Os valores em dinheiro chegam em centavos. Use `formatMoney`, `toCents` e `cents
 - `pages/app/index.vue` usa `useAsyncData` com `overviewService.get()`. A API entrega o texto já formatado ("R$ 800", "12,5%"), e o front só exibe.
 - `trend` (`up`, `down`, `flat`) define a seta e a cor das métricas e do gráfico semanal.
 - Clicar num paciente de "Próximos pacientes" abre o modal `appointment-details`.
+
+## Ficha do paciente (`pages/app/pacientes/[id].vue`)
+
+- **Acesso:**
+  - qualquer papel abre a rota; a API responde `403` para quem não pode ver o paciente, e a página mostra "Você não tem acesso a este paciente";
+  - a recepção vê só a aba Consultas. Admin e profissional também veem Prontuário, Odontograma e Anexos;
+  - só admin e recepção editam o cadastro e adicionam à lista de espera.
+- **Como se chega à ficha:**
+  - pelo nome na lista de pacientes;
+  - por "Ver ficha do paciente", no modal de detalhes da consulta. É o caminho do profissional, que não tem "Pacientes" no menu;
+  - pela lista de espera.
+- **Abas (`components/patients/`):**
+  - **`AppointmentsTab`:** consultas paginadas com "Carregar mais"; o clique abre o modal da consulta.
+  - **`RecordTab`:** nova anotação, com consulta opcional, e o histórico. "Corrigir" grava uma nova anotação ligada à anterior; nada é editado.
+  - **`OdontogramTab` e `Odontogram`:**
+    - SVG com 5 faces por dente, em numeração FDI, com alternância para os decíduos;
+    - o clique numa face escolhe dente e face; o clique ou Enter no dente escolhe só o dente;
+    - cada dente é um botão com `aria-label` do estado ("Dente 16, cárie oclusal");
+    - as regras de face (vestibular para fora da boca, mesial para o centro) e as cores estão em `utils/odontogram.ts`.
+  - **`AttachmentsTab`:**
+    - envio pelo botão ou arrastando arquivos, um de cada vez;
+    - tipo e tamanho são conferidos antes do envio, e a API confere de novo;
+    - mostra "Enviando...". O `$fetch` não informa o progresso do envio, então não há barra;
+    - o download é um link comum para a API, e o cookie da sessão vai junto.
+- **Edição:** o modal de paciente recarrega a lista e a ficha (`refreshNuxtData(['patients', 'patient-<id>'])`).
+
+## Lista de espera (`pages/app/lista-espera.vue`)
+
+- Mostra as entradas em aberto e pode filtrar por agendados ou removidos.
+- Avisa quando o paciente não tem e-mail, porque nesse caso ele não recebe a oferta automática.
+- **Ações:** "Marcar agendado", editar e remover (com segundo clique).
+- **`WaitlistEntryModal`:**
+  - busca o paciente; quando abre pela ficha, o paciente já vem escolhido e não pode ser trocado;
+  - procedimentos e profissionais vêm de `useAgenda()`.
+- **Link do e-mail:** `/agendar` lê a query e abre direto na etapa de horários. Só aceita procedimento e profissional que a clínica oferece e data dentro da janela; o horário só fica escolhido se ainda estiver livre.
 
 ## Sino de avisos
 

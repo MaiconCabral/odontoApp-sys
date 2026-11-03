@@ -1,3 +1,4 @@
+import type { AppointmentDetails } from '~/types/agenda'
 import type { Patient, PatientForm, PatientList, PatientQuery } from '~/types/patients'
 
 type PatientPage = {
@@ -14,6 +15,7 @@ function toBody(form: PatientForm) {
     email: form.email || null,
     insurance: form.insurance || null,
     birth_date: form.birthDate || null,
+    notes: form.notes.trim() || null,
   }
 }
 
@@ -30,6 +32,19 @@ export const patientsService = {
       page: response.meta.current_page,
       lastPage: response.meta.last_page,
     }
+  },
+
+  // One patient, for the patient page.
+  get: (id: string) => useApi().api<Patient>(`/api/patients/${id}`),
+
+  // Appointments of the patient, newest first, one page at a time.
+  appointments: async (id: string, page = 1) => {
+    const response = await useApi().api<{ data: AppointmentDetails[], meta: { current_page: number, last_page: number } }>(
+      `/api/patients/${id}/appointments`,
+      { query: { page } },
+    )
+
+    return { appointments: response.data, page: response.meta.current_page, lastPage: response.meta.last_page }
   },
 
   // Adds a patient.

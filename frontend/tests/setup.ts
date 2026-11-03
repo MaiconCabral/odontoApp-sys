@@ -1,5 +1,6 @@
 import { beforeEach, vi } from 'vitest'
 import { agendaMock, businessHoursFixture, overviewFixture, patientListFixture, proceduresFixture, publicBookingFixture, roomsFixture } from './fixtures/agenda'
+import { attachmentsFixture, notesFixture, odontogramFixture, patientAppointmentsFixture, waitlistFixture } from './fixtures/clinical'
 import { clinicFixture, notificationsFixture, preferencesFixture, subscriptionFixture, teamFixture } from './fixtures/settings'
 import { seedSession } from './utils/session'
 
@@ -13,6 +14,12 @@ const apiResponses: Record<string, unknown> = {
     meta: { total: patientListFixture.total, current_page: 1, last_page: patientListFixture.lastPage },
   },
   '/api/business-hours': { data: businessHoursFixture },
+  '/api/patients/patient-1': patientListFixture.patients[0],
+  '/api/patients/patient-1/appointments': patientAppointmentsFixture,
+  '/api/patients/patient-1/notes': notesFixture,
+  '/api/patients/patient-1/odontogram': odontogramFixture,
+  '/api/patients/patient-1/attachments': attachmentsFixture,
+  '/api/waitlist': waitlistFixture,
   '/api/public/booking': publicBookingFixture,
   '/api/public/availability': { slots: ['09:00', '09:30', '14:00'] },
   '/api/clinic': clinicFixture,

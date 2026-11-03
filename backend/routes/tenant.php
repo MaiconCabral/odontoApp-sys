@@ -5,10 +5,12 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\AgendaController;
 use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\AvailabilityController;
+use App\Http\Controllers\Api\ClinicalRecordController;
 use App\Http\Controllers\Api\ClinicController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\OverviewController;
 use App\Http\Controllers\Api\PasswordController;
+use App\Http\Controllers\Api\PatientAttachmentController;
 use App\Http\Controllers\Api\PatientController;
 use App\Http\Controllers\Api\PatientLinkController;
 use App\Http\Controllers\Api\ProcedureController;
@@ -17,6 +19,7 @@ use App\Http\Controllers\Api\RoomController;
 use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\SessionController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\WaitlistController;
 use App\Http\Middleware\EnsureUserIsActive;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain;
@@ -69,6 +72,16 @@ Route::prefix('api')
 
             Route::apiResource('users', UserController::class);
             Route::apiResource('patients', PatientController::class);
+            Route::get('patients/{patient}/appointments', [PatientController::class, 'appointments']);
+            Route::get('patients/{patient}/notes', [ClinicalRecordController::class, 'notes']);
+            Route::post('patients/{patient}/notes', [ClinicalRecordController::class, 'storeNote']);
+            Route::get('patients/{patient}/odontogram', [ClinicalRecordController::class, 'odontogram']);
+            Route::post('patients/{patient}/odontogram', [ClinicalRecordController::class, 'storeTooth']);
+            Route::get('patients/{patient}/attachments', [PatientAttachmentController::class, 'index']);
+            Route::post('patients/{patient}/attachments', [PatientAttachmentController::class, 'store'])->middleware('throttle:uploads');
+            Route::get('attachments/{attachment}/download', [PatientAttachmentController::class, 'download']);
+            Route::delete('attachments/{attachment}', [PatientAttachmentController::class, 'destroy']);
+            Route::apiResource('waitlist', WaitlistController::class)->except('show');
             Route::apiResource('procedures', ProcedureController::class);
             Route::apiResource('rooms', RoomController::class);
 

@@ -1,6 +1,6 @@
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import PatientsPage from '~/pages/app/pacientes.vue'
+import PatientsPage from '~/pages/app/pacientes/index.vue'
 
 const { usePatientsMock } = vi.hoisted(() => ({ usePatientsMock: vi.fn() }))
 

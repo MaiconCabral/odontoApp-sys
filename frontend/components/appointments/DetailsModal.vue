@@ -95,6 +95,14 @@ const dangerActions: AppointmentAction[] = ['cancel', 'reject', 'no_show']
     </div>
 
     <template v-else-if="details">
+      <NuxtLink
+        :to="panelPath(`pacientes/${details.patient.id}`)"
+        class="justify-self-start text-[11px] font-bold text-brand-text hover:underline sm:col-span-2"
+        @click="closeModal"
+      >
+        Ver ficha do paciente
+      </NuxtLink>
+
       <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-[11px] sm:col-span-2">
         <div>
           <dt class="text-[10px] text-muted">

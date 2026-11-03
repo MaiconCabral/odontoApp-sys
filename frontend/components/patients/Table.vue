@@ -90,7 +90,9 @@ const mutedCellClass = 'text-[10px] text-muted'
         <div role="cell" class="flex min-w-0 items-center gap-2.5 text-[11px]">
           <PatientsAvatar :initials="patient.initials" :tone="patient.tone" />
           <div class="min-w-0">
-            <strong class="block truncate">{{ patient.name }}</strong>
+            <NuxtLink :to="panelPath(`pacientes/${patient.id}`)" class="block truncate font-bold hover:text-brand-text hover:underline">
+              {{ patient.name }}
+            </NuxtLink>
             <span v-if="patient.cpf" class="block text-[9px] text-muted">{{ patient.cpf }}</span>
           </div>
         </div>

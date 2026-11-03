@@ -4,6 +4,7 @@ import {
   CalendarDays,
   ChevronDown,
   CircleHelp,
+  Hourglass,
   LayoutDashboard,
   LogOut,
   PanelLeftClose,
@@ -29,12 +30,18 @@ const navIcons = {
   overview: LayoutDashboard,
   agenda: CalendarDays,
   patients: Users,
+  waitlist: Hourglass,
   settings: Settings,
 } satisfies Record<NavIcon, unknown>
 
 const route = useRoute()
 const workspace = useWorkspace()
 const { logout } = useAuth()
+
+// The entry of the current page, also on its subpages (a patient page keeps "Pacientes" marked).
+function isCurrent(path: string) {
+  return route.path === path || (path !== panelPath() && route.path.startsWith(`${path}/`))
+}
 
 // The mobile drawer always shows the full menu.
 const isCompact = computed(() => props.collapsed && !props.mobileOpen)
@@ -95,18 +102,18 @@ const footerItemClass = computed(() => [
         :to="item.path"
         class="flex w-full items-center gap-3 rounded-[9px] py-2.5 text-left text-[13px] transition duration-200 hover:bg-brand-tint hover:text-brand-text dark:hover:bg-brand-soft"
         :class="[
-          item.path === route.path
+          isCurrent(item.path)
             ? 'bg-brand-soft font-bold text-brand-text'
             : 'text-muted',
           isCompact ? 'h-[42px] justify-center' : 'px-3',
         ]"
-        :aria-current="item.path === route.path ? 'page' : undefined"
+        :aria-current="isCurrent(item.path) ? 'page' : undefined"
         :aria-label="isCompact ? item.label : undefined"
       >
         <component
           :is="navIcons[item.icon]"
           :size="18"
-          :stroke-width="item.path === route.path ? 2.4 : 1.9"
+          :stroke-width="isCurrent(item.path) ? 2.4 : 1.9"
           class="flex-none"
         />
         <template v-if="!isCompact">

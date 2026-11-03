@@ -4,6 +4,7 @@ namespace App\Domains\Agenda\Actions;
 
 use App\Domains\Agenda\DTOs\AppointmentData;
 use App\Domains\Agenda\Enums\AppointmentStatus;
+use App\Domains\Agenda\Jobs\OfferFreedSlotJob;
 use App\Domains\Agenda\Models\Appointment;
 use App\Domains\Agenda\Support\AvailabilityChecker;
 use App\Domains\Identity\Models\User;
@@ -32,6 +33,8 @@ class RescheduleAppointment
             $this->availability->ensure($data->startsAt, $data->procedure->minutes(), $data->professionalId, $data->roomId, $appointment->id);
 
             $previousStart = $appointment->starts_at->copy();
+            $previousMinutes = $appointment->minutes();
+            $previousProfessional = $appointment->professional_id;
 
             $appointment->fill([
                 'patient_id' => $data->patientId,
@@ -44,6 +47,11 @@ class RescheduleAppointment
                 'ends_at' => $data->endsAt(),
                 'notes' => $data->notes,
             ]);
+
+            // The old time is free again when the appointment leaves it.
+            if ($appointment->isDirty(['starts_at', 'professional_id'])) {
+                OfferFreedSlotJob::afterCommit($appointment, $previousStart, $previousMinutes, $previousProfessional);
+            }
 
             if ($appointment->isDirty('starts_at')) {
                 $reason = 'Remarcada de '.$previousStart->format('d/m/Y H:i').' para '.$data->startsAt->format('d/m/Y H:i').'.';

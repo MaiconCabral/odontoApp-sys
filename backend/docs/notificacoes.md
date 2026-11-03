@@ -62,7 +62,7 @@ Regras:
 | --- | --- | --- |
 | `reminder_24h` | `reminder24h` | Liga ou desliga o lembrete de 24h da clínica |
 | `auto_confirmation` | `autoConfirmation` | Só é salvo; a regra ainda não existe |
-| `waiting_list` | `waitingList` | Só é salvo; a lista de espera ainda não existe |
+| `waiting_list` | `waitingList` | Liga ou desliga a oferta de horários vagos à lista de espera ([prontuario.md](prontuario.md#lista-de-espera)) |
 
 ## Avisos para a equipe (sino)
 
@@ -74,6 +74,7 @@ O sino no topo mostra avisos gravados na tabela `notifications` do banco da clí
 | `cancelled_by_patient` | Paciente cancelou pelo link (`ChangeAppointmentStatus` sem autor) | Admins, recepção e o profissional da consulta |
 | `confirmed_by_patient` | Paciente confirmou pelo link | Admins, recepção e o profissional da consulta |
 | `reminder_failed` | O lembrete falhou depois das tentativas da fila (`AppointmentMessage::failed`) | Admins, recepção e o profissional da consulta |
+| `waitlist_offered` | Um horário vago foi oferecido à lista de espera (`OfferFreedSlot`) | Admins e recepção |
 
 - Só usuários ativos recebem. O aviso é gravado depois do commit (`StaffNotifier`, com `DB::afterCommit`), sem fila.
 - Endpoints, com sessão: `GET /api/notifications` (últimos 20 e `meta.unreadCount`), `POST /api/notifications/{id}/read` e `POST /api/notifications/read-all`.

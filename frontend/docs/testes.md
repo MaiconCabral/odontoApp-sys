@@ -60,8 +60,18 @@ Componentes que dependem do host usam `mockNuxtImport('useClinicHost', ...)`, po
 
 - **Ações salvas ao clicar** (preferências): o valor enviado à API e a volta ao estado anterior quando a API falha. Veja `tests/pages/configuracoes.test.ts`.
 - **Sino:** a bolinha só com aviso não lido, a lista vazia, marcar como lido e a abertura da consulta. Veja `tests/components/notifications.test.ts`.
+- **Ficha do paciente:**
+  - abas por papel;
+  - `403`;
+  - anotação e correção;
+  - clique numa face do odontograma e condição do dente inteiro;
+  - envio de anexos, com recusa antes do envio.
+  - Veja `tests/pages/paciente.test.ts`. As regras de face e o rótulo acessível do dente estão em `tests/utils/odontogram.test.ts`.
+- **Lista de espera e link do e-mail:** `tests/pages/lista-espera.test.ts` e o bloco "from the waiting list link" de `tests/pages/agendar.test.ts`.
+- **Formulários enviados a um service:** passe uma cópia (`{ ...form }`). O componente limpa o formulário depois de salvar, e um spy guardaria a referência já limpa.
+- **Classes em `utils/`:** o Tailwind lê `utils/**/*.ts` (`content` em `tailwind.config.ts`). Escreva cada classe por inteiro; classes montadas com texto, como `replace('fill-', 'bg-')`, não são geradas.
 
-As respostas padrão de `/api/overview`, `/api/procedures` e `/api/rooms` estão em `tests/fixtures/agenda.ts` (`overviewFixture`, `proceduresFixture`, `roomsFixture`). As de `/api/clinic/preferences`, `/api/clinic/subscription` e `/api/notifications` estão em `tests/fixtures/settings.ts` (`preferencesFixture`, `subscriptionFixture`, `notificationsFixture`). O `beforeEach` de `tests/setup.ts` limpa os avisos do sino com `useNotifications().reset()`.
+As respostas padrão de `/api/overview`, `/api/procedures` e `/api/rooms` estão em `tests/fixtures/agenda.ts` (`overviewFixture`, `proceduresFixture`, `roomsFixture`). As da ficha do paciente `patient-1` e de `/api/waitlist` estão em `tests/fixtures/clinical.ts`. As de `/api/clinic/preferences`, `/api/clinic/subscription` e `/api/notifications` estão em `tests/fixtures/settings.ts` (`preferencesFixture`, `subscriptionFixture`, `notificationsFixture`). O `beforeEach` de `tests/setup.ts` limpa os avisos do sino com `useNotifications().reset()`.
 
 ## Confira também no navegador
 

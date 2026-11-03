@@ -217,9 +217,13 @@ Para aceitar um pedido, use `/accept`. Recusas de regra de horário estão em [a
 | --- | --- |
 | `GET /api/patients?search=&page=` | Admin e recepção |
 | `POST /api/patients`, `PUT /api/patients/{id}` | Admin e recepção |
-| `GET /api/patients/{id}`, `DELETE /api/patients/{id}` | Admin e recepção |
+| `GET /api/patients/{id}` | Admin, recepção e o profissional que já atendeu o paciente |
+| `DELETE /api/patients/{id}` | Admin e recepção |
+| `GET /api/patients/{id}/appointments?page=` | Mesmo acesso do `GET /api/patients/{id}` |
 
-- O corpo tem `name`, `phone` (com DDD), `email`, `cpf` (11 dígitos, único na clínica), `insurance` e `birth_date`.
+- O corpo tem `name`, `phone` (com DDD), `email`, `cpf` (11 dígitos, único na clínica), `insurance`, `birth_date` e `notes` (até 1.000 caracteres; ficam visíveis para a recepção, então não são lugar de dado clínico).
+- As consultas do paciente vêm da mais recente para a mais antiga, de 20 em 20, no formato de consulta da agenda.
+- Prontuário, odontograma e anexos estão em [prontuario.md](prontuario.md).
 - A listagem é paginada de 20 em 20, com `meta.total` e `meta.last_page`. A busca procura por nome, dígitos do CPF ou dígitos do telefone.
 - Paciente com consultas não pode ser excluído (`422` em `errors.patient`).
 

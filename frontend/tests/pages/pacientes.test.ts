@@ -1,7 +1,7 @@
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
-import PatientsPage from '~/pages/app/pacientes.vue'
+import PatientsPage from '~/pages/app/pacientes/index.vue'
 
 describe('Pacientes', () => {
   it('renders the patients of the page and the total', async () => {

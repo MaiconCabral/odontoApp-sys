@@ -20,6 +20,7 @@ describe('Sidebar', () => {
       '/app',
       '/app/agenda',
       '/app/pacientes',
+      '/app/lista-espera',
       '/app/configuracoes',
     ])
   })
@@ -37,7 +38,7 @@ describe('Sidebar', () => {
 
     const sidebar = await mountSuspended(Sidebar, { props: { collapsed: false, mobileOpen: false } })
 
-    expect(sidebar.findAll('nav a').map(link => link.attributes('href'))).toEqual(['/app', '/app/agenda', '/app/pacientes'])
+    expect(sidebar.findAll('nav a').map(link => link.attributes('href'))).toEqual(['/app', '/app/agenda', '/app/pacientes', '/app/lista-espera'])
   })
 
   it('hides the labels when collapsed but keeps them accessible', async () => {

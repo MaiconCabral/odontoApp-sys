@@ -26,11 +26,13 @@ O caminho dos dados é: página ou componente → composable → service → moc
 | `/cadastro` | Domínio central | Cadastro da clínica e do administrador |
 | `/recuperar-senha` | Subdomínio, sem sessão | Pedido do link de redefinição |
 | `/redefinir-senha?token&email` | Subdomínio, sem sessão | Nova senha |
-| `/agendar` | Subdomínio, público | Pedido de agendamento do paciente |
+| `/agendar` | Subdomínio, público | Pedido de agendamento do paciente. Aceita `date`, `time`, `professional_id` e `procedure_id` na query (link da lista de espera) |
 | `/consulta?token` | Subdomínio, público | Paciente confirma ou cancela pelo link do e-mail |
 | `/app` | Admin e recepção | Visão geral, com dados da API |
 | `/app/agenda` | Todos os papéis | Agenda, pedidos pendentes e bloqueios |
 | `/app/pacientes` | Admin e recepção | Cadastro de pacientes |
+| `/app/pacientes/[id]` | Todos os papéis; a API decide quem vê cada paciente | Ficha com consultas, prontuário, odontograma e anexos |
+| `/app/lista-espera` | Admin e recepção | Lista de espera |
 | `/app/configuracoes` | Admin | Clínica, equipe, horários, procedimentos, salas e demais configurações |
 
 ### Regras das rotas do painel

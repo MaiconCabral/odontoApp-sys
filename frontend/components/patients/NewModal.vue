@@ -14,6 +14,7 @@ const form = reactive<PatientForm>({
   email: editing?.email ?? '',
   insurance: editing?.insurance ?? INSURANCES[0] ?? '',
   birthDate: editing?.birthDate ?? '',
+  notes: editing?.notes ?? '',
 })
 
 const { errors, formError, isSubmitting, submit } = useAuthForm(form, validatePatient, async () => {
@@ -21,7 +22,8 @@ const { errors, formError, isSubmitting, submit } = useAuthForm(form, validatePa
   const saved = editing ? await patientsService.update(editing.id, body) : await patientsService.create(body)
 
   showToast(editing ? `Cadastro de ${saved.name} atualizado.` : `Cadastro de ${saved.name} concluído.`)
-  await refreshNuxtData('patients')
+  // The list and, when it is open, the page of this patient.
+  await refreshNuxtData(['patients', `patient-${saved.id}`])
   closeModal()
 })
 </script>
@@ -104,6 +106,19 @@ const { errors, formError, isSubmitting, submit } = useAuthForm(form, validatePa
           {{ insurance }}
         </option>
       </select>
+    </AppFormField>
+
+    <AppFormField v-slot="field" label="Observações (opcional)" :error="errors.notes" full>
+      <textarea
+        :id="field.id"
+        v-model="form.notes"
+        rows="3"
+        maxlength="1000"
+        placeholder="Preferências de contato, melhor horário para ligar..."
+        :class="[field.controlClass, 'h-auto py-2 placeholder:text-faint']"
+        :aria-invalid="field.invalid"
+        :aria-describedby="field.describedBy"
+      />
     </AppFormField>
   </AppModal>
 </template>

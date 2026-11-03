@@ -22,7 +22,9 @@ Usam a API do `backend/`:
 - avisos ao paciente e a página `/consulta`;
 - visão geral;
 - preferências de atendimento e assinatura, em Configurações;
-- sino de avisos para a equipe, no topo.
+- sino de avisos para a equipe, no topo;
+- ficha do paciente com consultas, prontuário, odontograma e anexos;
+- lista de espera, com o link do e-mail que preenche o `/agendar`.
 
 `mocks/settings.ts` guarda só textos fixos: abas, títulos das preferências e itens extras de cada plano. Os valores vêm da API. Detalhes em [integracao-api.md](integracao-api.md#configurações--preferências-e-assinatura).
 
@@ -39,13 +41,11 @@ A documentação do backend começa em [backend/docs/README.md](../../backend/do
 - Avisos por WhatsApp.
 - Gestão global de clínicas e de planos.
 - Status rápido de consultas no dashboard.
-- Histórico clínico e prontuário de pacientes.
 - Faturas e upgrade de plano com Stripe. Hoje "Gerenciar assinatura" só mostra os planos e o contato.
-- Regras de "Confirmação automática" e "Lista de espera". As duas preferências são salvas, mas nada ainda as usa.
+- Regra de "Confirmação automática". A preferência é salva, mas nada ainda a usa.
 - Agenda com FullCalendar e gráficos com ApexCharts.
 - Verificação de e-mail e aceite de termos/LGPD.
 
 ## Problemas visuais conhecidos
 
-- O branco sobre `#0284c7` nos botões tem contraste de cerca de 4,1:1, abaixo dos 4,5:1 do WCAG AA.
-- Os cartões de status em tons pastel continuam claros no tema escuro.
+Nenhum registrado. O contraste dos botões (agora 5,9:1) e as cores de status no tema escuro foram corrigidos; veja [identidade-visual.md](identidade-visual.md).

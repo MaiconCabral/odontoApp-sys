@@ -34,4 +34,5 @@ export type PatientForm = {
   email: string
   insurance: string
   birthDate: string
+  notes: string
 }

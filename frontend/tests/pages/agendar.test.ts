@@ -1,9 +1,17 @@
-import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
 import type { VueWrapper } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import BookingPage from '~/pages/agendar.vue'
 import { clearSession } from '../utils/session'
+
+// The page lives on the clinic host; the test runs on the central one, so the host is simulated.
+mockNuxtImport('useClinicHost', () => () => ({
+  isClinicHost: true,
+  slug: 'sorriso-perfeito',
+  centralUrl: (path: string) => `http://localhost:3000${path}`,
+  clinicUrl: (slug: string, path: string) => `http://${slug}.localhost:3000${path}`,
+}))
 
 // Control linked to a label.
 function fieldByLabel(root: VueWrapper, label: string) {
@@ -33,6 +41,28 @@ async function fillContact(page: VueWrapper) {
   await fieldByLabel(page, 'Telefone com DDD').setValue('11999990000')
   await page.find('input[type="checkbox"]').setValue(true)
 }
+
+describe('public booking from the waiting list link', () => {
+  it('opens on the times with the offered one chosen', async () => {
+    clearSession()
+    const date = addDays(localToday(), 2)
+    const page = await mountSuspended(BookingPage, { route: `/agendar?date=${date}&time=09:30&professional_id=ana&procedure_id=1` })
+
+    await flushPromises()
+
+    expect((fieldByLabel(page, 'Data').element as HTMLInputElement).value).toBe(date)
+    expect(button(page, '09:30')?.classes()).toContain('bg-brand')
+  })
+
+  it('ignores a link with values the clinic does not offer', async () => {
+    clearSession()
+    const page = await mountSuspended(BookingPage, { route: '/agendar?date=2000-01-01&time=09:30&procedure_id=999' })
+
+    await flushPromises()
+
+    expect(page.text()).toContain('Escolher horário')
+  })
+})
 
 describe('public booking', () => {
   it('shows the clinic, its procedures and the professionals without a session', async () => {

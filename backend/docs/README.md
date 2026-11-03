@@ -45,7 +45,9 @@ API do odontoApp em Laravel 12, consumida pelo Nuxt em `frontend/`.
   - cada envio fica registrado na consulta;
   - cada clínica pode desligar o lembrete em Configurações → Clínica.
 - **Avisos para a equipe (sino):** novo pedido, cancelamento e confirmação pelo paciente e falha no lembrete. Ficam na tabela `notifications` da clínica, um aviso por usuário. Detalhes em [notificacoes.md](notificacoes.md#avisos-para-a-equipe-sino).
-- **Preferências da clínica:** lembrete de 24h, confirmação automática e lista de espera. Só o lembrete muda o comportamento hoje; as outras duas são apenas salvas. Detalhes em [notificacoes.md](notificacoes.md#preferências-da-clínica).
+- **Preferências da clínica:** lembrete de 24h, confirmação automática e lista de espera. O lembrete e a lista de espera mudam o comportamento; a confirmação automática só é salva. Detalhes em [notificacoes.md](notificacoes.md#preferências-da-clínica).
+- **Área clínica:** ficha do paciente com as consultas, prontuário (anotações só de acréscimo), odontograma, anexos em disco privado por clínica e lista de espera com aviso por e-mail. Detalhes em [prontuario.md](prontuario.md).
+- **Limite do plano:** `max_professionals` é aplicado ao criar ou ativar profissionais ([api.md](api.md#equipe)).
 - **Assinatura:** `GET /api/clinic/subscription` devolve o plano atual, a situação (`trial`, `active` ou `expired`, calculada por `trial_ends_at`) e os planos disponíveis. Ainda não há cobrança.
 - **Visão geral:** consultas, faturamento estimado, comparecimento, novos pacientes, semana, ocupação e próximos pacientes, calculados do banco.
 - **Seeds:** criam os planos e duas clínicas de demonstração.

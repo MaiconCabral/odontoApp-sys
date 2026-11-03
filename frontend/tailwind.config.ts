@@ -7,6 +7,8 @@ export default {
     './layouts/**/*.vue',
     './pages/**/*.vue',
     './composables/**/*.ts',
+    // Class maps such as STATUS_CLASSES live here.
+    './utils/**/*.ts',
     './app.vue',
   ],
   theme: {

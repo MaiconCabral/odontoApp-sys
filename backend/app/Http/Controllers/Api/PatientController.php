@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Domains\Agenda\Models\Patient;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PatientRequest;
+use App\Http\Resources\AppointmentResource;
 use App\Http\Resources\PatientResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -43,6 +44,19 @@ class PatientController extends Controller
         Gate::authorize('view', $patient);
 
         return new PatientResource($patient);
+    }
+
+    /** Appointments of the patient, newest first, for the patient page. */
+    public function appointments(Patient $patient): AnonymousResourceCollection
+    {
+        Gate::authorize('view', $patient);
+
+        $appointments = $patient->appointments()
+            ->with(['professional', 'procedure', 'room'])
+            ->latest('starts_at')
+            ->paginate(self::PER_PAGE);
+
+        return AppointmentResource::collection($appointments);
     }
 
     /** Updates a patient record. */

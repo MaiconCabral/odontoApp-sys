@@ -1,6 +1,6 @@
 import type { AuthUser, Plan, Tenant, UserRole } from '~/types/auth'
 
-export type NavIcon = 'overview' | 'agenda' | 'patients' | 'settings'
+export type NavIcon = 'overview' | 'agenda' | 'patients' | 'waitlist' | 'settings'
 
 export type NavEntry = {
   id: string

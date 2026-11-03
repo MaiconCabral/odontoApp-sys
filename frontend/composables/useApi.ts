@@ -56,5 +56,11 @@ export function useApi() {
     }
   }
 
-  return { api }
+  // Full address of an API path, for links the browser opens itself (downloads).
+  // The session cookie goes along, because it ignores the port.
+  function url(path: string) {
+    return `${baseURL}${path}`
+  }
+
+  return { api, url }
 }

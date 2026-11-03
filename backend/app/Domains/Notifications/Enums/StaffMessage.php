@@ -8,6 +8,7 @@ enum StaffMessage: string
     case CancelledByPatient = 'cancelled_by_patient';
     case ConfirmedByPatient = 'confirmed_by_patient';
     case ReminderFailed = 'reminder_failed';
+    case WaitlistOffered = 'waitlist_offered';
 
     /** Title of the alert under the bell. */
     public function title(): string
@@ -17,6 +18,7 @@ enum StaffMessage: string
             self::CancelledByPatient => 'Paciente cancelou a consulta',
             self::ConfirmedByPatient => 'Paciente confirmou a consulta',
             self::ReminderFailed => 'Falha no lembrete de 24h',
+            self::WaitlistOffered => 'Horário vago oferecido à lista de espera',
         };
     }
 
@@ -28,12 +30,13 @@ enum StaffMessage: string
             self::CancelledByPatient => "{$patient} cancelou a consulta de {$when}.",
             self::ConfirmedByPatient => "{$patient} confirmou a consulta de {$when}.",
             self::ReminderFailed => "Não foi possível enviar o lembrete de {$patient} para {$when}.",
+            self::WaitlistOffered => "O horário vago de {$when} foi oferecido a {$patient}.",
         };
     }
 
-    /** Requests only concern who answers them; patient answers also reach the professional. */
+    /** Requests and waiting list offers concern the reception; patient answers also reach the professional. */
     public function reachesProfessional(): bool
     {
-        return $this !== self::BookingRequested;
+        return ! in_array($this, [self::BookingRequested, self::WaitlistOffered], true);
     }
 }

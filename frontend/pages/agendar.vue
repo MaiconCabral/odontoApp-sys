@@ -58,6 +58,33 @@ async function loadSlots() {
 
 watch(() => [form.date, form.procedure, form.professionalId], loadSlots)
 
+// The waiting list e-mail links here with the free time already chosen. Only values the
+// clinic offers are used, and the time is kept only if it is still free.
+async function prefillFromLink() {
+  const query = useRoute().query
+  const pick = (key: string) => (typeof query[key] === 'string' ? query[key] as string : '')
+  const procedure = info.value?.procedures.find(item => item.id === pick('procedure_id'))
+  const professional = info.value?.professionals.find(item => item.id === pick('professional_id'))
+  const date = pick('date')
+
+  if (!procedure || !/^\d{4}-\d{2}-\d{2}$/.test(date) || date < minDate || date > maxDate.value) {
+    return
+  }
+
+  form.procedure = procedure.id
+  form.professionalId = professional?.id ?? ''
+  form.date = date
+  await loadSlots()
+
+  if (slots.value.includes(pick('time'))) {
+    form.time = pick('time')
+  }
+
+  step.value = 2
+}
+
+await prefillFromLink()
+
 const procedureLabel = computed(() => info.value?.procedures.find(procedure => procedure.id === form.procedure)?.label ?? '')
 const professionalLabel = computed(() =>
   info.value?.professionals.find(professional => professional.id === form.professionalId)?.name ?? 'Sem preferência',

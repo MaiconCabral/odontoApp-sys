@@ -68,7 +68,7 @@ async function addPatient() {
   newPatientError.value = ''
 
   try {
-    const patient = await patientsService.create({ name: newPatient.name, phone: newPatient.phone, cpf: '', email: '', insurance: '', birthDate: '' })
+    const patient = await patientsService.create({ name: newPatient.name, phone: newPatient.phone, cpf: '', email: '', insurance: '', birthDate: '', notes: '' })
 
     choosePatient(patient)
     isAddingPatient.value = false

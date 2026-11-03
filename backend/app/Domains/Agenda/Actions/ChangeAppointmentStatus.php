@@ -3,6 +3,7 @@
 namespace App\Domains\Agenda\Actions;
 
 use App\Domains\Agenda\Enums\AppointmentStatus;
+use App\Domains\Agenda\Jobs\OfferFreedSlotJob;
 use App\Domains\Agenda\Models\Appointment;
 use App\Domains\Identity\Models\User;
 use App\Domains\Notifications\Enums\PatientMessage;
@@ -51,6 +52,11 @@ class ChangeAppointmentStatus
 
             if (! $author && $next === AppointmentStatus::Confirmed) {
                 $this->staff->send($appointment, StaffMessage::ConfirmedByPatient);
+            }
+
+            // The time it held is free again, so the waiting list may take it.
+            if (in_array($next, [AppointmentStatus::Cancelled, AppointmentStatus::Rejected], true)) {
+                OfferFreedSlotJob::afterCommit($appointment, $appointment->starts_at, $appointment->minutes(), $appointment->professional_id);
             }
 
             return $appointment;

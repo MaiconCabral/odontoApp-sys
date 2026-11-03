@@ -62,7 +62,7 @@ describe('agenda geometry', () => {
 })
 
 describe('validatePatient', () => {
-  const valid = { name: 'Ana Souza', cpf: '', phone: '(11) 91234-5678', email: '', insurance: 'Amil', birthDate: '' }
+  const valid = { name: 'Ana Souza', cpf: '', phone: '(11) 91234-5678', email: '', insurance: 'Amil', birthDate: '', notes: '' }
 
   it('accepts a patient without CPF and e-mail', () => {
     expect(validatePatient(valid)).toEqual({})

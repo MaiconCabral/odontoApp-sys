@@ -72,6 +72,7 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('password', fn (Request $request) => $this->limit(5, $this->accountKey($request)));
         RateLimiter::for('public-read', fn (Request $request) => $this->limit(60, $this->visitorKey($request)));
         RateLimiter::for('patient-link', fn (Request $request) => $this->limit(10, $this->visitorKey($request)));
+        RateLimiter::for('uploads', fn (Request $request) => $this->limit(20, implode('|', [tenant()?->getTenantKey(), $request->user()?->id])));
         RateLimiter::for('booking', fn (Request $request) => Limit::perHour(5)->by($this->visitorKey($request))->response(
             fn (Request $request, array $headers) => new JsonResponse(['message' => 'Você já enviou vários pedidos. Tente de novo mais tarde ou ligue para a clínica.'], 429, $headers),
         ));

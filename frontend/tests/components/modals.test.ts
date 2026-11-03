@@ -7,7 +7,7 @@ import DetailsModal from '~/components/appointments/DetailsModal.vue'
 import AppointmentModal from '~/components/appointments/NewModal.vue'
 import PatientModal from '~/components/patients/NewModal.vue'
 import AgendaPage from '~/pages/app/agenda.vue'
-import PatientsPage from '~/pages/app/pacientes.vue'
+import PatientsPage from '~/pages/app/pacientes/index.vue'
 import { agendaMock, appointmentDetails, patientFixture, requestDetails } from '../fixtures/agenda'
 
 // Control linked to a label.
