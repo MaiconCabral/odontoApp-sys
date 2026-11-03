@@ -114,6 +114,7 @@ Rota (routes/tenant.php ou routes/api.php)
 php artisan migrate:fresh --seed   # recria o central e as clínicas demo (apaga dados)
 php artisan tenants:migrate        # roda as migrations das clínicas
 php artisan tenants:list           # lista as clínicas e os subdomínios
+php artisan platform:create-admin seu@email.com --name="Equipe"  # cria um acesso ao painel /admin (pede a senha, mín. 12)
 composer dev                       # API, fila, agendador e Vite juntos
 php artisan queue:work --tries=3   # só a fila (envia os e-mails)
 php artisan schedule:work          # só o agendador (lembrete a cada 15 min)
