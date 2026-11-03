@@ -10,7 +10,7 @@ export type BusinessDay = {
 
 export type PublicBookingInfo = {
   clinic: { name: string, unit: string, phone: string | null }
-  procedures: { key: string, label: string, duration: number }[]
+  procedures: { id: string, label: string, duration: number }[]
   professionals: { id: string, name: string, specialty: string | null }[]
   maxDaysAhead: number
 }

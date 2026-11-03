@@ -3,9 +3,9 @@
 namespace App\Domains\Agenda\Queries;
 
 use App\Domains\Agenda\Enums\AppointmentStatus;
-use App\Domains\Agenda\Enums\Procedure;
 use App\Domains\Agenda\Models\Appointment;
 use App\Domains\Agenda\Models\BusinessHour;
+use App\Domains\Agenda\Models\Procedure;
 use App\Domains\Agenda\Models\Room;
 use App\Domains\Agenda\Models\ScheduleBlock;
 use App\Domains\Agenda\Support\DaySchedule;
@@ -83,15 +83,17 @@ class AgendaQuery
             ]);
     }
 
-    /** Rooms of the clinic. */
+    /** Rooms of the clinic. Inactive ones stay listed, so their old appointments still show up. */
     private function rooms(): Collection
     {
         return Room::query()
+            ->orderByDesc('active')
             ->orderBy('name')
-            ->get(['id', 'name'])
+            ->get(['id', 'name', 'active'])
             ->map(fn (Room $room) => [
                 'id' => (string) $room->id,
                 'name' => $room->name,
+                'active' => $room->active,
                 'selected' => true,
             ]);
     }
@@ -100,7 +102,7 @@ class AgendaQuery
     private function events(CarbonImmutable $from, CarbonImmutable $to, ?int $professionalId): Collection
     {
         return Appointment::query()
-            ->with('patient:id,name')
+            ->with(['patient:id,name', 'procedure:id,name'])
             ->whereNotIn('status', [AppointmentStatus::Cancelled, AppointmentStatus::Rejected])
             ->whereBetween('starts_at', [$from, $to])
             ->when($professionalId, fn ($query) => $query->where('professional_id', $professionalId))
@@ -112,9 +114,9 @@ class AgendaQuery
                 'date' => $appointment->starts_at->toDateString(),
                 'hour' => $appointment->starts_at->format('H:i'),
                 'endHour' => $appointment->ends_at->format('H:i'),
-                'duration' => $appointment->procedure->minutes(),
+                'duration' => $appointment->minutes(),
                 'procedure' => $appointment->procedure->label(),
-                'procedureKey' => $appointment->procedure->value,
+                'procedureId' => (string) $appointment->procedure_id,
                 'status' => $appointment->status->value,
                 'statusLabel' => $appointment->status->label(),
                 'source' => $appointment->source,

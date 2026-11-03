@@ -1,5 +1,5 @@
 import { beforeEach, vi } from 'vitest'
-import { agendaMock, businessHoursFixture, patientListFixture, publicBookingFixture } from './fixtures/agenda'
+import { agendaMock, businessHoursFixture, overviewFixture, patientListFixture, proceduresFixture, publicBookingFixture, roomsFixture } from './fixtures/agenda'
 import { clinicFixture, teamFixture } from './fixtures/settings'
 import { seedSession } from './utils/session'
 
@@ -16,6 +16,9 @@ const apiResponses: Record<string, unknown> = {
   '/api/public/booking': publicBookingFixture,
   '/api/public/availability': { slots: ['09:00', '09:30', '14:00'] },
   '/api/clinic': clinicFixture,
+  '/api/overview': overviewFixture,
+  '/api/procedures': { data: proceduresFixture },
+  '/api/rooms': { data: roomsFixture },
   '/api/users': { data: teamFixture },
 }
 

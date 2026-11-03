@@ -3,8 +3,8 @@
 namespace App\Domains\Agenda\Models;
 
 use App\Domains\Agenda\Enums\AppointmentStatus;
-use App\Domains\Agenda\Enums\Procedure;
 use App\Domains\Identity\Models\User;
+use App\Domains\Notifications\Models\NotificationLog;
 use Database\Factories\AppointmentFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -25,9 +25,10 @@ class Appointment extends Model
         'patient_id',
         'professional_id',
         'room_id',
+        'procedure_id',
+        'price_cents',
         'starts_at',
         'ends_at',
-        'procedure',
         'status',
         'tone',
         'source',
@@ -36,7 +37,7 @@ class Appointment extends Model
     ];
 
     /**
-     * Casts dates, status and procedure.
+     * Casts dates and status.
      *
      * @return array<string, string>
      */
@@ -46,7 +47,8 @@ class Appointment extends Model
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'status' => AppointmentStatus::class,
-            'procedure' => Procedure::class,
+            'price_cents' => 'integer',
+            'reminder_sent_at' => 'datetime',
         ];
     }
 
@@ -68,6 +70,18 @@ class Appointment extends Model
         return $this->belongsTo(User::class, 'professional_id');
     }
 
+    /** Procedure booked, with the length and price it has today. */
+    public function procedure(): BelongsTo
+    {
+        return $this->belongsTo(Procedure::class);
+    }
+
+    /** Length booked, which stays the same if the procedure changes later. */
+    public function minutes(): int
+    {
+        return (int) $this->starts_at->diffInMinutes($this->ends_at);
+    }
+
     /** Room or chair used. */
     public function room(): BelongsTo
     {
@@ -78,6 +92,12 @@ class Appointment extends Model
     public function statusChanges(): HasMany
     {
         return $this->hasMany(AppointmentStatusChange::class)->orderBy('id');
+    }
+
+    /** Messages sent to the patient about this appointment, newest first. */
+    public function notificationLogs(): HasMany
+    {
+        return $this->hasMany(NotificationLog::class)->latest('id');
     }
 
     /** Appointments that hold their time in the agenda. */

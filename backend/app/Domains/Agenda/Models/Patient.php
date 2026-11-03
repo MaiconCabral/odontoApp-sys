@@ -8,14 +8,17 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
 class Patient extends Model
 {
     /** @use HasFactory<PatientFactory> */
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     public const PRIVATE_INSURANCE = 'Particular';
+
+    private const TONES = ['blue', 'amber', 'green', 'violet', 'pink'];
 
     protected $fillable = [
         'name',
@@ -51,6 +54,12 @@ class Patient extends Model
     protected static function newFactory(): PatientFactory
     {
         return PatientFactory::new();
+    }
+
+    /** E-mail address used by notifications. */
+    public function routeNotificationForMail(): ?string
+    {
+        return $this->email;
     }
 
     /** Appointments of the patient. */
@@ -96,6 +105,12 @@ class Patient extends Model
                     ->orWhereRaw("replace(replace(cpf, '.', ''), '-', '') like ?", ["%{$digits}%"]);
             }
         });
+    }
+
+    /** Avatar color, stable for each patient. */
+    public function tone(): string
+    {
+        return self::TONES[$this->id % count(self::TONES)];
     }
 
     /** Only the digits of a value. */

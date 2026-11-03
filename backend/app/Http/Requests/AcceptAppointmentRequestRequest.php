@@ -24,7 +24,7 @@ class AcceptAppointmentRequestRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'room_id' => ['required', 'integer', Rule::exists(Room::class, 'id')],
+            'room_id' => ['required', 'integer', Rule::exists(Room::class, 'id')->where('active', true)],
         ];
     }
 
@@ -37,7 +37,7 @@ class AcceptAppointmentRequestRequest extends FormRequest
     {
         return [
             'room_id.required' => 'Escolha a sala.',
-            'room_id.exists' => 'Escolha uma sala da clínica.',
+            'room_id.exists' => 'Escolha uma sala em uso na clínica.',
         ];
     }
 }

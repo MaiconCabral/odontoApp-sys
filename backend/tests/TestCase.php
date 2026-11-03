@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use App\Domains\Agenda\Models\Procedure;
 use App\Domains\Identity\Models\User;
 use App\Domains\Tenancy\Models\Plan;
 use App\Domains\Tenancy\Models\Tenant;
@@ -61,6 +62,12 @@ abstract class TestCase extends BaseTestCase
 
         return $this->withHeaders(['Origin' => "http://{$slug}.localhost:3000", 'Accept' => 'application/json'])
             ->json($method, "http://{$slug}.localhost/api/{$uri}", $data);
+    }
+
+    /** Id of a procedure the clinic database starts with, by name. */
+    protected function procedureId(Tenant $clinic, string $name): int
+    {
+        return $clinic->run(fn () => Procedure::query()->where('name', $name)->value('id'));
     }
 
     /** Signs a user in on the clinic host, the way the SPA does. */

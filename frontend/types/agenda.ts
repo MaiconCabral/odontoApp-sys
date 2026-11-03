@@ -7,7 +7,7 @@ export type AppointmentStatus = 'requested' | 'scheduled' | 'confirmed' | 'compl
 export type AppointmentAction = 'accept' | 'reject' | 'confirm' | 'complete' | 'no_show' | 'cancel' | 'reschedule'
 
 export type ProcedureOption = {
-  key: string
+  id: string
   label: string
   duration: number
 }
@@ -22,6 +22,7 @@ export type AgendaProfessional = {
 export type AgendaRoom = {
   id: string
   name: string
+  active?: boolean
   selected: boolean
 }
 
@@ -33,7 +34,7 @@ export type AgendaEvent = {
   endHour: string
   duration: number
   procedure: string
-  procedureKey: string
+  procedureId: string
   status: AppointmentStatus
   statusLabel: string
   source: 'internal' | 'public'
@@ -84,6 +85,15 @@ export type AppointmentHistoryEntry = {
   at: string
 }
 
+export type NotificationEntry = {
+  type: string
+  typeLabel: string
+  channel: string
+  status: 'queued' | 'sent' | 'skipped' | 'failed'
+  statusLabel: string
+  at: string
+}
+
 export type AppointmentDetails = {
   id: string
   status: AppointmentStatus
@@ -101,6 +111,9 @@ export type AppointmentDetails = {
   patient: { id: string, name: string, phone: string, email: string | null }
   professional: { id: string, name: string } | null
   room: { id: string, name: string } | null
+  priceCents?: number
+  patientHasEmail?: boolean
+  notifications?: NotificationEntry[]
   history?: AppointmentHistoryEntry[]
   actions: AppointmentAction[]
 }

@@ -19,7 +19,7 @@ function button(root: VueWrapper, text: string) {
 
 // Goes through the first two steps.
 async function chooseTime(page: VueWrapper) {
-  await page.find('input[value="evaluation"]').setValue(true)
+  await page.find('input[value="1"]').setValue(true)
   await button(page, 'Escolher horário')?.trigger('click')
   await fieldByLabel(page, 'Data').setValue('2099-01-05')
   await flushPromises()
@@ -63,7 +63,7 @@ describe('public booking', () => {
     await page.find('form').trigger('submit')
     await flushPromises()
 
-    expect(request).toHaveBeenCalledWith(expect.objectContaining({ procedure: 'evaluation', date: '2099-01-05', time: '09:30', name: 'Paciente Novo', consent: true, website: '' }))
+    expect(request).toHaveBeenCalledWith(expect.objectContaining({ procedure: '1', date: '2099-01-05', time: '09:30', name: 'Paciente Novo', consent: true, website: '' }))
     expect(page.text()).toContain('Pedido enviado')
     expect(page.text()).toContain('Recebemos seu pedido.')
   })

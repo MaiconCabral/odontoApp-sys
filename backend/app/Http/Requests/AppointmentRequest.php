@@ -5,7 +5,6 @@ namespace App\Http\Requests;
 use App\Domains\Agenda\DTOs\AppointmentData;
 use App\Domains\Agenda\Models\Appointment;
 use App\Domains\Agenda\Models\Patient;
-use App\Domains\Agenda\Models\Room;
 use App\Http\Requests\Concerns\HasAppointmentRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
@@ -32,7 +31,7 @@ class AppointmentRequest extends FormRequest
             ...$this->timeRules(),
             'patient_id' => ['required', 'integer', Rule::exists(Patient::class, 'id')],
             'professional_id' => ['required', 'integer', $this->attendingProfessionalRule()],
-            'room_id' => ['required', 'integer', Rule::exists(Room::class, 'id')],
+            'room_id' => ['required', 'integer', $this->activeRoomRule()],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }

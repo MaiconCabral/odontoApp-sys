@@ -18,11 +18,13 @@ beforeEach(function () {
         User::factory()->reception()->create(['name' => 'Recepção']);
     });
 
+    $this->evaluation = $this->procedureId($this->clinic, 'Avaliação');
+
     $this->form = fn (array $overrides = []) => [
         'name' => 'Paciente Novo',
         'phone' => '(11) 99999-0000',
         'email' => 'novo@paciente.app',
-        'procedure' => 'evaluation',
+        'procedure_id' => $this->evaluation,
         'professional_id' => $this->ana->id,
         'date' => '2026-11-10',
         'time' => '09:00',
@@ -43,7 +45,7 @@ it('shows the clinic, the procedures and only who attends patients', function ()
 });
 
 it('lists free times of a day without the lunch break', function () {
-    $response = $this->clinicRequest('sorriso', 'GET', 'public/availability?date=2026-11-10&procedure=evaluation')->assertOk();
+    $response = $this->clinicRequest('sorriso', 'GET', "public/availability?date=2026-11-10&procedure_id={$this->evaluation}")->assertOk();
 
     expect($response->json('slots'))
         ->toContain('08:00', '11:30', '13:00', '17:30')
@@ -51,7 +53,7 @@ it('lists free times of a day without the lunch break', function () {
 });
 
 it('refuses days outside the booking window', function (string $date) {
-    $this->clinicRequest('sorriso', 'GET', "public/availability?date={$date}&procedure=evaluation")
+    $this->clinicRequest('sorriso', 'GET', "public/availability?date={$date}&procedure_id={$this->evaluation}")
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['date']);
 })->with(['2026-11-09', '2027-02-01']);
@@ -68,7 +70,7 @@ it('saves a request that holds the time until the clinic answers', function () {
         ->and($request->room_id)->toBeNull()
         ->and($request->patient->phone_digits)->toBe('11999990000');
 
-    $slots = $this->clinicRequest('sorriso', 'GET', "public/availability?date=2026-11-10&procedure=evaluation&professional_id={$this->ana->id}")->json('slots');
+    $slots = $this->clinicRequest('sorriso', 'GET', "public/availability?date=2026-11-10&procedure_id={$this->evaluation}&professional_id={$this->ana->id}")->json('slots');
 
     expect($slots)->not->toContain('09:00');
 

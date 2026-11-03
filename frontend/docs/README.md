@@ -8,13 +8,21 @@ As regras gerais de código estão em [`.cursor/rules/frontend.md`](../../.curso
 | --- | --- |
 | [Arquitetura](arquitetura.md) | Subdomínios, rotas, papéis, renderização, stores e services |
 | [Autenticação](autenticacao.md) | Fluxos, regras de formulário e segurança |
-| [Integração com a API](integracao-api.md) | `useApi`, subdomínios, services, papéis e telas de clínica e equipe |
+| [Integração com a API](integracao-api.md) | `useApi`, subdomínios, services, papéis, agenda, `/agendar`, `/consulta`, visão geral e configurações |
 | [Identidade visual](identidade-visual.md) | Cores, tema, tamanhos e direção das telas de entrada |
 | [Testes](testes.md) | Sessão de teste e o que cobrir |
 
 ## Estado atual
 
-Autenticação, clínica, equipe, agenda, pacientes, expediente e o pedido online usam a API do `backend/`. Visão geral, preferências e assinatura ainda vêm de `mocks/`.
+Usam a API do `backend/`:
+
+- autenticação, clínica e equipe;
+- agenda, pacientes, expediente e o pedido online;
+- procedimentos e salas;
+- avisos ao paciente e a página `/consulta`;
+- visão geral.
+
+Preferências e assinatura ainda vêm de `mocks/`.
 
 Para testar localmente:
 
@@ -26,8 +34,7 @@ A documentação do backend começa em [backend/docs/README.md](../../backend/do
 
 ## Ainda não implementado
 
-- Notificações de confirmação e lembrete ao paciente.
-- Cadastro de procedimentos e salas pela interface.
+- Avisos por WhatsApp.
 - Gestão global de clínicas e de planos.
 - Status rápido de consultas no dashboard.
 - Histórico clínico e prontuário de pacientes.

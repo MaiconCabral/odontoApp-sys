@@ -79,10 +79,10 @@ it('follows the shape the frontend expects', function () {
         ->assertJsonPath('today', today()->toDateString())
         ->assertJsonStructure([
             'today', 'from', 'to', 'hours', 'freeSlotsToday', 'blocks',
-            'procedures' => [['key', 'label', 'duration']],
+            'procedures' => [['id', 'label', 'duration']],
             'professionals' => [['id', 'name', 'tone', 'selected']],
             'rooms' => [['id', 'name', 'selected']],
-            'events' => [['id', 'patientName', 'date', 'hour', 'endHour', 'duration', 'procedure', 'procedureKey', 'status', 'statusLabel', 'source', 'professionalId', 'roomId']],
+            'events' => [['id', 'patientName', 'date', 'hour', 'endHour', 'duration', 'procedure', 'procedureId', 'status', 'statusLabel', 'source', 'professionalId', 'roomId']],
         ])
         ->assertJsonPath('events.0.hour', '09:00')
         ->assertJsonPath('events.0.endHour', '10:00')

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AgendaRequest extends FormRequest
@@ -48,7 +49,7 @@ class AgendaRequest extends FormRequest
     {
         return $this->filled('from')
             ? CarbonImmutable::createFromFormat('Y-m-d', $this->input('from'))->startOfDay()
-            : CarbonImmutable::today()->startOfWeek();
+            : CarbonImmutable::today()->startOfWeek(CarbonInterface::MONDAY);
     }
 
     /** Last day of the period, six weeks after the start by default. */

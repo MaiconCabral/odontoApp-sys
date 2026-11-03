@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Domains\Agenda\Enums\Procedure;
 use App\Domains\Agenda\Models\Room;
 use App\Http\Requests\Concerns\HasAppointmentRules;
 use Carbon\CarbonImmutable;
@@ -22,7 +21,7 @@ class AvailabilityRequest extends FormRequest
     {
         return [
             'date' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
-            'procedure' => ['required', Rule::enum(Procedure::class)],
+            'procedure_id' => ['required', 'integer', $this->activeProcedureRule()],
             'professional_id' => ['required', 'integer', $this->attendingProfessionalRule()],
             'room_id' => ['nullable', 'integer', Rule::exists(Room::class, 'id')],
             'ignore' => ['nullable', 'integer'],

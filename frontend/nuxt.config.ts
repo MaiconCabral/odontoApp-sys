@@ -40,6 +40,7 @@ export default defineNuxtConfig({
     '/recuperar-senha': clientOnly,
     '/redefinir-senha': clientOnly,
     '/agendar': clientOnly,
+    '/consulta': clientOnly,
   },
   runtimeConfig: {
     public: {

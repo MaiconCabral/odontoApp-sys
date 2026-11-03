@@ -4,11 +4,14 @@ export type MetricIcon = 'calendar' | 'billing' | 'attendance' | 'patients'
 
 export type MetricTone = 'blue' | 'green' | 'amber' | 'violet'
 
+export type Trend = 'up' | 'down' | 'flat'
+
 export type Metric = {
   id: string
   label: string
   value: string
   change: string
+  trend: Trend
   period: string
   icon: MetricIcon
   tone: MetricTone
@@ -23,6 +26,7 @@ export type WeeklyBar = {
 export type WeeklyAppointments = {
   total: number
   change: string
+  trend: Trend
   comparison: string
   range: string
   scaleMax: number
@@ -42,6 +46,7 @@ export type UpcomingAppointment = {
   procedure: string
   professional: string
   status: AppointmentStatus
+  statusLabel: string
 }
 
 export type Overview = {

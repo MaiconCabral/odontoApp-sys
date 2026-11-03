@@ -6,6 +6,8 @@ defineProps<{
   appointment: UpcomingAppointment
 }>()
 
+const { openModal } = useActiveModal()
+
 const statuses: Record<AppointmentStatus, { label: string, pill: string, dot: string }> = {
   completed: { label: 'Concluído', pill: 'bg-[#e8f8f1] text-[#26966f]', dot: 'bg-[#2cae80]' },
   in_progress: { label: 'Em atendimento', pill: 'bg-brand-soft text-brand-text', dot: 'bg-brand' },
@@ -33,12 +35,13 @@ const statuses: Record<AppointmentStatus, { label: string, pill: string, dot: st
       :class="statuses[appointment.status].pill"
     >
       <i class="h-1.5 w-1.5 rounded-full sm:h-[5px] sm:w-[5px]" :class="statuses[appointment.status].dot" />
-      {{ statuses[appointment.status].label }}
+      {{ appointment.statusLabel || statuses[appointment.status].label }}
     </span>
     <button
       type="button"
       class="grid h-[30px] w-[30px] flex-none place-items-center rounded-[7px] text-faint transition duration-200 hover:bg-line-soft hover:text-brand-text dark:hover:bg-brand-soft"
       :aria-label="`Abrir ${appointment.patientName}`"
+      @click="openModal('appointment-details', { id: appointment.id })"
     >
       <Ellipsis :size="18" />
     </button>

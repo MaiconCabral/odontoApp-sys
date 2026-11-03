@@ -8,6 +8,8 @@ use App\Domains\Agenda\Enums\AppointmentStatus;
 use App\Domains\Agenda\Models\Appointment;
 use App\Domains\Agenda\Queries\AvailableSlots;
 use App\Domains\Agenda\Support\AvailabilityChecker;
+use App\Domains\Notifications\Enums\PatientMessage;
+use App\Domains\Notifications\PatientNotifier;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -18,6 +20,7 @@ class RequestAppointment
         private readonly AvailabilityChecker $availability,
         private readonly FindOrCreatePatient $patients,
         private readonly AvailableSlots $slots,
+        private readonly PatientNotifier $notifier,
     ) {}
 
     /** Saves a public request that holds the time until the clinic answers. */
@@ -56,13 +59,15 @@ class RequestAppointment
             $appointment = new Appointment([
                 'patient_id' => $patient->id,
                 'professional_id' => $professionalId,
-                'procedure' => $data->procedure,
+                'procedure_id' => $data->procedure->id,
+                'price_cents' => $data->procedure->price_cents,
                 'starts_at' => $data->startsAt,
                 'ends_at' => $data->startsAt->addMinutes($data->procedure->minutes()),
                 'source' => Appointment::SOURCE_PUBLIC,
                 'notes' => $data->notes,
             ]);
             $appointment->moveTo(AppointmentStatus::Requested, null);
+            $this->notifier->send($appointment, PatientMessage::Requested);
 
             return $appointment;
         });

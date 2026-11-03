@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use App\Domains\Agenda\Enums\AppointmentStatus;
-use App\Domains\Agenda\Enums\Procedure;
 use App\Domains\Agenda\Models\Appointment;
 use App\Domains\Agenda\Models\Patient;
+use App\Domains\Agenda\Models\Procedure;
 use App\Domains\Agenda\Models\Room;
 use App\Domains\Agenda\Models\ScheduleBlock;
 use App\Domains\Identity\Enums\UserRole;
@@ -40,9 +40,9 @@ class DemoTenantSeeder extends Seeder
             ],
             'rooms' => ['Sala 01 · Consultório', 'Sala 02 · Cirurgia'],
             'patients' => [
-                ['name' => 'Mariana Costa', 'cpf' => '000.000.000-01', 'phone' => '(11) 99843-2108', 'insurance' => 'SulAmérica'],
-                ['name' => 'Rafael Oliveira', 'cpf' => '000.000.000-02', 'phone' => '(11) 99127-7844', 'insurance' => 'Particular'],
-                ['name' => 'Camila Ferreira', 'cpf' => '000.000.000-03', 'phone' => '(11) 99632-4510', 'insurance' => 'Bradesco Saúde'],
+                ['name' => 'Mariana Costa', 'cpf' => '000.000.000-01', 'phone' => '(11) 99843-2108', 'insurance' => 'SulAmérica', 'email' => 'mariana@paciente.test'],
+                ['name' => 'Rafael Oliveira', 'cpf' => '000.000.000-02', 'phone' => '(11) 99127-7844', 'insurance' => 'Particular', 'email' => 'rafael@paciente.test'],
+                ['name' => 'Camila Ferreira', 'cpf' => '000.000.000-03', 'phone' => '(11) 99632-4510', 'insurance' => 'Bradesco Saúde', 'email' => 'camila@paciente.test'],
                 ['name' => 'Lucas Martins', 'cpf' => '000.000.000-04', 'phone' => '(11) 98901-6288', 'insurance' => 'Amil'],
                 ['name' => 'Juliana Almeida', 'cpf' => '000.000.000-05', 'phone' => '(11) 99731-0972', 'insurance' => 'Particular'],
                 ['name' => 'Bruno Martins', 'cpf' => null, 'phone' => '(11) 98455-1203', 'insurance' => 'Particular'],
@@ -73,7 +73,16 @@ class DemoTenantSeeder extends Seeder
         ],
     ];
 
-    private const PROCEDURES = [Procedure::Evaluation, Procedure::Cleaning, Procedure::AestheticRestoration, Procedure::FollowUp];
+    private const PROCEDURES = ['Avaliação', 'Limpeza e prevenção', 'Restauração estética', 'Consulta de retorno'];
+
+    // Demo prices in cents. The migration creates the procedures with price zero.
+    private const PRICES = [
+        'Avaliação' => 15000,
+        'Avaliação ortodôntica' => 25000,
+        'Limpeza e prevenção' => 20000,
+        'Restauração estética' => 45000,
+        'Consulta de retorno' => 0,
+    ];
 
     // One start time per professional, outside the lunch break and inside Saturday morning.
     private const START_TIMES = ['08:30', '10:00', '09:00'];
@@ -152,8 +161,10 @@ class DemoTenantSeeder extends Seeder
         $rooms = collect($clinic['rooms'])->map(fn (string $name) => Room::create(['name' => $name]));
         $patients = collect($clinic['patients'])->map(fn (array $patient) => Patient::create($patient));
 
-        $this->seedAppointments($professionals, $rooms, $patients);
-        $this->seedRequests($professionals, $patients);
+        $procedures = $this->pricedProcedures();
+
+        $this->seedAppointments($professionals, $rooms, $patients, $procedures);
+        $this->seedRequests($professionals, $patients, $procedures);
         $this->seedBlocks($professionals);
     }
 
@@ -162,7 +173,7 @@ class DemoTenantSeeder extends Seeder
      * Each professional gets one appointment per weekday, from three days ago to ten days ahead.
      * Past ones are completed or missed; upcoming ones are scheduled or confirmed.
      */
-    private function seedAppointments(Collection $professionals, Collection $rooms, Collection $patients): void
+    private function seedAppointments(Collection $professionals, Collection $rooms, Collection $patients, Collection $procedures): void
     {
         $sequence = 0;
 
@@ -174,19 +185,20 @@ class DemoTenantSeeder extends Seeder
             }
 
             foreach ($professionals as $index => $professional) {
-                $procedure = self::PROCEDURES[$sequence % count(self::PROCEDURES)];
+                $procedure = $procedures[self::PROCEDURES[$sequence % count(self::PROCEDURES)]];
                 $startsAt = $day->setTimeFromTimeString(self::START_TIMES[$index % count(self::START_TIMES)]);
 
                 // Saturday closes at noon, so the long procedure moves to a shorter one.
                 if ($day->isSaturday() && $startsAt->addMinutes($procedure->minutes())->format('H:i') > '12:00') {
-                    $procedure = Procedure::FollowUp;
+                    $procedure = $procedures['Consulta de retorno'];
                 }
 
                 $appointment = new Appointment([
                     'patient_id' => $patients[$sequence % $patients->count()]->id,
                     'professional_id' => $professional->id,
                     'room_id' => $rooms[$index % $rooms->count()]->id,
-                    'procedure' => $procedure,
+                    'procedure_id' => $procedure->id,
+                    'price_cents' => $procedure->price_cents,
                     'starts_at' => $startsAt,
                     'ends_at' => $startsAt->addMinutes($procedure->minutes()),
                     'source' => Appointment::SOURCE_INTERNAL,
@@ -214,17 +226,18 @@ class DemoTenantSeeder extends Seeder
     }
 
     /** Two patient requests from the public page, waiting for the reception. */
-    private function seedRequests(Collection $professionals, Collection $patients): void
+    private function seedRequests(Collection $professionals, Collection $patients, Collection $procedures): void
     {
         foreach ([2 => '15:00', 3 => '16:00'] as $dayOffset => $time) {
             $day = CarbonImmutable::today()->addWeekdays($dayOffset);
             $startsAt = $day->setTimeFromTimeString($day->isSaturday() ? '10:30' : $time);
-            $procedure = Procedure::Evaluation;
+            $procedure = $procedures['Avaliação'];
 
             $request = new Appointment([
                 'patient_id' => $patients[$dayOffset % $patients->count()]->id,
                 'professional_id' => $professionals[$dayOffset % $professionals->count()]->id,
-                'procedure' => $procedure,
+                'procedure_id' => $procedure->id,
+                'price_cents' => $procedure->price_cents,
                 'starts_at' => $startsAt,
                 'ends_at' => $startsAt->addMinutes($procedure->minutes()),
                 'source' => Appointment::SOURCE_PUBLIC,
@@ -232,6 +245,20 @@ class DemoTenantSeeder extends Seeder
             ]);
             $request->moveTo(AppointmentStatus::Requested, null);
         }
+    }
+
+    /**
+     * Gives the procedures created by the migration their demo prices.
+     *
+     * @return Collection<string, Procedure>
+     */
+    private function pricedProcedures(): Collection
+    {
+        foreach (self::PRICES as $name => $price) {
+            Procedure::query()->where('name', $name)->update(['price_cents' => $price]);
+        }
+
+        return Procedure::query()->get()->keyBy('name');
     }
 
     /** A clinic holiday and a day off, both after the seeded appointments. */

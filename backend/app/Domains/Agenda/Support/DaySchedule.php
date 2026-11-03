@@ -103,6 +103,15 @@ class DaySchedule
         return $problems;
     }
 
+    /** Tells whether the professional works in this slot, booked or not: open clinic, no closure, no day off. */
+    public function serves(CarbonImmutable $start, int $professionalId): bool
+    {
+        $end = $start->addMinutes(self::SLOT_MINUTES);
+
+        return $this->clinicProblem($start, $end) === null
+            && $this->blocksAt($start, $end)->doesntContain(fn (ScheduleBlock $block) => $block->professional_id === $professionalId);
+    }
+
     /** Opening hours, lunch break and clinic closures. */
     private function clinicProblem(CarbonImmutable $start, CarbonImmutable $end): ?string
     {

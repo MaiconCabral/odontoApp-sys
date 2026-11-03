@@ -67,7 +67,7 @@ describe('AppointmentsNewModal', () => {
     const modal = await mountSuspended(AppointmentModal)
     await flushPromises()
 
-    expect((fieldByLabel(modal, 'Procedimento').element as HTMLSelectElement).value).toBe('evaluation')
+    expect((fieldByLabel(modal, 'Procedimento').element as HTMLSelectElement).value).toBe('1')
     expect((fieldByLabel(modal, 'Profissional').element as HTMLSelectElement).value).toBe('carlos')
     expect((fieldByLabel(modal, 'Data').element as HTMLInputElement).value).toBe(agendaMock.today)
     expect(fieldByLabel(modal, 'Horário').findAll('option').map(option => option.text())).toEqual(['Escolha um horário livre', '15:00', '15:30'])
@@ -141,6 +141,38 @@ describe('AppointmentsDetailsModal', () => {
     expect(modal.text()).toContain('Agendado')
     expect(modal.text()).toContain('Paula Nunes')
     expect(modal.findAll('button').map(item => item.text())).toEqual(expect.arrayContaining(['Confirmar presença', 'Cancelar consulta', 'Remarcar']))
+  })
+
+  it('shows the messages sent to the patient', async () => {
+    vi.spyOn(appointmentsService, 'get').mockResolvedValue(appointmentDetails)
+    useActiveModal().openModal('appointment-details', { id: 'event-2' })
+
+    const modal = await mountSuspended(DetailsModal)
+    const notices = modal.find('[aria-label="Avisos ao paciente"]')
+
+    expect(notices.text()).toContain('Consulta agendada')
+    expect(notices.text()).toContain('Enviado')
+    expect(notices.text()).not.toContain('avise por telefone')
+  })
+
+  it('warns when the patient has no e-mail', async () => {
+    vi.spyOn(appointmentsService, 'get').mockResolvedValue(requestDetails)
+    useActiveModal().openModal('appointment-details', { id: 'event-4' })
+
+    const modal = await mountSuspended(DetailsModal)
+
+    expect(modal.text()).toContain('Paciente sem e-mail: avise por telefone.')
+    expect(modal.text()).toContain('Não enviado: paciente sem e-mail')
+  })
+
+  it('offers only rooms in use when accepting', async () => {
+    vi.spyOn(appointmentsService, 'get').mockResolvedValue(requestDetails)
+    useActiveModal().openModal('appointment-details', { id: 'event-4' })
+
+    const modal = await mountSuspended(DetailsModal)
+    await button(modal, 'Aceitar pedido')?.trigger('click')
+
+    expect(fieldByLabel(modal, 'Sala da consulta').findAll('option').map(option => option.text())).not.toContain('Sala Antiga')
   })
 
   it('confirms an appointment in one click', async () => {

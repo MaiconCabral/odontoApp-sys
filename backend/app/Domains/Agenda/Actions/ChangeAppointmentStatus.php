@@ -5,13 +5,18 @@ namespace App\Domains\Agenda\Actions;
 use App\Domains\Agenda\Enums\AppointmentStatus;
 use App\Domains\Agenda\Models\Appointment;
 use App\Domains\Identity\Models\User;
+use App\Domains\Notifications\Enums\PatientMessage;
+use App\Domains\Notifications\PatientNotifier;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ChangeAppointmentStatus
 {
+    /** Receives the patient notifier. */
+    public function __construct(private readonly PatientNotifier $notifier) {}
+
     /** Applies a status change allowed by the flow and records it. */
-    public function handle(Appointment $appointment, AppointmentStatus $next, ?string $reason, User $author): Appointment
+    public function handle(Appointment $appointment, AppointmentStatus $next, ?string $reason, ?User $author): Appointment
     {
         return DB::transaction(function () use ($appointment, $next, $reason, $author) {
             // Two people may act on the same appointment at once; the second sees the first change.
@@ -24,6 +29,15 @@ class ChangeAppointmentStatus
             }
 
             $appointment->moveTo($next, $author, $reason);
+
+            // The patient is told when the clinic cancels or rejects, not when the patient did it.
+            if ($author && $next === AppointmentStatus::Cancelled) {
+                $this->notifier->send($appointment, PatientMessage::Cancelled);
+            }
+
+            if ($author && $next === AppointmentStatus::Rejected) {
+                $this->notifier->send($appointment, PatientMessage::Rejected);
+            }
 
             return $appointment;
         });

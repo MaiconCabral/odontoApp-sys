@@ -2,7 +2,7 @@
 
 namespace App\Domains\Agenda\DTOs;
 
-use App\Domains\Agenda\Enums\Procedure;
+use App\Domains\Agenda\Models\Procedure;
 use Carbon\CarbonImmutable;
 
 readonly class AppointmentData

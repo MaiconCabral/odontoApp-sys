@@ -54,6 +54,11 @@ Componentes que dependem do host usam `mockNuxtImport('useClinicHost', ...)`, po
 - **Redirecionamento:** cada novo destino aceito precisa de teste em `tests/utils/auth.test.ts`, incluindo tentativas de sair para outro site.
 - **Papéis:** todo item de menu ou ação restrita precisa de teste com os três papéis. A restrição real é testada no backend.
 - **Logout:** todo estado novo com dados da clínica entra no teste "does not leave clinic data for the next account on logout".
+- **Cadastros com modal** (equipe, procedimentos, salas): validação antes do envio, erro da API no campo, exclusão bloqueada pela API e o segundo clique para excluir. Veja `tests/components/catalog.test.ts`.
+- **Páginas públicas com token** (`/consulta`): token válido, sem token e expirado (`404`), e as ações liberadas por `canConfirm` e `canCancel`. Veja `tests/pages/consulta.test.ts`.
+- **Valores em dinheiro:** use `utils/money.ts` e teste a conversão em `tests/utils/forms.test.ts`.
+
+As respostas padrão de `/api/overview`, `/api/procedures` e `/api/rooms` estão em `tests/fixtures/agenda.ts` (`overviewFixture`, `proceduresFixture`, `roomsFixture`).
 
 ## Confira também no navegador
 

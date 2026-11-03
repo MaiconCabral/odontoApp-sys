@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Gate;
 
 class AppointmentController extends Controller
 {
-    private const DETAILS = ['patient', 'professional', 'room', 'statusChanges.author'];
+    private const DETAILS = ['patient', 'professional', 'room', 'procedure', 'statusChanges.author', 'notificationLogs'];
 
     /** Lists the patient requests waiting for an answer, oldest first. */
     public function requests(): AnonymousResourceCollection
@@ -26,7 +26,7 @@ class AppointmentController extends Controller
         Gate::authorize('manage', Appointment::class);
 
         $requests = Appointment::query()
-            ->with(['patient', 'professional', 'room'])
+            ->with(['patient', 'professional', 'room', 'procedure'])
             ->where('status', AppointmentStatus::Requested)
             ->orderBy('created_at')
             ->get();

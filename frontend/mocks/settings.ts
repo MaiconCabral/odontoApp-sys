@@ -5,6 +5,8 @@ export const settingsMock: Omit<Settings, 'clinic'> = {
   tabs: [
     { id: 'clinic', label: 'Clínica' },
     { id: 'team', label: 'Equipe' },
+    { id: 'procedures', label: 'Procedimentos' },
+    { id: 'rooms', label: 'Salas' },
     { id: 'hours', label: 'Horários' },
     { id: 'subscription', label: 'Assinatura', badge: 'Pro' },
   ],

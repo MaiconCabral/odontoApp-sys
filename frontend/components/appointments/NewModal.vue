@@ -12,9 +12,9 @@ const editing = payload.appointment ?? null
 
 const form = reactive<AppointmentForm>({
   patientId: editing?.patient.id ?? '',
-  procedure: editing?.procedure ?? agenda.value?.procedures[0]?.key ?? '',
+  procedure: editing?.procedure ?? agenda.value?.procedures[0]?.id ?? '',
   professionalId: editing?.professional?.id ?? payload.professionalId ?? agenda.value?.professionals[0]?.id ?? '',
-  roomId: editing?.room?.id ?? agenda.value?.rooms[0]?.id ?? '',
+  roomId: editing?.room?.id ?? agenda.value?.rooms.find(room => room.active !== false)?.id ?? '',
   date: editing?.date ?? payload.date ?? agenda.value?.today ?? '',
   time: editing?.hour ?? payload.time ?? '',
   notes: editing?.notes ?? '',
@@ -126,6 +126,9 @@ const { errors, formError, isSubmitting, submit } = useAuthForm(form, validateAp
   closeModal()
 })
 
+// Only rooms still in use are offered. Inactive ones stay in the agenda for old appointments.
+const activeRooms = computed(() => agenda.value?.rooms.filter(room => room.active !== false) ?? [])
+
 // The API reports closed or taken times on the start, which the form shows on the time field.
 const timeError = computed(() => errors.value.time ?? (errors.value as Record<string, string | undefined>).startsAt)
 </script>
@@ -210,7 +213,7 @@ const timeError = computed(() => errors.value.time ?? (errors.value as Record<st
 
     <AppFormField v-slot="field" label="Procedimento">
       <select :id="field.id" v-model="form.procedure" :class="field.controlClass">
-        <option v-for="procedure in agenda.procedures" :key="procedure.key" :value="procedure.key">
+        <option v-for="procedure in agenda.procedures" :key="procedure.id" :value="procedure.id">
           {{ procedure.label }} ({{ procedure.duration }} min)
         </option>
       </select>
@@ -238,7 +241,7 @@ const timeError = computed(() => errors.value.time ?? (errors.value as Record<st
         :aria-invalid="field.invalid"
         :aria-describedby="field.describedBy"
       >
-        <option v-for="room in agenda.rooms" :key="room.id" :value="room.id">
+        <option v-for="room in activeRooms" :key="room.id" :value="room.id">
           {{ room.name }}
         </option>
       </select>

@@ -2,7 +2,8 @@
 
 namespace App\Http\Requests\Concerns;
 
-use App\Domains\Agenda\Enums\Procedure;
+use App\Domains\Agenda\Models\Procedure;
+use App\Domains\Agenda\Models\Room;
 use App\Domains\Identity\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Validation\Rule;
@@ -10,6 +11,18 @@ use Illuminate\Validation\Rules\Exists;
 
 trait HasAppointmentRules
 {
+    /** Procedure must exist and still be offered. */
+    protected function activeProcedureRule(): Exists
+    {
+        return Rule::exists(Procedure::class, 'id')->where('active', true);
+    }
+
+    /** Room must exist and still be in use. */
+    protected function activeRoomRule(): Exists
+    {
+        return Rule::exists(Room::class, 'id')->where('active', true);
+    }
+
     /** Professional must be an active user who attends patients. */
     protected function attendingProfessionalRule(): Exists
     {
@@ -24,7 +37,7 @@ trait HasAppointmentRules
     protected function timeRules(): array
     {
         return [
-            'procedure' => ['required', Rule::enum(Procedure::class)],
+            'procedure_id' => ['required', 'integer', $this->activeProcedureRule()],
             'date' => ['required', 'date_format:Y-m-d'],
             'time' => ['required', 'date_format:H:i'],
         ];
@@ -38,8 +51,8 @@ trait HasAppointmentRules
     protected function timeMessages(): array
     {
         return [
-            'procedure.required' => 'Escolha o procedimento.',
-            'procedure.enum' => 'Escolha o procedimento.',
+            'procedure_id.required' => 'Escolha o procedimento.',
+            'procedure_id.exists' => 'Escolha um procedimento oferecido pela clínica.',
             'date.required' => 'Informe a data da consulta.',
             'date.date_format' => 'Informe a data da consulta.',
             'time.required' => 'Escolha o horário.',
@@ -47,7 +60,7 @@ trait HasAppointmentRules
             'professional_id.required' => 'Escolha o profissional.',
             'professional_id.exists' => 'Escolha um profissional da clínica.',
             'room_id.required' => 'Escolha a sala.',
-            'room_id.exists' => 'Escolha uma sala da clínica.',
+            'room_id.exists' => 'Escolha uma sala em uso na clínica.',
             'patient_id.required' => 'Selecione um paciente cadastrado.',
             'patient_id.exists' => 'Selecione um paciente cadastrado.',
         ];
@@ -62,6 +75,6 @@ trait HasAppointmentRules
     /** Procedure chosen in the form. */
     public function procedure(): Procedure
     {
-        return Procedure::from($this->input('procedure'));
+        return Procedure::query()->findOrFail($this->integer('procedure_id'));
     }
 }

@@ -25,7 +25,8 @@ await load()
 
 const pendingAction = ref<AppointmentAction | null>(null)
 const reason = ref('')
-const roomId = ref(agenda.value?.rooms[0]?.id ?? '')
+const activeRooms = computed(() => agenda.value?.rooms.filter(room => room.active !== false) ?? [])
+const roomId = ref(activeRooms.value[0]?.id ?? '')
 const actionError = ref('')
 const isBusy = ref(false)
 
@@ -168,7 +169,7 @@ const dangerActions: AppointmentAction[] = ['cancel', 'reject', 'no_show']
         <template v-if="pendingAction === 'accept'">
           <AppFormField v-slot="field" label="Sala da consulta">
             <select :id="field.id" v-model="roomId" :class="field.controlClass">
-              <option v-for="room in agenda?.rooms ?? []" :key="room.id" :value="room.id">
+              <option v-for="room in activeRooms" :key="room.id" :value="room.id">
                 {{ room.name }}
               </option>
             </select>
@@ -190,6 +191,24 @@ const dangerActions: AppointmentAction[] = ['cancel', 'reject', 'no_show']
       <p v-if="actionError" role="alert" class="text-[11px] text-[#c2553f] sm:col-span-2">
         {{ actionError }}
       </p>
+
+      <section v-if="details.notifications" class="sm:col-span-2" aria-label="Avisos ao paciente">
+        <h3 class="mb-2 text-[10px] font-bold uppercase tracking-[.06em] text-muted">
+          Avisos ao paciente
+        </h3>
+        <p v-if="details.patientHasEmail === false" class="mb-2 rounded-md bg-[#fff4dc] px-2.5 py-2 text-[10px] text-[#8a6420]">
+          Paciente sem e-mail: avise por telefone.
+        </p>
+        <p v-if="!details.notifications.length" class="text-[10px] text-muted">
+          Nenhum aviso enviado ainda.
+        </p>
+        <ul v-else class="grid gap-1 text-[10px] text-muted">
+          <li v-for="(notice, index) in details.notifications" :key="index">
+            <strong class="text-body">{{ notice.typeLabel }}</strong>
+            · {{ notice.statusLabel }} · {{ new Date(notice.at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) }}
+          </li>
+        </ul>
+      </section>
 
       <section v-if="details.history?.length" class="sm:col-span-2" aria-label="Histórico">
         <h3 class="mb-2 text-[10px] font-bold uppercase tracking-[.06em] text-muted">

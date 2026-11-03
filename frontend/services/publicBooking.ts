@@ -7,7 +7,7 @@ export const publicBookingService = {
   // Free start times of a day.
   availability: async (query: { date: string, procedure: string, professionalId: string }) =>
     (await useApi().api<{ slots: string[] }>('/api/public/availability', {
-      query: { date: query.date, procedure: query.procedure, professional_id: query.professionalId || undefined },
+      query: { date: query.date, procedure_id: query.procedure, professional_id: query.professionalId || undefined },
     })).slots,
 
   // Sends the booking request.
@@ -15,7 +15,7 @@ export const publicBookingService = {
     useApi().api<{ message: string }>('/api/public/booking-requests', {
       method: 'POST',
       body: {
-        procedure: form.procedure,
+        procedure_id: form.procedure,
         professional_id: form.professionalId || null,
         date: form.date,
         time: form.time,

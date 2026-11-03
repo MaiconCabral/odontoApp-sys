@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Activity, ArrowUpRight, CalendarDays, CreditCard, Users } from 'lucide-vue-next'
-import type { Metric, MetricIcon, MetricTone } from '~/types/overview'
+import { Activity, ArrowDownRight, ArrowRight, ArrowUpRight, CalendarDays, CreditCard, Users } from 'lucide-vue-next'
+import type { Metric, MetricIcon, MetricTone, Trend } from '~/types/overview'
 
 defineProps<{
   metric: Metric
@@ -19,6 +19,11 @@ const toneClasses: Record<MetricTone, string> = {
   amber: 'bg-[#fff5df] text-[#c89132]',
   violet: 'bg-[#eeebfb] text-[#7a73bc]',
 }
+const trends = {
+  up: { icon: ArrowUpRight, class: 'text-[#24a375]', label: 'subiu' },
+  down: { icon: ArrowDownRight, class: 'text-[#c2553f]', label: 'caiu' },
+  flat: { icon: ArrowRight, class: 'text-muted', label: 'estável' },
+} satisfies Record<Trend, unknown>
 </script>
 
 <template>
@@ -35,8 +40,8 @@ const toneClasses: Record<MetricTone, string> = {
     <div class="mt-[17px] font-display text-[22px] font-extrabold leading-[normal] tracking-[-.8px] text-heading sm:mt-[15px] sm:text-[25px]">
       {{ metric.value }}
     </div>
-    <div class="mt-[11px] flex items-center gap-[3px] text-[11px] font-bold text-[#24a375]">
-      <ArrowUpRight :size="13" />
+    <div class="mt-[11px] flex items-center gap-[3px] text-[11px] font-bold" :class="trends[metric.trend].class">
+      <component :is="trends[metric.trend].icon" :size="13" :aria-label="trends[metric.trend].label" />
       {{ metric.change }}
       <span class="ml-[3px] hidden font-normal text-faint sm:inline">{{ metric.period }}</span>
     </div>

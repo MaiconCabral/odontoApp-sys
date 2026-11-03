@@ -2,7 +2,6 @@
 
 namespace App\Domains\Agenda\Queries;
 
-use App\Domains\Agenda\Enums\Procedure;
 use App\Domains\Agenda\Support\DaySchedule;
 use App\Domains\Identity\Models\User;
 use Carbon\CarbonImmutable;
@@ -15,7 +14,7 @@ class AvailableSlots
      *
      * @return list<array{time: string, professionalIds: list<string>}>
      */
-    public function for(CarbonInterface $date, Procedure $procedure, ?int $professionalId = null, ?int $roomId = null, ?int $ignoreAppointmentId = null): array
+    public function for(CarbonInterface $date, int $minutes, ?int $professionalId = null, ?int $roomId = null, ?int $ignoreAppointmentId = null): array
     {
         $schedule = DaySchedule::load($date, $ignoreAppointmentId);
         $candidates = $professionalId ? [$professionalId] : $this->attendingIds();
@@ -28,7 +27,7 @@ class AvailableSlots
 
             $free = array_values(array_filter(
                 $candidates,
-                fn (int $candidate) => $schedule->problems($start, $procedure->minutes(), $candidate, $roomId) === [],
+                fn (int $candidate) => $schedule->problems($start, $minutes, $candidate, $roomId) === [],
             ));
 
             if ($free) {

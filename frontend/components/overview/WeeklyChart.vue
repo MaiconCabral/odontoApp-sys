@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowUpRight, ChevronDown } from 'lucide-vue-next'
+import { ArrowDownRight, ArrowRight, ArrowUpRight } from 'lucide-vue-next'
 import type { WeeklyAppointments } from '~/types/overview'
 
 const props = defineProps<{
@@ -15,18 +15,18 @@ const chartDescription = computed(() =>
   <OverviewPanel
     class="p-4 sm:p-[21px]"
     title="Agendamentos da semana"
-    subtitle="Volume de consultas confirmadas"
+    subtitle="Consultas agendadas, confirmadas e concluídas"
   >
     <template #action>
-      <button type="button" class="inline-flex items-center gap-[7px] rounded-[7px] border border-line bg-surface px-[9px] py-[7px] text-[10px] text-body">
-        {{ weekly.range }} <ChevronDown :size="14" />
-      </button>
+      <span class="inline-flex items-center rounded-[7px] border border-line bg-surface px-[9px] py-[7px] text-[10px] text-body">
+        {{ weekly.range }}
+      </span>
     </template>
 
     <div class="mt-5 flex items-baseline gap-2 sm:mt-[25px]">
       <strong class="font-display text-[26px] font-extrabold leading-[normal] tracking-[-.8px]">{{ weekly.total }}</strong>
-      <span class="flex items-center text-[10px] font-bold text-[#21a477]">
-        <ArrowUpRight :size="14" /> {{ weekly.change }}
+      <span class="flex items-center text-[10px] font-bold" :class="weekly.trend === 'down' ? 'text-[#c2553f]' : weekly.trend === 'up' ? 'text-[#21a477]' : 'text-muted'">
+        <component :is="weekly.trend === 'down' ? ArrowDownRight : weekly.trend === 'up' ? ArrowUpRight : ArrowRight" :size="14" /> {{ weekly.change }}
       </span>
       <small class="text-[10px] text-faint">{{ weekly.comparison }}</small>
     </div>

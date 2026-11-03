@@ -1,5 +1,6 @@
-import { overviewMock } from '~/mocks/overview'
+import type { Overview } from '~/types/overview'
 
 export const overviewService = {
-  get: () => Promise.resolve(overviewMock),
+  // Numbers of the panel home page.
+  get: () => useApi().api<Overview>('/api/overview'),
 }

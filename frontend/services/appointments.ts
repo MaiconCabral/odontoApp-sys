@@ -6,7 +6,7 @@ function toBody(form: AppointmentForm) {
     patient_id: form.patientId,
     professional_id: form.professionalId,
     room_id: form.roomId,
-    procedure: form.procedure,
+    procedure_id: form.procedure,
     date: form.date,
     time: form.time,
     notes: form.notes || null,
@@ -41,7 +41,7 @@ export const appointmentsService = {
     (await useApi().api<{ slots: AvailableSlot[] }>('/api/availability', {
       query: {
         date: query.date,
-        procedure: query.procedure,
+        procedure_id: query.procedure,
         professional_id: query.professionalId,
         room_id: query.roomId || undefined,
         ignore: query.ignore || undefined,

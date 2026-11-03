@@ -6,9 +6,13 @@ use App\Http\Controllers\Api\AgendaController;
 use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\AvailabilityController;
 use App\Http\Controllers\Api\ClinicController;
+use App\Http\Controllers\Api\OverviewController;
 use App\Http\Controllers\Api\PasswordController;
 use App\Http\Controllers\Api\PatientController;
+use App\Http\Controllers\Api\PatientLinkController;
+use App\Http\Controllers\Api\ProcedureController;
 use App\Http\Controllers\Api\PublicBookingController;
+use App\Http\Controllers\Api\RoomController;
 use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\SessionController;
 use App\Http\Controllers\Api\UserController;
@@ -43,6 +47,9 @@ Route::prefix('api')
             Route::get('booking', [PublicBookingController::class, 'show'])->middleware('throttle:public-read');
             Route::get('availability', [PublicBookingController::class, 'availability'])->middleware('throttle:public-read');
             Route::post('booking-requests', [PublicBookingController::class, 'store'])->middleware('throttle:booking');
+            Route::get('appointments/{token}', [PatientLinkController::class, 'show'])->middleware('throttle:public-read');
+            Route::post('appointments/{token}/confirm', [PatientLinkController::class, 'confirm'])->middleware('throttle:patient-link');
+            Route::post('appointments/{token}/cancel', [PatientLinkController::class, 'cancel'])->middleware('throttle:patient-link');
         });
 
         Route::middleware(['auth:sanctum', EnsureUserIsActive::class])->group(function () {
@@ -54,8 +61,11 @@ Route::prefix('api')
 
             Route::apiResource('users', UserController::class);
             Route::apiResource('patients', PatientController::class);
+            Route::apiResource('procedures', ProcedureController::class);
+            Route::apiResource('rooms', RoomController::class);
 
             Route::get('agenda', AgendaController::class);
+            Route::get('overview', OverviewController::class);
             Route::get('availability', AvailabilityController::class);
 
             Route::get('appointment-requests', [AppointmentController::class, 'requests']);

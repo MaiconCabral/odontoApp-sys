@@ -1,6 +1,5 @@
 <?php
 
-use App\Domains\Agenda\Enums\Procedure;
 use App\Domains\Agenda\Models\Appointment;
 use App\Domains\Agenda\Models\ScheduleBlock;
 use App\Domains\Agenda\Queries\AvailableSlots;
@@ -50,7 +49,7 @@ it('applies a block only to its professional', function () {
 });
 
 it('offers only times where the whole procedure fits', function () {
-    $slots = collect((new AvailableSlots)->for($this->tuesday, Procedure::AestheticRestoration, $this->ana->id))->pluck('time');
+    $slots = collect((new AvailableSlots)->for($this->tuesday, 90, $this->ana->id))->pluck('time');
 
     expect($slots)->toContain('08:00', '10:30', '13:00', '16:30')
         ->not->toContain('11:00', '11:30', '17:00', '17:30');

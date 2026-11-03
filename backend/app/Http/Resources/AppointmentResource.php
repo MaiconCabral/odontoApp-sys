@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use App\Domains\Agenda\Enums\AppointmentStatus;
 use App\Domains\Agenda\Models\Appointment;
 use App\Domains\Agenda\Models\AppointmentStatusChange;
+use App\Domains\Notifications\Models\NotificationLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Gate;
@@ -35,9 +36,10 @@ class AppointmentResource extends JsonResource
             'id' => (string) $this->id,
             'status' => $this->status->value,
             'statusLabel' => $this->status->label(),
-            'procedure' => $this->procedure->value,
+            'procedure' => (string) $this->procedure_id,
             'procedureLabel' => $this->procedure->label(),
-            'duration' => $this->procedure->minutes(),
+            'duration' => $this->minutes(),
+            'priceCents' => $this->price_cents,
             'date' => $this->starts_at->toDateString(),
             'hour' => $this->starts_at->format('H:i'),
             'endHour' => $this->ends_at->format('H:i'),
@@ -65,8 +67,17 @@ class AppointmentResource extends JsonResource
                 'to' => $change->to_status->value,
                 'toLabel' => $change->to_status->label(),
                 'reason' => $change->reason,
-                'author' => $change->author?->name ?? 'Paciente (pedido online)',
+                'author' => $change->author?->name ?? 'Paciente',
                 'at' => $change->created_at->toIso8601String(),
+            ])->all()),
+            'patientHasEmail' => $this->whenLoaded('patient', fn () => $this->patient->email !== null),
+            'notifications' => $this->whenLoaded('notificationLogs', fn () => $this->notificationLogs->map(fn (NotificationLog $log) => [
+                'type' => $log->type->value,
+                'typeLabel' => $log->type->label(),
+                'channel' => $log->channel,
+                'status' => $log->status,
+                'statusLabel' => $log->statusLabel(),
+                'at' => $log->created_at->toIso8601String(),
             ])->all()),
             'actions' => $this->actionsFor($request),
         ];

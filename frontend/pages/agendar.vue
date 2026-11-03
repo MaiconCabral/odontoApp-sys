@@ -58,7 +58,7 @@ async function loadSlots() {
 
 watch(() => [form.date, form.procedure, form.professionalId], loadSlots)
 
-const procedureLabel = computed(() => info.value?.procedures.find(procedure => procedure.key === form.procedure)?.label ?? '')
+const procedureLabel = computed(() => info.value?.procedures.find(procedure => procedure.id === form.procedure)?.label ?? '')
 const professionalLabel = computed(() =>
   info.value?.professionals.find(professional => professional.id === form.professionalId)?.name ?? 'Sem preferência',
 )
@@ -118,11 +118,11 @@ const primaryClass = 'inline-flex h-11 w-full items-center justify-center rounde
           </legend>
           <label
             v-for="procedure in info.procedures"
-            :key="procedure.key"
-            :class="[optionClass, form.procedure === procedure.key ? 'border-brand-accent bg-brand-tint' : 'border-line']"
+            :key="procedure.id"
+            :class="[optionClass, form.procedure === procedure.id ? 'border-brand-accent bg-brand-tint' : 'border-line']"
           >
             <span class="flex items-center gap-2">
-              <input v-model="form.procedure" type="radio" name="procedure" :value="procedure.key" class="accent-brand">
+              <input v-model="form.procedure" type="radio" name="procedure" :value="procedure.id" class="accent-brand">
               {{ procedure.label }}
             </span>
             <span class="text-[11px] text-muted">{{ procedure.duration }} min</span>

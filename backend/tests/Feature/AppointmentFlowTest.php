@@ -28,7 +28,7 @@ beforeEach(function () {
         'patient_id' => $this->patient->id,
         'professional_id' => $this->ana->id,
         'room_id' => $this->room->id,
-        'procedure' => 'cleaning',
+        'procedure_id' => $this->procedureId($this->clinic, 'Limpeza e prevenção'),
         'date' => '2026-11-10',
         'time' => '09:00',
         ...$overrides,
@@ -109,9 +109,9 @@ it('refuses a busy professional or room, but not a cancelled slot', function () 
 it('validates the booking form', function () {
     $this->signIn('sorriso', $this->admin);
 
-    $this->clinicRequest('sorriso', 'POST', 'appointments', ['procedure' => 'botox', 'professional_id' => $this->receptionist->id])
+    $this->clinicRequest('sorriso', 'POST', 'appointments', ['procedure_id' => 999, 'professional_id' => $this->receptionist->id])
         ->assertUnprocessable()
-        ->assertJsonValidationErrors(['patient_id', 'room_id', 'date', 'time', 'procedure'])
+        ->assertJsonValidationErrors(['patient_id', 'room_id', 'date', 'time', 'procedure_id'])
         ->assertJsonValidationErrors(['professional_id' => 'Escolha um profissional da clínica.']);
 });
 

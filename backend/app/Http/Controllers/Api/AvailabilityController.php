@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Domains\Agenda\Enums\Procedure;
 use App\Domains\Agenda\Queries\AvailableSlots;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AvailabilityRequest;
@@ -17,7 +16,7 @@ class AvailabilityController extends Controller
             'date' => $request->input('date'),
             'slots' => $slots->for(
                 $request->day(),
-                Procedure::from($request->input('procedure')),
+                $request->procedure()->minutes(),
                 $request->integer('professional_id'),
                 $request->filled('room_id') ? $request->integer('room_id') : null,
                 $request->filled('ignore') ? $request->integer('ignore') : null,

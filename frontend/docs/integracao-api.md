@@ -34,11 +34,16 @@ Toda chamada passa por `useApi().api(path, options)`, que:
 | `appointmentsService` | `/api/appointments`, `/api/availability`, `/api/appointment-requests` | Criar, remarcar, status, aceite e horários livres |
 | `patientsService` | `/api/patients` | Busca e paginação no servidor |
 | `scheduleService` | `/api/business-hours`, `/api/schedule-blocks` | Expediente e bloqueios |
-| `publicBookingService` | `/api/public/*` | Página `/agendar`, sem sessão |
+| `publicBookingService` | `/api/public/booking`, `availability`, `booking-requests` | Página `/agendar`, sem sessão |
+| `patientLinksService` | `/api/public/appointments/{token}` | Página `/consulta`, sem sessão |
 | `clinicService` | `GET` e `PUT /api/clinic` | Troca `null` por texto vazio |
 | `usersService` | `/api/users` | Converte o formulário para snake_case |
-| `settingsService` | `GET /api/clinic` e mock | Preferências, horários e assinatura ainda são mock |
-| `overviewService` | mock | Ainda sem API |
+| `proceduresService` | `/api/procedures` | Converte o preço digitado (`"450,00"`) para `price_cents` |
+| `roomsService` | `/api/rooms` | |
+| `settingsService` | `GET /api/clinic` e mock | Preferências e assinatura ainda são mock |
+| `overviewService` | `GET /api/overview` | Admin e recepção |
+
+Os valores em dinheiro chegam em centavos. Use `formatMoney`, `toCents` e `centsToInput`, de `utils/money.ts`, para exibir e editar.
 
 ## Papéis no frontend
 
@@ -64,13 +69,15 @@ Toda chamada passa por `useApi().api(path, options)`, que:
   | Modal | Payload | Uso |
   | --- | --- | --- |
   | `appointment` | `{ appointment? }` | Novo agendamento ou remarcação |
-  | `appointment-details` | `{ id }` | Dados, histórico e ações permitidas |
+  | `appointment-details` | `{ id }` | Dados, avisos ao paciente, histórico e ações permitidas |
   | `block` | `{ block? }` | Novo bloqueio, ou ver e excluir um existente |
   | `patient` | `{ patient? }` | Novo paciente ou edição |
 
 - Os botões de ação vêm de `actions`, devolvido pela API. O front não decide quem pode o quê.
 - Depois de qualquer mudança, `refreshAgendaData()` recarrega a agenda e os pedidos pendentes.
 - O layout carrega os pedidos pendentes para admin e recepção, e o número aparece ao lado de Agenda no menu.
+- O procedimento é identificado pelo `id` (`ProcedureOption.id`), não mais por uma chave fixa. O agendamento, a remarcação e o aceite de pedido só oferecem procedimentos e salas ativos. Uma consulta antiga em sala desativada continua na agenda, mas, para ser remarcada, precisa de outra sala.
+- A seção "Avisos ao paciente" do modal de detalhes lista o que foi enviado e mostra "Paciente sem e-mail: avise por telefone" quando não há e-mail.
 
 ## Página pública `/agendar`
 
@@ -78,6 +85,22 @@ Toda chamada passa por `useApi().api(path, options)`, que:
 - Tem três etapas: atendimento, dia e horário, dados de contato.
 - Se o horário for ocupado enquanto o paciente digita, a página volta para a escolha de horários, com a mensagem da API e horários atualizados.
 - O campo oculto `website` é a armadilha para robôs. Não remova nem torne visível.
+- Os procedimentos aparecem sem preço.
+
+## Página do paciente `/consulta`
+
+- É aberta pelo link dos e-mails (`/consulta?token=...`), no subdomínio da clínica, sem sessão e com o layout `auth`.
+- Mostra a data, o procedimento, o profissional e o endereço, com os botões que a API libera (`canConfirm`, `canCancel`):
+  - "Confirmo presença" confirma na hora;
+  - "Preciso cancelar" pede um segundo clique ("Sim, cancelar a consulta").
+- Sem token, com token expirado ou com consulta remarcada, a página mostra "Link inválido ou expirado" e orienta a falar direto com a clínica.
+- `routeRules` em `nuxt.config.ts` renderiza a rota só no navegador (`ssr: false`), como as páginas de entrada.
+
+## Visão geral
+
+- `pages/app/index.vue` usa `useAsyncData` com `overviewService.get()`. A API entrega o texto já formatado ("R$ 800", "12,5%"), e o front só exibe.
+- `trend` (`up`, `down`, `flat`) define a seta e a cor das métricas e do gráfico semanal.
+- Clicar num paciente de "Próximos pacientes" abre o modal `appointment-details`.
 
 ## Telas desta etapa
 
@@ -89,6 +112,12 @@ Toda chamada passa por `useApi().api(path, options)`, que:
   - a exclusão pede um segundo clique;
   - o próprio usuário não aparece com o botão de excluir e não pode trocar o próprio papel;
   - os erros da API aparecem no campo ou no topo do modal.
+- **Configurações → Procedimentos e Salas (`SettingsProceduresCard`, `SettingsProcedureModal`, `SettingsRoomsCard` e `SettingsRoomModal`):**
+  - só para admin;
+  - seguem o padrão da equipe: lista, modal de criar e editar, ativar e desativar, e exclusão com segundo clique;
+  - o procedimento tem duração de 30 a 240 minutos e preço em reais;
+  - excluir um item já usado em consultas mostra a mensagem da API, que sugere desativar;
+  - `useProcedures` e `useRooms`, em `composables/useCatalog.ts`, guardam as listas. Depois de salvar, a agenda é recarregada.
 
 ## Ambiente local
 

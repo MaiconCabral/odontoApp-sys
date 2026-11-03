@@ -1,4 +1,4 @@
-export type SettingsTabId = 'clinic' | 'team' | 'hours' | 'subscription'
+export type SettingsTabId = 'clinic' | 'team' | 'procedures' | 'rooms' | 'hours' | 'subscription'
 
 export type SettingsTab = {
   id: SettingsTabId

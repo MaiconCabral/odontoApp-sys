@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Domains\Agenda\Actions\RequestAppointment;
-use App\Domains\Agenda\Enums\Procedure;
+use App\Domains\Agenda\Models\Procedure;
 use App\Domains\Agenda\Queries\AvailableSlots;
 use App\Domains\Identity\Models\User;
 use App\Http\Controllers\Controller;
@@ -44,7 +44,7 @@ class PublicBookingController extends Controller
             'date' => $request->input('date'),
             'slots' => array_map(
                 fn (array $slot) => $slot['time'],
-                $slots->for($request->day(), Procedure::from($request->input('procedure')), $professionalId),
+                $slots->for($request->day(), $request->procedure()->minutes(), $professionalId),
             ),
         ]);
     }

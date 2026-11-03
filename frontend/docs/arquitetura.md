@@ -27,10 +27,11 @@ O caminho dos dados é: página ou componente → composable → service → moc
 | `/recuperar-senha` | Subdomínio, sem sessão | Pedido do link de redefinição |
 | `/redefinir-senha?token&email` | Subdomínio, sem sessão | Nova senha |
 | `/agendar` | Subdomínio, público | Pedido de agendamento do paciente |
-| `/app` | Admin e recepção | Visão geral |
+| `/consulta?token` | Subdomínio, público | Paciente confirma ou cancela pelo link do e-mail |
+| `/app` | Admin e recepção | Visão geral, com dados da API |
 | `/app/agenda` | Todos os papéis | Agenda, pedidos pendentes e bloqueios |
 | `/app/pacientes` | Admin e recepção | Cadastro de pacientes |
-| `/app/configuracoes` | Admin | Configurações |
+| `/app/configuracoes` | Admin | Clínica, equipe, horários, procedimentos, salas e demais configurações |
 
 ### Regras das rotas do painel
 
@@ -63,7 +64,7 @@ Eles só organizam a navegação. **Quem protege os dados é a API**, que valida
 
 Definida em `routeRules`, no `nuxt.config.ts`:
 
-- O painel (`/app/**`) e as telas de autenticação rodam só no navegador (`ssr: false`). Toda rota nova de autenticação precisa entrar nessa lista.
+- O painel (`/app/**`), as telas de autenticação e a página `/consulta` rodam só no navegador (`ssr: false`). Toda rota nova de autenticação ou com token na URL precisa entrar nessa lista.
 - O SSR continua ligado por padrão, para futuras páginas públicas com SEO.
 
 ## Estado

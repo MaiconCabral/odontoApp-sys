@@ -9,6 +9,7 @@ import {
   visibleRange,
 } from '~/utils/appointments'
 import { localToday, validateBookingContact } from '~/utils/booking'
+import { centsToInput, formatMoney, toCents } from '~/utils/money'
 import { formatCpf, formatPhone, patientInitials, validatePatient } from '~/utils/patients'
 import { agendaMock } from '../fixtures/agenda'
 
@@ -98,5 +99,20 @@ describe('formatting', () => {
   it('builds the initials from the first and last names', () => {
     expect(patientInitials('Ana Maria Souza')).toBe('AS')
     expect(patientInitials('Ana')).toBe('A')
+  })
+})
+
+describe('money', () => {
+  it('reads prices typed in the Brazilian format', () => {
+    expect(toCents('450')).toBe(45000)
+    expect(toCents('450,5')).toBe(45050)
+    expect(toCents('R$ 1.250,00')).toBe(125000)
+    expect(toCents('abc')).toBeNull()
+    expect(toCents('1,234')).toBeNull()
+  })
+
+  it('formats cents back for the screen and the form', () => {
+    expect(formatMoney(45000)).toMatch(/R\$\s450,00/)
+    expect(centsToInput(125050)).toBe('1250,50')
   })
 })

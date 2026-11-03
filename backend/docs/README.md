@@ -6,11 +6,14 @@ API do odontoApp em Laravel 12, consumida pelo Nuxt em `frontend/`.
 | --- | --- |
 | [API](api.md) | Endpoints, contratos de requisição e resposta, erros |
 | [Multi-tenancy e autenticação](multitenancy.md) | Banco por clínica, subdomínios, sessão, papéis, contas demo e produção |
-| [Agenda](agenda.md) | Disponibilidade, travas contra horário duplicado, status e pedido online |
+| [Agenda](agenda.md) | Disponibilidade, procedimentos e salas, travas contra horário duplicado, status, pedido online e visão geral |
+| [Notificações](notificacoes.md) | E-mails ao paciente, fila, lembrete de 24h, links de confirmação, WhatsApp e como rodar |
 
 ## O que está implementado
 
-Etapa 1: autenticação, clínicas (tenants), usuários e agenda somente leitura. Etapa 2: agenda completa, pacientes e pedidos online.
+- **Etapa 1:** autenticação, clínicas (tenants), usuários e agenda somente leitura.
+- **Etapa 2:** agenda completa, pacientes e pedidos online.
+- **Etapa 3:** notificações e lembrete ao paciente, cadastro de procedimentos e salas, visão geral real.
 
 - **Clínicas:**
   - Cada clínica tem banco MySQL próprio e um subdomínio, com `stancl/tenancy` 3.
@@ -33,11 +36,19 @@ Etapa 1: autenticação, clínicas (tenants), usuários e agenda somente leitura
   - `GET /api/agenda` devolve o período pedido (até 62 dias).
 - **Pedidos online:** o paciente pede um horário pela página pública da clínica, sem login, e a recepção aceita ou recusa.
 - **Pacientes:** CRUD com busca por nome, CPF ou telefone e paginação.
+- **Procedimentos e salas:**
+  - cadastrados pelo admin, com duração, preço e situação;
+  - a consulta guarda o preço do momento da marcação.
+- **Notificações:**
+  - e-mail em fila a cada pedido, marcação, remarcação, cancelamento e recusa;
+  - lembrete 24h antes, com links para o paciente confirmar ou cancelar sem login;
+  - cada envio fica registrado na consulta.
+- **Visão geral:** consultas, faturamento estimado, comparecimento, novos pacientes, semana, ocupação e próximos pacientes, calculados do banco.
 - **Seeds:** criam os planos e duas clínicas de demonstração.
 
 Ficam para as próximas etapas:
 
-- notificações em fila (confirmação e lembrete de 24h);
+- canal de WhatsApp (o ponto de extensão já existe);
 - faturamento com Stripe;
 - gestão global de clínicas e de planos.
 
@@ -50,7 +61,8 @@ app/
 ├── Domains/
 │   ├── Tenancy/   Tenant, Plan, cadastro e edição da clínica, ClinicUrl
 │   ├── Identity/  User, UserRole, CRUD da equipe, AdminGuard, e-mail de senha
-│   └── Agenda/    Consultas, pacientes, expediente, bloqueios, DaySchedule, AvailabilityChecker
+│   ├── Agenda/    Consultas, pacientes, procedimentos, salas, expediente, bloqueios, DaySchedule, OverviewQuery
+│   └── Notifications/  PatientNotifier, AppointmentMessage, NotificationLog, lembretes, links do paciente
 ├── Http/
 │   ├── Controllers/Api/  controllers finos
 │   ├── Requests/         validação (FormRequest) e conversão para DTO
@@ -95,6 +107,10 @@ Rota (routes/tenant.php ou routes/api.php)
 php artisan migrate:fresh --seed   # recria o central e as clínicas demo (apaga dados)
 php artisan tenants:migrate        # roda as migrations das clínicas
 php artisan tenants:list           # lista as clínicas e os subdomínios
+composer dev                       # API, fila, agendador e Vite juntos
+php artisan queue:work --tries=3   # só a fila (envia os e-mails)
+php artisan schedule:work          # só o agendador (lembrete a cada 15 min)
+php artisan appointments:send-reminders  # envia os lembretes devidos agora
 php artisan test                   # testes (SQLite, nunca o MySQL do .env)
 php vendor/bin/pint --test         # estilo
 ```

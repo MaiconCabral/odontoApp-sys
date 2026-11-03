@@ -15,8 +15,6 @@ class PatientResource extends JsonResource
 {
     public static $wrap = null;
 
-    private const TONES = ['blue', 'amber', 'green', 'violet', 'pink'];
-
     /**
      * Patient record in the format of the patients page.
      *
@@ -28,7 +26,7 @@ class PatientResource extends JsonResource
             'id' => (string) $this->id,
             'name' => $this->name,
             'initials' => Initials::of($this->name),
-            'tone' => self::TONES[$this->id % count(self::TONES)],
+            'tone' => $this->tone(),
             'cpf' => $this->cpf,
             'phone' => $this->phone,
             'email' => $this->email,
