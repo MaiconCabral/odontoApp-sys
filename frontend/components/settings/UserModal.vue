@@ -59,7 +59,7 @@ const checkboxRowClass = 'flex items-center gap-2 text-[11px] text-body sm:col-s
       <UserPlus :size="17" />
     </template>
 
-    <p v-if="formError || guardError" role="alert" class="text-[11px] text-[#c2553f] dark:text-[#e88d7b] sm:col-span-2">
+    <p v-if="formError || guardError" role="alert" class="text-[11px] text-tone-red-text sm:col-span-2">
       {{ formError || guardError }}
     </p>
 

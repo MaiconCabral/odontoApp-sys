@@ -41,6 +41,7 @@ class SessionResource extends JsonResource
             'plan' => [
                 'name' => $tenant->plan->name,
                 'trialDaysLeft' => $tenant->trialDaysLeft(),
+                'maxProfessionals' => $tenant->plan->max_professionals,
             ],
         ];
     }

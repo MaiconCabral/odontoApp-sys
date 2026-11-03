@@ -75,7 +75,7 @@ function closeOnBackdrop(event: MouseEvent) {
           v-if="submitLabel"
           type="submit"
           :disabled="submitting"
-          class="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-2.5 py-2.5 text-[12px] font-bold text-white shadow-[0_5px_14px_rgba(2,132,199,.18)] transition duration-200 hover:-translate-y-px hover:bg-brand-hover disabled:opacity-60 sm:px-[15px]"
+          class="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-2.5 py-2.5 text-[12px] font-bold text-white shadow-[0_5px_14px_rgba(3,105,161,.18)] transition duration-200 hover:-translate-y-px hover:bg-brand-hover disabled:opacity-60 sm:px-[15px]"
         >
           <slot name="submit-icon" />
           {{ submitLabel }}

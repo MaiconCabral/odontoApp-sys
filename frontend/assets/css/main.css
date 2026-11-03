@@ -18,6 +18,28 @@
     --color-brand-tint: #f0f9ff;
     --color-brand-soft: #e0f2fe;
     --color-brand-line: #bae6fd;
+
+    /* Status tones. "text" reaches 4.5:1 on its own "bg"; "solid" is for dots and bars. */
+    --tone-green-bg: #e7f7ef;
+    --tone-green-text: #1d6f53;
+    --tone-green-line: #43a47d;
+    --tone-green-solid: #2cae80;
+    --tone-amber-bg: #fff4dc;
+    --tone-amber-text: #7f5a17;
+    --tone-amber-line: #dda646;
+    --tone-amber-solid: #dfaa4c;
+    --tone-red-bg: #fdeeea;
+    --tone-red-text: #a8402c;
+    --tone-red-line: #d9705c;
+    --tone-red-solid: #ec6d58;
+    --tone-violet-bg: #eeebfb;
+    --tone-violet-text: #5a529c;
+    --tone-violet-line: #b9b3e6;
+    --tone-violet-solid: #7a73bc;
+    --tone-pink-bg: #fce9ed;
+    --tone-pink-text: #94485b;
+    --tone-pink-line: #e8b4c1;
+    --tone-pink-solid: #d97a92;
   }
 
   .dark {
@@ -35,6 +57,27 @@
     --color-brand-tint: #0b2533;
     --color-brand-soft: #0c3347;
     --color-brand-line: #075985;
+
+    --tone-green-bg: #0f2a20;
+    --tone-green-text: #6fd3ad;
+    --tone-green-line: #2f6f56;
+    --tone-green-solid: #34c48f;
+    --tone-amber-bg: #2a2110;
+    --tone-amber-text: #f0c674;
+    --tone-amber-line: #7a5c1f;
+    --tone-amber-solid: #e4ad4c;
+    --tone-red-bg: #2a1512;
+    --tone-red-text: #f0a899;
+    --tone-red-line: #8a3f30;
+    --tone-red-solid: #ec6d58;
+    --tone-violet-bg: #1e1b33;
+    --tone-violet-text: #b8b2f0;
+    --tone-violet-line: #4a437d;
+    --tone-violet-solid: #8f88d6;
+    --tone-pink-bg: #2c151c;
+    --tone-pink-text: #f0a8bb;
+    --tone-pink-line: #6e3445;
+    --tone-pink-solid: #d97a92;
   }
 
   html {

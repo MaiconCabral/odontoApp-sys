@@ -12,11 +12,11 @@ import type { FormErrors } from '~/utils/auth'
 export const SLOT_MINUTES = 30
 
 export const STATUS_CLASSES: Record<AppointmentStatus, string> = {
-  requested: 'border-dashed border-[#dda646] bg-[#fff4dc] text-[#a3782c]',
+  requested: 'border-dashed border-tone-amber-line bg-tone-amber-bg text-tone-amber-text',
   scheduled: 'border-brand-accent bg-brand-soft text-brand-text',
-  confirmed: 'border-[#43a47d] bg-[#e7f7ef] text-[#2f7d5f]',
+  confirmed: 'border-tone-green-line bg-tone-green-bg text-tone-green-text',
   completed: 'border-line bg-surface-soft text-muted',
-  no_show: 'border-[#d9705c] bg-[#fdeeea] text-[#b4543f]',
+  no_show: 'border-tone-red-line bg-tone-red-bg text-tone-red-text',
   cancelled: 'border-line bg-surface-soft text-faint line-through',
   rejected: 'border-line bg-surface-soft text-faint line-through',
 }

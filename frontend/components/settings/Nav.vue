@@ -25,7 +25,7 @@ const active = defineModel<SettingsTabId>('active', { required: true })
       {{ tab.label }}
       <span
         v-if="tab.badge"
-        class="rounded bg-[#fff2d9] px-[5px] py-[3px] text-[8px] font-normal text-[#bc8031]"
+        class="rounded bg-tone-amber-bg px-[5px] py-[3px] text-[8px] font-normal text-tone-amber-text"
       >
         {{ tab.badge }}
       </span>

@@ -51,7 +51,7 @@ const { errors, formError, isSubmitting, submit } = useAuthForm(form, validateCl
       </button>
     </template>
 
-    <p v-if="formError" role="alert" class="pt-4 text-[11px] text-[#c2553f] dark:text-[#e88d7b]">
+    <p v-if="formError" role="alert" class="pt-4 text-[11px] text-tone-red-text">
       {{ formError }}
     </p>
 
@@ -70,9 +70,9 @@ const { errors, formError, isSubmitting, submit } = useAuthForm(form, validateCl
           v-model="form[field.key]"
           :type="field.type"
           :aria-invalid="Boolean(errors[field.key])"
-          class="h-[37px] w-full rounded-[7px] border border-line bg-surface px-[11px] text-[11px] text-body outline-none transition duration-200 focus:border-brand-accent aria-[invalid=true]:!border-[#d9705c]"
+          class="h-[37px] w-full rounded-[7px] border border-line bg-surface px-[11px] text-[11px] text-body outline-none transition duration-200 focus:border-brand-accent aria-[invalid=true]:!border-tone-red-line"
         >
-        <p v-if="errors[field.key]" class="text-[10px] text-[#c2553f] dark:text-[#e88d7b]">
+        <p v-if="errors[field.key]" class="text-[10px] text-tone-red-text">
           {{ errors[field.key] }}
         </p>
       </div>

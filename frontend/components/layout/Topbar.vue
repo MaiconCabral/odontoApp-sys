@@ -39,7 +39,7 @@ const iconButtonClass = 'grid h-[34px] w-[34px] place-items-center rounded-lg te
 
     <div class="flex items-center gap-[3px] sm:gap-2.5">
       <div class="flex items-center gap-[7px] rounded-[7px] p-[7px] text-[0px] text-muted sm:border sm:border-line sm:px-2.5 sm:text-[11px]">
-        <span class="mr-[3px] h-1.5 w-1.5 rounded-full bg-[#32bc8a] shadow-[0_0_0_3px_#e1f7ee] sm:mr-0" />
+        <span class="mr-[3px] h-1.5 w-1.5 rounded-full bg-tone-green-solid shadow-[0_0_0_3px_var(--tone-green-bg)] sm:mr-0" />
         Trial {{ workspace.plan.name }}
         <span class="hidden font-semibold text-brand-text md:inline">{{ workspace.plan.trialDaysLeft }} dias restantes</span>
       </div>

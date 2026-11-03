@@ -3,7 +3,9 @@ import { flushPromises } from '@vue/test-utils'
 import type { VueWrapper } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import SettingsPage from '~/pages/app/configuracoes.vue'
+import { adminSession } from '../fixtures/session'
 import { clinicFixture, preferencesFixture } from '../fixtures/settings'
+import { seedSession } from '../utils/session'
 
 function openTab(page: VueWrapper, label: string) {
   const tab = page.findAll('aside button').find(item => item.text().startsWith(label))
@@ -30,6 +32,30 @@ describe('Configurações', () => {
     expect(page.find('[data-testid="clinic-tab"]').attributes('style')).toContain('display: none')
     expect(page.text()).toContain('Dr. Felipe Rocha')
     expect(page.text()).toContain('Odontologia estética')
+  })
+
+  it('counts the active professionals against the plan limit', async () => {
+    const page = await mountSuspended(SettingsPage)
+
+    await openTab(page, 'Equipe')
+    await flushPromises()
+
+    // Carlos (admin who attends) and Ana count; Felipe is inactive.
+    expect(page.find('#team-plan-limit').text()).toBe('2 de 5 profissionais')
+  })
+
+  it('warns when the plan is full but keeps adding reception open', async () => {
+    seedSession({ ...adminSession, plan: { ...adminSession.plan, maxProfessionals: 2 } })
+    const page = await mountSuspended(SettingsPage)
+
+    await openTab(page, 'Equipe')
+    await flushPromises()
+
+    const add = page.findAll('button').find(item => item.text() === 'Novo usuário')
+
+    expect(page.find('#team-plan-limit').text()).toContain('limite atingido, só é possível adicionar recepção')
+    expect(add?.attributes('disabled')).toBeUndefined()
+    expect(add?.attributes('aria-describedby')).toBe('team-plan-limit')
   })
 
   it('shows the opening hours tab', async () => {

@@ -126,6 +126,13 @@ Regras:
 - `professional` sempre atende, `reception` nunca, e só `admin` usa o valor enviado em `attends_patients`.
 - Remover o próprio acesso (rebaixar, desativar ou excluir) ou o último administrador ativo dá `422` em `errors.user`.
 - Usuário com agendamentos não pode ser excluído (`422` em `errors.user`). Nesse caso, desative-o.
+- **Limite do plano (`plans.max_professionals`):**
+  - conta os usuários ativos que atendem (`attends_patients`), aplicado por `PlanLimits` em `CreateUser` e `UpdateUser`;
+  - criar, ativar ou passar a atender além do limite dá `422` em `errors.role`: "Seu plano permite até N profissionais. Fale com a gente para mudar de plano.";
+  - recepção e usuários inativos não contam;
+  - quem já contava continua depois de uma troca para um plano menor. Só entradas novas são barradas;
+  - `null` significa sem limite;
+  - a sessão traz `plan.maxProfessionals` e a assinatura traz `professionalsUsed`.
 
 ### Agenda
 

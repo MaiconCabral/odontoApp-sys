@@ -33,14 +33,22 @@ export default {
         muted: 'var(--color-muted)',
         faint: 'var(--color-faint)',
         brand: {
-          DEFAULT: '#0284c7',
-          hover: '#0369a1',
+          // Sky 700: white text on it reaches 5.9:1 (WCAG AA). Sky 600 stayed at 4.1:1.
+          DEFAULT: '#0369a1',
+          hover: '#075985',
           accent: '#0ea5e9',
           text: 'var(--color-brand-text)',
           tint: 'var(--color-brand-tint)',
           soft: 'var(--color-brand-soft)',
           line: 'var(--color-brand-line)',
         },
+        // Status colors that follow the theme: bg-tone-green-bg, text-tone-green-text...
+        tone: Object.fromEntries(['green', 'amber', 'red', 'violet', 'pink'].map(tone => [tone, {
+          bg: `var(--tone-${tone}-bg)`,
+          text: `var(--tone-${tone}-text)`,
+          line: `var(--tone-${tone}-line)`,
+          solid: `var(--tone-${tone}-solid)`,
+        }])),
       },
       fontFamily: {
         sans: ['"DM Sans"', 'sans-serif'],

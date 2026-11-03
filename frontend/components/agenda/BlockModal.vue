@@ -100,10 +100,10 @@ const professionalName = computed(() =>
     <p class="text-[11px] text-muted sm:col-span-2">
       Enquanto o bloqueio existir, a agenda não aceita novas consultas neste período.
     </p>
-    <button type="button" class="self-start rounded-lg border border-line px-3 py-2 text-[11px] font-bold text-[#b4543f]" @click="remove">
+    <button type="button" class="self-start rounded-lg border border-line px-3 py-2 text-[11px] font-bold text-tone-red-text" @click="remove">
       Excluir bloqueio
     </button>
-    <p v-if="removeError" role="alert" class="text-[11px] text-[#c2553f] sm:col-span-2">
+    <p v-if="removeError" role="alert" class="text-[11px] text-tone-red-text sm:col-span-2">
       {{ removeError }}
     </p>
   </AppModal>
@@ -122,7 +122,7 @@ const professionalName = computed(() =>
       <Ban :size="17" />
     </template>
 
-    <p v-if="formError" role="alert" class="text-[11px] text-[#c2553f] sm:col-span-2">
+    <p v-if="formError" role="alert" class="text-[11px] text-tone-red-text sm:col-span-2">
       {{ formError }}
     </p>
 

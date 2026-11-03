@@ -94,7 +94,7 @@ const label = computed(() => state.value.unreadCount
       <span
         v-if="state.unreadCount > 0"
         data-testid="unread-dot"
-        class="absolute right-[7px] top-[7px] h-[5px] w-[5px] rounded-full border-[1.5px] border-white bg-[#ec6d58]"
+        class="absolute right-[7px] top-[7px] h-[5px] w-[5px] rounded-full border-[1.5px] border-surface bg-tone-red-solid"
       />
     </button>
 

@@ -18,6 +18,7 @@ export const adminSession: AuthSession = {
   plan: {
     name: 'Pro',
     trialDaysLeft: 14,
+    maxProfessionals: 5,
   },
 }
 

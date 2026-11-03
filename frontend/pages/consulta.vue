@@ -51,7 +51,7 @@ async function answer(action: 'confirm' | 'cancel') {
 await load()
 
 const primaryClass = 'inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand text-[14px] font-bold text-white disabled:opacity-60'
-const secondaryClass = 'inline-flex h-11 w-full items-center justify-center rounded-lg border border-line text-[14px] font-semibold text-[#b4543f] disabled:opacity-60'
+const secondaryClass = 'inline-flex h-11 w-full items-center justify-center rounded-lg border border-line text-[14px] font-semibold text-tone-red-text disabled:opacity-60'
 </script>
 
 <template>

@@ -157,7 +157,7 @@ const dangerActions: AppointmentAction[] = ['cancel', 'reject', 'no_show']
           v-for="action in details.actions"
           :key="action"
           type="button"
-          :class="[buttonClass, dangerActions.includes(action) ? 'text-[#b4543f]' : '', pendingAction === action ? '!border-brand-accent' : '']"
+          :class="[buttonClass, dangerActions.includes(action) ? 'text-tone-red-text' : '', pendingAction === action ? '!border-brand-accent' : '']"
           :disabled="isBusy"
           @click="run(action)"
         >
@@ -188,7 +188,7 @@ const dangerActions: AppointmentAction[] = ['cancel', 'reject', 'no_show']
         </div>
       </div>
 
-      <p v-if="actionError" role="alert" class="text-[11px] text-[#c2553f] sm:col-span-2">
+      <p v-if="actionError" role="alert" class="text-[11px] text-tone-red-text sm:col-span-2">
         {{ actionError }}
       </p>
 
@@ -196,7 +196,7 @@ const dangerActions: AppointmentAction[] = ['cancel', 'reject', 'no_show']
         <h3 class="mb-2 text-[10px] font-bold uppercase tracking-[.06em] text-muted">
           Avisos ao paciente
         </h3>
-        <p v-if="details.patientHasEmail === false" class="mb-2 rounded-md bg-[#fff4dc] px-2.5 py-2 text-[10px] text-[#8a6420]">
+        <p v-if="details.patientHasEmail === false" class="mb-2 rounded-md bg-tone-amber-bg px-2.5 py-2 text-[10px] text-tone-amber-text">
           Paciente sem e-mail: avise por telefone.
         </p>
         <p v-if="!details.notifications.length" class="text-[10px] text-muted">

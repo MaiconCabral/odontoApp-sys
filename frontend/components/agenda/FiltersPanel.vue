@@ -13,8 +13,8 @@ const selectedRooms = defineModel<string[]>('selectedRooms', { required: true })
 
 const toneClasses: Record<ProfessionalTone, string> = {
   cyan: 'bg-brand',
-  amber: 'bg-[#e4ad4c]',
-  green: 'bg-[#51bd92]',
+  amber: 'bg-tone-amber-solid',
+  green: 'bg-tone-green-solid',
 }
 
 const allProfessionalsSelected = computed(() => selectedProfessionals.value.length === props.professionals.length)
@@ -65,11 +65,11 @@ const checkboxClass = 'h-[13px] w-[13px] accent-brand'
       {{ room.name }}
     </label>
 
-    <div class="mt-3 flex items-center gap-[9px] rounded-lg bg-[#ecfaf4] px-[9px] py-[11px] text-[#178c6a] md:mt-[25px]">
+    <div class="mt-3 flex items-center gap-[9px] rounded-lg bg-tone-green-bg px-[9px] py-[11px] text-tone-green-text md:mt-[25px]">
       <Clock3 :size="16" class="flex-none" />
       <div class="flex flex-col gap-[3px]">
         <strong class="text-[10px]">{{ freeSlotsToday }} horários livres</strong>
-        <span class="text-[9px] text-[#67ae96]">de 30 minutos, ainda hoje</span>
+        <span class="text-[9px] text-tone-green-text">de 30 minutos, ainda hoje</span>
       </div>
     </div>
   </aside>

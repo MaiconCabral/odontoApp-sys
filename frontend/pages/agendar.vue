@@ -222,7 +222,7 @@ const primaryClass = 'inline-flex h-11 w-full items-center justify-center rounde
             <input v-model="form.consent" type="checkbox" class="mt-0.5 accent-brand" :aria-invalid="Boolean(errors.consent)">
             Autorizo a clínica a entrar em contato comigo para confirmar o horário.
           </label>
-          <p v-if="errors.consent" class="-mt-3 text-[12px] text-[#c2553f]">
+          <p v-if="errors.consent" class="-mt-3 text-[12px] text-tone-red-text">
             {{ errors.consent }}
           </p>
 

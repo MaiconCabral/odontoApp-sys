@@ -11,10 +11,10 @@ const { data: requests } = useAppointmentRequests()
 <template>
   <section
     v-if="requests?.length"
-    class="mb-[18px] rounded-xl border border-[#f1d9a6] bg-[#fffaf0] p-4 dark:border-line dark:bg-surface"
+    class="mb-[18px] rounded-xl border border-tone-amber-line bg-tone-amber-bg p-4 dark:border-line dark:bg-surface"
     aria-labelledby="requests-title"
   >
-    <h2 id="requests-title" class="mb-3 flex items-center gap-2 text-[12px] font-bold text-[#8a6420] dark:text-body">
+    <h2 id="requests-title" class="mb-3 flex items-center gap-2 text-[12px] font-bold text-tone-amber-text dark:text-body">
       <Inbox :size="16" />
       {{ requests.length }} {{ requests.length === 1 ? 'pedido de agendamento aguardando' : 'pedidos de agendamento aguardando' }}
     </h2>

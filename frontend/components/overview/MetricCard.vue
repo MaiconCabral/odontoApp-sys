@@ -15,13 +15,13 @@ const icons = {
 
 const toneClasses: Record<MetricTone, string> = {
   blue: 'bg-brand-soft text-brand-text',
-  green: 'bg-[#e3f8ef] text-[#20a171]',
-  amber: 'bg-[#fff5df] text-[#c89132]',
-  violet: 'bg-[#eeebfb] text-[#7a73bc]',
+  green: 'bg-tone-green-bg text-tone-green-text',
+  amber: 'bg-tone-amber-bg text-tone-amber-text',
+  violet: 'bg-tone-violet-bg text-tone-violet-text',
 }
 const trends = {
-  up: { icon: ArrowUpRight, class: 'text-[#24a375]', label: 'subiu' },
-  down: { icon: ArrowDownRight, class: 'text-[#c2553f]', label: 'caiu' },
+  up: { icon: ArrowUpRight, class: 'text-tone-green-text', label: 'subiu' },
+  down: { icon: ArrowDownRight, class: 'text-tone-red-text', label: 'caiu' },
   flat: { icon: ArrowRight, class: 'text-muted', label: 'estável' },
 } satisfies Record<Trend, unknown>
 </script>

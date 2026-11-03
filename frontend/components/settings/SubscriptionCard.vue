@@ -23,8 +23,8 @@ const summary = computed(() => {
 
 // Red badge for an expired trial, green otherwise.
 const statusClass = computed(() => props.subscription.status === 'expired'
-  ? 'bg-[#fdecea] text-[#c2412d]'
-  : 'bg-[#e5f7ef] text-[#258f6c]')
+  ? 'bg-tone-red-bg text-tone-red-text'
+  : 'bg-tone-green-bg text-tone-green-text')
 </script>
 
 <template>
@@ -53,14 +53,14 @@ const statusClass = computed(() => props.subscription.status === 'expired'
 
     <ul class="mb-[23px] mt-4 flex flex-wrap gap-[13px] text-[10px] text-body">
       <li v-for="feature in subscription.plan.features" :key="feature" class="flex items-center gap-1">
-        <Check :size="13" class="flex-none text-[#24a375]" />
+        <Check :size="13" class="flex-none text-tone-green-text" />
         {{ feature }}
       </li>
     </ul>
 
     <button
       type="button"
-      class="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-[15px] py-2.5 text-[12px] font-bold text-white shadow-[0_5px_14px_rgba(2,132,199,.18)] transition duration-200 hover:-translate-y-px hover:bg-brand-hover"
+      class="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-[15px] py-2.5 text-[12px] font-bold text-white shadow-[0_5px_14px_rgba(3,105,161,.18)] transition duration-200 hover:-translate-y-px hover:bg-brand-hover"
       @click="managing = true"
     >
       Gerenciar assinatura

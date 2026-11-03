@@ -25,7 +25,7 @@ const chartDescription = computed(() =>
 
     <div class="mt-5 flex items-baseline gap-2 sm:mt-[25px]">
       <strong class="font-display text-[26px] font-extrabold leading-[normal] tracking-[-.8px]">{{ weekly.total }}</strong>
-      <span class="flex items-center text-[10px] font-bold" :class="weekly.trend === 'down' ? 'text-[#c2553f]' : weekly.trend === 'up' ? 'text-[#21a477]' : 'text-muted'">
+      <span class="flex items-center text-[10px] font-bold" :class="weekly.trend === 'down' ? 'text-tone-red-text' : weekly.trend === 'up' ? 'text-tone-green-text' : 'text-muted'">
         <component :is="weekly.trend === 'down' ? ArrowDownRight : weekly.trend === 'up' ? ArrowUpRight : ArrowRight" :size="14" /> {{ weekly.change }}
       </span>
       <small class="text-[10px] text-faint">{{ weekly.comparison }}</small>
@@ -47,12 +47,12 @@ const chartDescription = computed(() =>
         >
           <div
             class="relative max-h-[140px] min-h-[15px] w-[18px] rounded-[6px_6px_2px_2px] transition-[height] duration-500 ease-in-out sm:w-[22px]"
-            :class="bar.highlighted ? 'bg-brand shadow-[0_5px_12px_rgba(2,132,199,.2)]' : 'bg-brand-soft'"
+            :class="bar.highlighted ? 'bg-brand shadow-[0_5px_12px_rgba(3,105,161,.2)]' : 'bg-brand-soft'"
             :style="{ height: `${barHeightPercent(bar.value, weekly.scaleMax)}%` }"
           >
             <span
               v-if="bar.highlighted"
-              class="absolute left-1/2 top-[-22px] -translate-x-1/2 rounded bg-brand-soft px-[5px] py-[3px] text-[9px] text-white"
+              class="absolute left-1/2 top-[-22px] -translate-x-1/2 rounded bg-brand-soft px-[5px] py-[3px] text-[9px] font-semibold text-brand-text"
             >
               {{ bar.value }}
             </span>

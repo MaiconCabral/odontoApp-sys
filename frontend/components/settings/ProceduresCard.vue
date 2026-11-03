@@ -104,7 +104,7 @@ const iconButtonClass = 'grid h-[30px] w-[30px] place-items-center rounded-lg te
             :aria-label="confirmingDelete === procedure.id ? `Confirmar exclusão de ${procedure.name}` : `Excluir ${procedure.name}`"
             @click="remove(procedure)"
           >
-            <span v-if="confirmingDelete === procedure.id" class="text-[10px] font-bold text-[#c2553f]">Sim?</span>
+            <span v-if="confirmingDelete === procedure.id" class="text-[10px] font-bold text-tone-red-text">Sim?</span>
             <Trash2 v-else :size="14" />
           </button>
         </div>

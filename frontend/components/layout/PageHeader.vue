@@ -30,7 +30,7 @@ defineEmits<{
       v-if="actionLabel"
       type="button"
       @click="$emit('action')"
-      class="mt-[18px] inline-flex flex-none items-center justify-center gap-2 rounded-lg bg-brand px-[15px] py-2.5 text-[12px] font-bold text-white shadow-[0_5px_14px_rgba(2,132,199,.18)] transition duration-200 hover:-translate-y-px hover:bg-brand-hover sm:mt-0"
+      class="mt-[18px] inline-flex flex-none items-center justify-center gap-2 rounded-lg bg-brand px-[15px] py-2.5 text-[12px] font-bold text-white shadow-[0_5px_14px_rgba(3,105,161,.18)] transition duration-200 hover:-translate-y-px hover:bg-brand-hover sm:mt-0"
     >
       <Plus :size="17" /> {{ actionLabel }}
     </button>

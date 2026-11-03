@@ -4,7 +4,7 @@ import type { Workspace } from '~/types/workspace'
 const signedOut: Pick<Workspace, 'clinic' | 'user' | 'plan'> = {
   clinic: { slug: '', name: '', unit: '', initials: '' },
   user: { id: '', name: '', email: '', initials: '', role: 'professional', roleLabel: '' },
-  plan: { name: '', trialDaysLeft: 0 },
+  plan: { name: '', trialDaysLeft: 0, maxProfessionals: null },
 }
 
 // Clinic, user, plan and menu of the panel.

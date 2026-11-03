@@ -99,7 +99,7 @@ const mutedCellClass = 'text-[10px] text-muted'
         <span role="cell" class="hidden md:block">
           <span
             class="inline-block rounded-[5px] px-[7px] py-[5px] text-[9px]"
-            :class="patient.isPrivate ? 'bg-[#fff4df] text-[#aa7830]' : 'bg-[#e7f7ef] text-[#378b70]'"
+            :class="patient.isPrivate ? 'bg-tone-amber-bg text-tone-amber-text' : 'bg-tone-green-bg text-tone-green-text'"
           >
             {{ patient.insurance ?? 'Particular' }}
           </span>
@@ -114,7 +114,7 @@ const mutedCellClass = 'text-[10px] text-muted'
             :aria-label="confirmingDelete === patient.id ? `Confirmar exclusão de ${patient.name}` : `Excluir ${patient.name}`"
             @click="remove(patient)"
           >
-            <span v-if="confirmingDelete === patient.id" class="text-[10px] font-bold text-[#c2553f]">Sim?</span>
+            <span v-if="confirmingDelete === patient.id" class="text-[10px] font-bold text-tone-red-text">Sim?</span>
             <Trash2 v-else :size="14" />
           </button>
         </div>

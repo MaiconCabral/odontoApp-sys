@@ -16,7 +16,7 @@ const sizes = {
   large: { control: 'h-11 rounded-lg px-3 text-[14px]', label: 'text-[13px]', error: 'text-[12px]' },
 }
 
-const controlClass = computed(() => `${sizes[props.size].control} w-full border border-line bg-surface text-body outline-none transition duration-200 focus:border-brand-accent aria-[invalid=true]:!border-[#d9705c] dark:[color-scheme:dark]`)
+const controlClass = computed(() => `${sizes[props.size].control} w-full border border-line bg-surface text-body outline-none transition duration-200 focus:border-brand-accent aria-[invalid=true]:!border-tone-red-line dark:[color-scheme:dark]`)
 </script>
 
 <template>
@@ -28,7 +28,7 @@ const controlClass = computed(() => `${sizes[props.size].control} w-full border 
       :invalid="Boolean(error)"
       :described-by="error ? errorId : undefined"
     />
-    <p v-if="error" :id="errorId" class="text-[#c2553f] dark:text-[#e88d7b]" :class="sizes[size].error">
+    <p v-if="error" :id="errorId" class="text-tone-red-text" :class="sizes[size].error">
       {{ error }}
     </p>
   </div>

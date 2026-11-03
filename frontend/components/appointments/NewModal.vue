@@ -148,7 +148,7 @@ const timeError = computed(() => errors.value.time ?? (errors.value as Record<st
       <CalendarDays :size="17" />
     </template>
 
-    <p v-if="formError" role="alert" class="text-[11px] text-[#c2553f] sm:col-span-2">
+    <p v-if="formError" role="alert" class="text-[11px] text-tone-red-text sm:col-span-2">
       {{ formError }}
     </p>
 
@@ -156,7 +156,7 @@ const timeError = computed(() => errors.value.time ?? (errors.value as Record<st
       <div class="relative">
         <div
           class="flex h-[37px] items-center gap-2 rounded-[7px] border border-line px-[11px] text-faint transition duration-200 focus-within:border-brand-accent"
-          :class="{ '!border-[#d9705c]': field.invalid }"
+          :class="{ '!border-tone-red-line': field.invalid }"
         >
           <Search :size="15" class="flex-none" />
           <input
@@ -206,7 +206,7 @@ const timeError = computed(() => errors.value.time ?? (errors.value as Record<st
       <button type="button" class="h-[37px] rounded-[7px] bg-brand px-3 text-[11px] font-bold text-white" @click="addPatient">
         Cadastrar
       </button>
-      <p v-if="newPatientError" role="alert" class="text-[10px] text-[#c2553f] sm:col-span-3">
+      <p v-if="newPatientError" role="alert" class="text-[10px] text-tone-red-text sm:col-span-3">
         {{ newPatientError }}
       </p>
     </div>

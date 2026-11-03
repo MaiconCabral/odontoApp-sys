@@ -21,8 +21,8 @@ describe('Pacientes', () => {
     const page = await mountSuspended(PatientsPage)
     const tag = (text: string) => page.findAll('[role="cell"] span').find(item => item.text() === text)
 
-    expect(tag('Particular')?.classes()).toContain('text-[#aa7830]')
-    expect(tag('Bradesco Saúde')?.classes()).toContain('text-[#378b70]')
+    expect(tag('Particular')?.classes()).toContain('text-tone-amber-text')
+    expect(tag('Bradesco Saúde')?.classes()).toContain('text-tone-green-text')
   })
 
   it('sends the search to the API after a pause and returns to the first page', async () => {

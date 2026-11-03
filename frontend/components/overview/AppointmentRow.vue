@@ -9,9 +9,9 @@ defineProps<{
 const { openModal } = useActiveModal()
 
 const statuses: Record<AppointmentStatus, { label: string, pill: string, dot: string }> = {
-  completed: { label: 'Concluído', pill: 'bg-[#e8f8f1] text-[#26966f]', dot: 'bg-[#2cae80]' },
+  completed: { label: 'Concluído', pill: 'bg-tone-green-bg text-tone-green-text', dot: 'bg-tone-green-solid' },
   in_progress: { label: 'Em atendimento', pill: 'bg-brand-soft text-brand-text', dot: 'bg-brand' },
-  waiting: { label: 'Aguardando', pill: 'bg-[#fff5df] text-[#ad7c2d]', dot: 'bg-[#dfaa4c]' },
+  waiting: { label: 'Aguardando', pill: 'bg-tone-amber-bg text-tone-amber-text', dot: 'bg-tone-amber-solid' },
 }
 </script>
 

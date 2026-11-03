@@ -62,7 +62,7 @@ const priceError = computed(() => errors.value.price ?? (errors.value as Record<
       <Stethoscope :size="17" />
     </template>
 
-    <p v-if="formError" role="alert" class="text-[11px] text-[#c2553f] sm:col-span-2">
+    <p v-if="formError" role="alert" class="text-[11px] text-tone-red-text sm:col-span-2">
       {{ formError }}
     </p>
 

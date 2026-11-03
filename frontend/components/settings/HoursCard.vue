@@ -74,7 +74,7 @@ const timeClass = 'h-[34px] w-[84px] rounded-[7px] border border-line bg-surface
     </div>
 
     <template v-else>
-      <p v-if="formError" role="alert" class="pt-4 text-[11px] text-[#c2553f]">
+      <p v-if="formError" role="alert" class="pt-4 text-[11px] text-tone-red-text">
         {{ formError }}
       </p>
 
@@ -111,7 +111,7 @@ const timeClass = 'h-[34px] w-[84px] rounded-[7px] border border-line bg-surface
           </template>
           <span v-else class="text-[10px] text-muted">Fechado</span>
 
-          <p v-if="dayErrors[index]" role="alert" class="w-full text-[10px] text-[#c2553f]">
+          <p v-if="dayErrors[index]" role="alert" class="w-full text-[10px] text-tone-red-text">
             {{ dayErrors[index] }}
           </p>
         </div>

@@ -19,6 +19,8 @@ export type Tenant = {
 export type Plan = {
   name: string
   trialDaysLeft: number
+  // Active professionals the plan allows; null means no limit.
+  maxProfessionals: number | null
 }
 
 export type AuthSession = {

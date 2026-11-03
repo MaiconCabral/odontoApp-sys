@@ -9,6 +9,17 @@ const { data: users, error, pending, refresh } = useTeam()
 const editing = ref<TeamUser | null>(null)
 const isModalOpen = ref(false)
 const confirmingDelete = ref<string | null>(null)
+const workspace = useWorkspace()
+
+// Active people who attend patients, the ones the plan counts.
+const professionalsUsed = computed(() => users.value?.filter(user => user.active && user.attendsPatients).length ?? 0)
+
+// The API enforces the limit; this only warns. Reception does not count, so adding stays open.
+const isPlanFull = computed(() => {
+  const max = workspace.value.plan.maxProfessionals
+
+  return max !== null && professionalsUsed.value >= max
+})
 
 // Role and specialty in one line.
 function roleLine(user: TeamUser) {
@@ -65,14 +76,21 @@ const iconButtonClass = 'grid h-[30px] w-[30px] place-items-center rounded-lg te
     subtitle="Quem acessa o painel e quem atende na agenda da clínica."
   >
     <template #action>
-      <button
-        type="button"
-        class="inline-flex flex-none items-center justify-center gap-2 rounded-lg border border-line bg-surface px-[15px] py-2.5 text-[12px] font-bold text-body transition duration-200"
-        @click="openNew"
-      >
-        <Plus :size="15" />
-        Novo usuário
-      </button>
+      <div class="flex flex-none flex-col items-end gap-1">
+        <button
+          type="button"
+          class="inline-flex flex-none items-center justify-center gap-2 rounded-lg border border-line bg-surface px-[15px] py-2.5 text-[12px] font-bold text-body transition duration-200"
+          :aria-describedby="isPlanFull ? 'team-plan-limit' : undefined"
+          @click="openNew"
+        >
+          <Plus :size="15" />
+          Novo usuário
+        </button>
+        <span v-if="users && workspace.plan.maxProfessionals !== null" id="team-plan-limit" class="text-[10px] text-muted">
+          {{ professionalsUsed }} de {{ workspace.plan.maxProfessionals }} profissionais
+          <template v-if="isPlanFull">· limite atingido, só é possível adicionar recepção</template>
+        </span>
+      </div>
     </template>
 
     <p v-if="pending && !users" role="status" class="pt-4 text-[11px] text-muted">
@@ -113,7 +131,7 @@ const iconButtonClass = 'grid h-[30px] w-[30px] place-items-center rounded-lg te
             :aria-label="confirmingDelete === user.id ? `Confirmar exclusão de ${user.name}` : `Excluir ${user.name}`"
             @click="remove(user)"
           >
-            <span v-if="confirmingDelete === user.id" class="text-[10px] font-bold text-[#c2553f]">Sim?</span>
+            <span v-if="confirmingDelete === user.id" class="text-[10px] font-bold text-tone-red-text">Sim?</span>
             <Trash2 v-else :size="14" />
           </button>
         </div>

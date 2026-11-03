@@ -8,7 +8,7 @@ const props = defineProps<{
 
 
 const donutStyle = computed(() => ({
-  background: `conic-gradient(#0284c7 0 ${props.percentage}%, var(--color-line) ${props.percentage}% 100%)`,
+  background: `conic-gradient(#0369a1 0 ${props.percentage}%, var(--color-line) ${props.percentage}% 100%)`,
 }))
 </script>
 

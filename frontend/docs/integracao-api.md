@@ -140,7 +140,9 @@ Os valores em dinheiro chegam em centavos. Use `formatMoney`, `toCents` e `cents
   - lista a equipe e permite criar, editar e excluir;
   - a exclusão pede um segundo clique;
   - o próprio usuário não aparece com o botão de excluir e não pode trocar o próprio papel;
-  - os erros da API aparecem no campo ou no topo do modal.
+  - os erros da API aparecem no campo ou no topo do modal;
+  - abaixo de "Novo usuário", mostra "2 de 5 profissionais": ativos que atendem, contra `plan.maxProfessionals` da sessão;
+  - no limite, avisa "só é possível adicionar recepção", mas o botão continua ativo, porque a recepção não conta. Quem barra é a API, e o erro aparece no campo "Perfil de acesso".
 - **Configurações → Procedimentos e Salas (`SettingsProceduresCard`, `SettingsProcedureModal`, `SettingsRoomsCard` e `SettingsRoomModal`):**
   - só para admin;
   - seguem o padrão da equipe: lista, modal de criar e editar, ativar e desativar, e exclusão com segundo clique;

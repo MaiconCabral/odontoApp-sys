@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Domains\Tenancy\Models\Plan;
 use App\Domains\Tenancy\Models\Tenant;
+use App\Domains\Tenancy\Support\PlanLimits;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -25,6 +26,7 @@ class SubscriptionResource extends JsonResource
             'status' => $this->subscriptionStatus(),
             'trialDaysLeft' => $this->trialDaysLeft(),
             'trialEndsAt' => $this->trial_ends_at?->toIso8601String(),
+            'professionalsUsed' => app(PlanLimits::class)->professionalsUsed(),
             'plan' => self::plan($this->plan),
             'plans' => Plan::query()->orderBy('price_cents')->get()->map(fn (Plan $plan) => self::plan($plan))->all(),
         ];

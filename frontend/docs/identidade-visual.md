@@ -12,7 +12,9 @@
 <p class="text-[#64748b] dark:text-[#a1a1aa]">...</p>
 ```
 
-A exceção são as cores de status (verde, âmbar, vermelho, roxo), que ainda são fixas nos componentes.
+Isso vale também para as cores de status: use os tokens `tone-*`, descritos abaixo. Um teste em `tests/utils/theme.test.ts` impede cor fixa em `STATUS_CLASSES` e confere se todo tom existe nos dois temas.
+
+**Contraste:** texto precisa de 4,5:1 com o fundo (WCAG AA). Texto branco só sobre `brand` ou mais escuro; nunca sobre `brand-accent`, `brand-soft` ou os tons `solid`.
 
 ## Tokens
 
@@ -39,8 +41,8 @@ Definidos em `assets/css/main.css` e expostos em `tailwind.config.ts`.
 
 | Token | Claro | Escuro | Uso |
 | --- | --- | --- | --- |
-| `brand` | `#0284c7` | `#0284c7` | Preenchimento de botões e dados em destaque |
-| `brand-hover` | `#0369a1` | `#0369a1` | Hover de botões |
+| `brand` | `#0369a1` | `#0369a1` | Preenchimento de botões e dados em destaque. Com texto branco, 5,9:1 |
+| `brand-hover` | `#075985` | `#075985` | Hover de botões |
 | `brand-accent` | `#0ea5e9` | `#0ea5e9` | Borda de foco e destaques |
 | `brand-text` | `#0369a1` | `#38bdf8` | Links e textos de marca |
 | `brand-tint` | `#f0f9ff` | `#0b2533` | Fundo suave e hover |
@@ -48,6 +50,28 @@ Definidos em `assets/css/main.css` e expostos em `tailwind.config.ts`.
 | `brand-line` | `#bae6fd` | `#075985` | Bordas de áreas de marca |
 
 Para texto na cor da marca, use sempre `brand-text`, nunca `brand`.
+
+O `brand` era `#0284c7`, que dava 4,1:1 com texto branco. Ele passou para `#0369a1` para atingir o AA.
+
+### Tons de status
+
+Cinco tons (`green`, `amber`, `red`, `violet`, `pink`), cada um com quatro tokens:
+
+| Token | Uso | Exemplo |
+| --- | --- | --- |
+| `tone-<tom>-bg` | Fundo de selos, cartões e eventos | `bg-tone-green-bg` |
+| `tone-<tom>-text` | Texto sobre o `bg` do mesmo tom ou sobre `surface`, com 4,5:1 | `text-tone-red-text` |
+| `tone-<tom>-line` | Borda | `border-tone-amber-line` |
+| `tone-<tom>-solid` | Pontos, barras e ícones decorativos, nunca atrás de texto | `bg-tone-green-solid` |
+
+Significado de cada tom:
+
+- **`green`:** confirmado, concluído e sucesso.
+- **`amber`:** pedido, aguardando e particular.
+- **`red`:** falta, erro e ações destrutivas.
+- **`violet` e `pink`:** variações de avatar e métricas.
+
+Mensagens de erro de formulário usam `text-tone-red-text`, sem `dark:`.
 
 ## Tema
 

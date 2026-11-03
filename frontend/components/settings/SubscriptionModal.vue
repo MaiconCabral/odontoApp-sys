@@ -54,7 +54,7 @@ const isCurrent = (code: string) => code === props.subscription.plan.code
         </div>
         <ul class="flex flex-col gap-1 text-[10px] text-body">
           <li v-for="feature in plan.features" :key="feature" class="flex items-center gap-1">
-            <Check :size="12" class="flex-none text-[#24a375]" />
+            <Check :size="12" class="flex-none text-tone-green-text" />
             {{ feature }}
           </li>
         </ul>
