@@ -6,7 +6,7 @@ definePageMeta({ layout: 'platform', middleware: 'platform-auth' })
 useHead({ title: 'Planos' })
 
 const { showToast } = useToast()
-const { data: plans, error, pending, refresh } = await useAsyncData('platform-plans', () => platformService.plans())
+const { data: plans, error, pending, refresh } = await usePlatformPlans()
 
 const editing = ref<PlatformPlan | null>(null)
 const isFormOpen = ref(false)

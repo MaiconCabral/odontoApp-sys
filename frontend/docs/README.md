@@ -11,6 +11,7 @@ As regras gerais de código estão em [`.cursor/rules/frontend.md`](../../.curso
 | [Integração com a API](integracao-api.md) | `useApi`, subdomínios, services, papéis, agenda, `/agendar`, `/consulta`, visão geral e configurações |
 | [Identidade visual](identidade-visual.md) | Cores, tema, tamanhos e direção das telas de entrada |
 | [Testes](testes.md) | Sessão de teste e o que cobrir |
+| [Performance](performance.md) | Cache entre telas, respostas atrasadas, polling e pendências |
 
 ## Estado atual
 

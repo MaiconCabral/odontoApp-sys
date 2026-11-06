@@ -25,7 +25,8 @@ function openEdit(procedure: ProcedureItem) {
 async function onSaved(message: string) {
   isModalOpen.value = false
   showToast(message)
-  await refreshNuxtData(['procedures', 'agenda'])
+  await refreshNuxtData('procedures')
+  forgetAgendaOptions()
 }
 
 // Deletes a procedure after a second click.
@@ -41,7 +42,8 @@ async function remove(procedure: ProcedureItem) {
   try {
     await proceduresService.remove(procedure.id)
     showToast(`${procedure.name} foi excluído.`)
-    await refreshNuxtData(['procedures', 'agenda'])
+    await refreshNuxtData('procedures')
+    forgetAgendaOptions()
   }
   catch (failure) {
     const { message, fields } = parseApiError(failure)

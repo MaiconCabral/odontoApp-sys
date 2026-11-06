@@ -5,7 +5,7 @@ import type { Patient } from '~/types/patients'
 
 const { closeModal, modalPayload } = useActiveModal()
 const { showToast } = useToast()
-const { data: agenda } = await useAgenda()
+const { data: agenda } = await useAgendaOptions()
 
 const payload = (modalPayload.value ?? {}) as { appointment?: AppointmentDetails, date?: string, time?: string, professionalId?: string }
 const editing = payload.appointment ?? null
@@ -25,6 +25,15 @@ const patientResults = ref<Patient[]>([])
 const patientsListId = useId()
 let selectedName = editing?.patient.name ?? ''
 let searchTimer: ReturnType<typeof setTimeout> | undefined
+const searchGuard = createLatestGuard()
+const slotsGuard = createLatestGuard()
+
+// A closed form must not be filled by answers still on their way.
+onBeforeUnmount(() => {
+  clearTimeout(searchTimer)
+  searchGuard.cancel()
+  slotsGuard.cancel()
+})
 
 // Searches registered patients while the user types.
 watch(patientQuery, (query) => {
@@ -34,6 +43,7 @@ watch(patientQuery, (query) => {
 
   form.patientId = ''
   clearTimeout(searchTimer)
+  searchGuard.cancel()
 
   if (query.trim().length < 2) {
     patientResults.value = []
@@ -42,11 +52,13 @@ watch(patientQuery, (query) => {
   }
 
   searchTimer = setTimeout(async () => {
-    try {
-      patientResults.value = (await patientsService.list({ search: query.trim(), page: 1 })).patients.slice(0, 6)
-    }
-    catch {
-      patientResults.value = []
+    const isCurrent = searchGuard.start()
+    const found = await patientsService.list({ search: query.trim(), page: 1 })
+      .then(list => list.patients.slice(0, 6))
+      .catch(() => [])
+
+    if (isCurrent()) {
+      patientResults.value = found
     }
   }, 250)
 })
@@ -86,27 +98,42 @@ const isLoadingSlots = ref(false)
 // Loads the free start times for the chosen day, procedure, professional and room.
 async function loadSlots() {
   if (!form.date || !form.procedure || !form.professionalId) {
+    slotsGuard.cancel()
     slots.value = []
 
     return
   }
 
+  const isCurrent = slotsGuard.start()
+
   isLoadingSlots.value = true
 
   try {
-    slots.value = await appointmentsService.availability({
+    const found = await appointmentsService.availability({
       date: form.date,
       procedure: form.procedure,
       professionalId: form.professionalId,
       roomId: form.roomId,
       ignore: editing?.id,
     })
+
+    if (!isCurrent()) {
+      return
+    }
+
+    slots.value = found
   }
   catch {
+    if (!isCurrent()) {
+      return
+    }
+
     slots.value = []
   }
   finally {
-    isLoadingSlots.value = false
+    if (isCurrent()) {
+      isLoadingSlots.value = false
+    }
   }
 
   if (form.time && !slots.value.some(slot => slot.time === form.time)) {

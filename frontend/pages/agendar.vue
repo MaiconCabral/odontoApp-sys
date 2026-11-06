@@ -28,27 +28,44 @@ const maxDate = computed(() => addDays(localToday(), info.value?.maxDaysAhead ??
 const slots = ref<string[]>([])
 const isLoadingSlots = ref(false)
 const slotError = ref('')
+// Only the answer for the latest choice of day, procedure and professional fills the times.
+const slotsGuard = createLatestGuard()
 
 // Loads the free times of the chosen day.
 async function loadSlots() {
   if (!form.date || !form.procedure) {
+    slotsGuard.cancel()
     slots.value = []
 
     return
   }
 
+  const isCurrent = slotsGuard.start()
+
   isLoadingSlots.value = true
   slotError.value = ''
 
   try {
-    slots.value = await publicBookingService.availability(form)
+    const found = await publicBookingService.availability(form)
+
+    if (!isCurrent()) {
+      return
+    }
+
+    slots.value = found
   }
   catch (failure) {
+    if (!isCurrent()) {
+      return
+    }
+
     slots.value = []
     slotError.value = Object.values(parseApiError(failure).fields)[0] ?? 'Não foi possível buscar os horários.'
   }
   finally {
-    isLoadingSlots.value = false
+    if (isCurrent()) {
+      isLoadingSlots.value = false
+    }
   }
 
   if (!slots.value.includes(form.time)) {

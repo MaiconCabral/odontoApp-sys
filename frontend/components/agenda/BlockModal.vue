@@ -14,7 +14,7 @@ type BlockFormFields = {
 
 const { closeModal, modalPayload } = useActiveModal()
 const { showToast } = useToast()
-const { data: agenda } = await useAgenda()
+const { data: agenda } = await useAgendaOptions()
 
 const existing = (modalPayload.value?.block ?? null) as AgendaBlock | null
 const today = agenda.value?.today ?? ''

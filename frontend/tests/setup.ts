@@ -5,18 +5,7 @@ import { platformClinicFixture, platformPlansFixture } from './fixtures/platform
 import { clinicFixture, notificationsFixture, preferencesFixture, subscriptionFixture, teamFixture } from './fixtures/settings'
 import { seedSession } from './utils/session'
 
-// happy-dom cannot draw charts. The stub keeps the props, so tests read what would be drawn.
-vi.mock('vue3-apexcharts', async () => {
-  const { defineComponent, h } = await import('vue')
-
-  return {
-    default: defineComponent({
-      name: 'ApexChartStub',
-      props: ['type', 'series', 'options', 'height'],
-      setup: props => () => h('div', { 'data-testid': 'apex-chart', 'data-type': props.type }),
-    }),
-  }
-})
+// Charts: vue3-apexcharts is replaced by tests/stubs/apexcharts.ts through an alias in vitest.config.ts.
 
 // FullCalendar needs a real layout; the stub keeps the events, labels and handlers.
 vi.mock('@fullcalendar/vue3', async () => ({ default: (await import('./stubs/fullcalendar')).FullCalendarStub }))
@@ -24,6 +13,7 @@ vi.mock('@fullcalendar/vue3', async () => ({ default: (await import('./stubs/ful
 // Answers at the network level, so the real services run in the page tests.
 const apiResponses: Record<string, unknown> = {
   '/api/agenda': agendaMock,
+  '/api/agenda/options': { today: agendaMock.today, procedures: agendaMock.procedures, professionals: agendaMock.professionals, rooms: agendaMock.rooms },
   '/api/appointment-requests': { data: [] },
   '/api/availability': { slots: [{ time: '15:00', professionalIds: ['carlos'] }, { time: '15:30', professionalIds: ['carlos'] }] },
   '/api/patients': {
@@ -59,6 +49,8 @@ const apiResponses: Record<string, unknown> = {
 beforeEach(() => {
   // Spies of one test must not answer for the next one.
   vi.restoreAllMocks()
+  // Loaded data is kept between screens now, so each test starts with none.
+  clearNuxtData()
   seedSession()
   useAgendaFiltersStore().reset()
   useAgendaRange().value = null

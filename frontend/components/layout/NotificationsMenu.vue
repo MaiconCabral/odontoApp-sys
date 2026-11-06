@@ -8,6 +8,8 @@ const props = defineProps<{
 
 // How often the bell asks the API for new alerts.
 const POLL_MS = 60_000
+// Opening the bell right after a load shows what is on screen instead of asking again.
+const FRESH_MS = 10_000
 
 const { state, load, markRead, markAllRead } = useNotifications()
 const { openModal } = useActiveModal()
@@ -15,18 +17,38 @@ const open = ref(false)
 const root = ref<HTMLElement | null>(null)
 const panelId = useId()
 let timer: ReturnType<typeof setInterval> | undefined
+let lastLoad = 0
 
-// Loads now, keeps polling and listens for clicks outside the menu.
-onMounted(() => {
+// Asks for the alerts, unless the tab is in the background where nobody sees them.
+function poll() {
+  if (document.visibilityState === 'hidden') {
+    return
+  }
+
+  lastLoad = Date.now()
   load()
-  timer = setInterval(load, POLL_MS)
+}
+
+// Coming back to the tab catches up at once if a poll was skipped meanwhile.
+function onVisibilityChange() {
+  if (document.visibilityState === 'visible' && Date.now() - lastLoad >= POLL_MS) {
+    poll()
+  }
+}
+
+// Loads now, keeps polling and listens for clicks outside the menu and for tab changes.
+onMounted(() => {
+  poll()
+  timer = setInterval(poll, POLL_MS)
   document.addEventListener('click', closeOutside)
+  document.addEventListener('visibilitychange', onVisibilityChange)
 })
 
-// Stops the polling and the listener when the top bar leaves the screen.
+// Stops the polling and the listeners when the top bar leaves the screen.
 onBeforeUnmount(() => {
   clearInterval(timer)
   document.removeEventListener('click', closeOutside)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
 })
 
 // Closes the menu when the click lands outside the bell and the list.
@@ -36,12 +58,12 @@ function closeOutside(event: MouseEvent) {
   }
 }
 
-// Opens or closes the list, refreshing it on open.
+// Opens or closes the list, refreshing it on open unless it was loaded a moment ago.
 function toggle() {
   open.value = !open.value
 
-  if (open.value) {
-    load()
+  if (open.value && Date.now() - lastLoad >= FRESH_MS) {
+    poll()
   }
 }
 

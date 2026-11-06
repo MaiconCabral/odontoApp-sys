@@ -17,7 +17,12 @@ Playwright não é dependência do projeto. Os testes de navegador feitos até a
 - limpa os filtros da agenda, para não vazarem entre testes;
 - desfaz os `vi.spyOn` do teste anterior;
 - responde às chamadas GET de `$fetch` com os dados de `tests/fixtures/`, para que os services reais rodem. Uma chamada sem resposta definida falha o teste;
-- zera o período da agenda e a busca de pacientes.
+- zera o período da agenda e a busca de pacientes;
+- limpa os dados carregados (`clearNuxtData()`), porque `useCachedAsyncData` os guarda entre telas.
+
+Para contar chamadas à API, use `apiCalls(path)` e `resetApiCalls()` de `tests/utils/api.ts`. É assim que os testes de cache garantem que um modal não carrega a agenda.
+
+O `vue3-apexcharts` é trocado por `tests/stubs/apexcharts.ts` com um alias em `vitest.config.ts`. Um `vi.mock` não alcança o import sob demanda de `AppChart`, e a biblioteca real falha no happy-dom com "Element not found".
 
 Para simular outra resposta ou uma gravação (POST, PUT, DELETE), use `vi.spyOn` no service dentro do próprio arquivo de teste. Um spy no arquivo de setup não alcança a instância usada pelas páginas.
 

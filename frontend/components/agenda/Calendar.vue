@@ -26,6 +26,8 @@ const emit = defineEmits<{
   move: [move: { event: AgendaEvent, date: string, time: string, revert: () => void }]
 }>()
 
+const PLUGINS = [dayGridPlugin, timeGridPlugin, interactionPlugin]
+
 const calendar = ref<InstanceType<typeof FullCalendar> | null>(null)
 
 // Opens an appointment, or a block for who manages blocks.
@@ -59,10 +61,20 @@ function onEventMount(info: EventMountArg) {
   info.el.setAttribute('aria-label', String(info.event.extendedProps.label ?? info.event.title))
 }
 
+// Only read when the calendar starts; later view and date changes go through changeView below,
+// so they must not rebuild the options.
+const initial = { initialView: CALENDAR_VIEWS[props.view], initialDate: props.date }
+
+// Kept apart from the other options: FullCalendar resets every event when it receives a new
+// events array, so the array changes only when the events, blocks or professionals do.
+const calendarEvents = computed(() => [
+  ...toCalendarEvents(props.events, Boolean(props.canManage)),
+  ...toCalendarBlocks(props.blocks, props.professionals),
+])
+
 const options = computed<CalendarOptions>(() => ({
-  plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
-  initialView: CALENDAR_VIEWS[props.view],
-  initialDate: props.date,
+  plugins: PLUGINS,
+  ...initial,
   now: props.today,
   locale: ptBrLocale,
   headerToolbar: false,
@@ -76,7 +88,7 @@ const options = computed<CalendarOptions>(() => ({
   dayMaxEvents: 3,
   editable: Boolean(props.canManage),
   eventDurationEditable: false,
-  events: [...toCalendarEvents(props.events, Boolean(props.canManage)), ...toCalendarBlocks(props.blocks, props.professionals)],
+  events: calendarEvents.value,
   eventClick: onEventClick,
   eventDrop: onEventDrop,
   eventDidMount: onEventMount,

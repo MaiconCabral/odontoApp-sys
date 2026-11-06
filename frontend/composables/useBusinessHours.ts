@@ -1,4 +1,4 @@
 // Opening hours of the clinic.
 export function useBusinessHours() {
-  return useAsyncData('business-hours', () => scheduleService.hours())
+  return useCachedAsyncData('business-hours', () => scheduleService.hours())
 }

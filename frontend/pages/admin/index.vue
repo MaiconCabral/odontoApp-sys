@@ -17,12 +17,15 @@ watch(search, (value) => {
   }, 300)
 })
 
-const { data: plans } = await useAsyncData('platform-plans', () => platformService.plans())
-const { data: page, error, pending, refresh } = await useAsyncData(
-  'platform-clinics',
-  () => platformService.clinics(query),
-  { watch: [() => query.search, () => query.planId, () => query.status, () => query.page] },
-)
+// Both lists load at the same time.
+const [{ data: plans }, { data: page, error, pending, refresh }] = await Promise.all([
+  usePlatformPlans(),
+  useAsyncData(
+    'platform-clinics',
+    () => platformService.clinics(query),
+    { watch: [() => query.search, () => query.planId, () => query.status, () => query.page] },
+  ),
+])
 
 
 const controlClass = 'h-[34px] rounded-[7px] border border-line bg-surface px-2 text-[11px] text-body'

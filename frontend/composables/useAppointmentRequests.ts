@@ -13,5 +13,6 @@ export function useAppointmentRequests() {
     count.value = requests.length
 
     return requests
-  })
+  // The layout and the agenda panel ask at the same time; the second joins the first request.
+  }, { dedupe: 'defer' })
 }

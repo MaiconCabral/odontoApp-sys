@@ -8,26 +8,26 @@ const props = defineProps<{
 
 const { showToast } = useToast()
 
-const notes = ref<ClinicalNote[]>([])
+const { items: notes, hasMore, isLoading, loadFailed: notesFailed, reload, loadMore } = usePagedList(page => clinicalService.notes(props.patientId, page))
 const appointments = ref<AppointmentDetails[]>([])
-const loadFailed = ref(false)
+const appointmentsFailed = ref(false)
+const loadFailed = computed(() => notesFailed.value || appointmentsFailed.value)
 
-// Notes and the appointments a note may belong to.
-async function load() {
-  loadFailed.value = false
+// Appointments a note may belong to.
+async function loadAppointments() {
+  appointmentsFailed.value = false
 
   try {
-    const [loadedNotes, page] = await Promise.all([
-      clinicalService.notes(props.patientId),
-      patientsService.appointments(props.patientId),
-    ])
-
-    notes.value = loadedNotes
-    appointments.value = page.appointments
+    appointments.value = (await patientsService.appointments(props.patientId)).appointments
   }
   catch {
-    loadFailed.value = true
+    appointmentsFailed.value = true
   }
+}
+
+// First page of notes and the appointments, at the same time.
+async function load() {
+  await Promise.all([reload(), loadAppointments()])
 }
 
 await load()
@@ -143,6 +143,16 @@ function formatWhen(iso: string) {
           </p>
         </li>
       </ol>
+
+      <button
+        v-if="hasMore && !loadFailed"
+        type="button"
+        class="mt-3 text-[11px] font-bold text-brand-text disabled:opacity-60"
+        :disabled="isLoading"
+        @click="loadMore"
+      >
+        {{ isLoading ? 'Carregando...' : 'Carregar mais' }}
+      </button>
     </SettingsCard>
   </div>
 </template>

@@ -43,6 +43,7 @@ async function onSaved(message: string) {
   isModalOpen.value = false
   showToast(message)
   await refresh()
+  forgetAgendaOptions()
 }
 
 // Deletes a user after a second click.
@@ -59,6 +60,7 @@ async function remove(user: TeamUser) {
     await usersService.remove(user.id)
     showToast(`${user.name} foi removido da equipe.`)
     await refresh()
+    forgetAgendaOptions()
   }
   catch (failure) {
     const { message, fields } = parseApiError(failure)

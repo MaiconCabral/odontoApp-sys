@@ -1,9 +1,20 @@
 import type { ClinicalNote, ClinicalNoteForm, Odontogram, PatientAttachment, ToothRecord, ToothRecordForm } from '~/types/clinical'
 
+// Page as Laravel sends it.
+type PageResponse<T> = { data: T[], meta: { current_page: number, last_page: number } }
+
+// Page as the screens use it.
+export type Paged<T> = { items: T[], page: number, lastPage: number }
+
+// Turns a Laravel page into the screen shape.
+function toPaged<T>(response: PageResponse<T>): Paged<T> {
+  return { items: response.data, page: response.meta.current_page, lastPage: response.meta.last_page }
+}
+
 export const clinicalService = {
-  // Notes of the medical record, newest first.
-  notes: async (patientId: string) =>
-    (await useApi().api<{ data: ClinicalNote[] }>(`/api/patients/${patientId}/notes`)).data,
+  // One page of the medical record notes, newest first.
+  notes: async (patientId: string, page = 1): Promise<Paged<ClinicalNote>> =>
+    toPaged(await useApi().api<PageResponse<ClinicalNote>>(`/api/patients/${patientId}/notes`, { query: page > 1 ? { page } : undefined })),
 
   // Appends a note; a correction points to the note it amends.
   addNote: (patientId: string, form: ClinicalNoteForm) =>
@@ -22,9 +33,9 @@ export const clinicalService = {
       body: { tooth: form.tooth, surface: form.surface, condition: form.condition, notes: form.notes || null },
     }),
 
-  // Files of the patient, newest first.
-  attachments: async (patientId: string) =>
-    (await useApi().api<{ data: PatientAttachment[] }>(`/api/patients/${patientId}/attachments`)).data,
+  // One page of the patient files, newest first.
+  attachments: async (patientId: string, page = 1): Promise<Paged<PatientAttachment>> =>
+    toPaged(await useApi().api<PageResponse<PatientAttachment>>(`/api/patients/${patientId}/attachments`, { query: page > 1 ? { page } : undefined })),
 
   // Sends one file as multipart.
   upload: (patientId: string, file: File) => {

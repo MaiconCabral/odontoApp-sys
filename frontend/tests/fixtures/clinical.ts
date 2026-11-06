@@ -29,7 +29,8 @@ export const patientAppointmentsFixture: { data: AppointmentDetails[], meta: { c
   meta: { current_page: 1, last_page: 1 },
 }
 
-export const notesFixture: { data: ClinicalNote[] } = {
+export const notesFixture: { data: ClinicalNote[], meta: { current_page: number, last_page: number } } = {
+  meta: { current_page: 1, last_page: 1 },
   data: [
     {
       id: 'n1',
@@ -50,7 +51,8 @@ export const odontogramFixture: Odontogram = {
   history: [],
 }
 
-export const attachmentsFixture: { data: PatientAttachment[] } = {
+export const attachmentsFixture: { data: PatientAttachment[], meta: { current_page: number, last_page: number } } = {
+  meta: { current_page: 1, last_page: 1 },
   data: [
     { id: 'a1', name: 'raio-x.pdf', mime: 'application/pdf', sizeBytes: 245760, uploader: 'Dra. Ana Beatriz', createdAt: '2024-10-06T09:45:00-03:00', canDelete: true },
   ],

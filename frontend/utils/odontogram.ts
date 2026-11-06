@@ -85,9 +85,34 @@ export function toothState(records: ToothRecord[], tooth: number) {
   return { whole, surfaces }
 }
 
+export type ToothState = ReturnType<typeof toothState>
+
+// State of every tooth with records, grouped in one pass so a chart of 32 teeth does not scan
+// the whole history for each surface it paints.
+export function toothStates(records: ToothRecord[]): Map<number, ToothState> {
+  const byTooth = new Map<number, ToothRecord[]>()
+
+  for (const record of records) {
+    const list = byTooth.get(record.tooth)
+
+    if (list) {
+      list.push(record)
+    }
+    else {
+      byTooth.set(record.tooth, [record])
+    }
+  }
+
+  return new Map([...byTooth].map(([tooth, list]) => [tooth, toothState(list, tooth)]))
+}
+
 // Name read by screen readers, like "Dente 16, cárie oclusal, restauração mesial".
 export function toothLabel(records: ToothRecord[], tooth: number): string {
-  const { whole, surfaces } = toothState(records, tooth)
+  return describeTooth(toothState(records, tooth), tooth)
+}
+
+// Screen reader name from a state already computed.
+export function describeTooth({ whole, surfaces }: ToothState, tooth: number): string {
   const parts = [`Dente ${tooth}`]
 
   if (whole) {

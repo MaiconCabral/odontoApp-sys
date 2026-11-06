@@ -67,6 +67,9 @@ export type Agenda = {
   blocks: AgendaBlock[]
 }
 
+// What the booking forms list, without the events of a period.
+export type AgendaOptions = Pick<Agenda, 'today' | 'procedures' | 'professionals' | 'rooms'>
+
 export type AgendaRange = {
   from: string
   to: string

@@ -11,25 +11,12 @@ const { showToast } = useToast()
 const ACCEPTED = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp']
 const MAX_BYTES = 10 * 1024 * 1024
 
-const attachments = ref<PatientAttachment[]>([])
-const loadFailed = ref(false)
+const { items: attachments, hasMore, isLoading, loadFailed, reload: load, loadMore } = usePagedList<PatientAttachment>(page => clinicalService.attachments(props.patientId, page))
 const isUploading = ref(false)
 const uploadError = ref('')
 const isDragging = ref(false)
 const confirmingDelete = ref<string | null>(null)
 const input = ref<HTMLInputElement | null>(null)
-
-// Files of the patient.
-async function load() {
-  loadFailed.value = false
-
-  try {
-    attachments.value = await clinicalService.attachments(props.patientId)
-  }
-  catch {
-    loadFailed.value = true
-  }
-}
 
 await load()
 
@@ -180,5 +167,15 @@ function formatSize(bytes: number) {
         </button>
       </li>
     </ul>
+
+    <button
+      v-if="hasMore && !loadFailed"
+      type="button"
+      class="mt-3 text-[11px] font-bold text-brand-text disabled:opacity-60"
+      :disabled="isLoading"
+      @click="loadMore"
+    >
+      {{ isLoading ? 'Carregando...' : 'Carregar mais' }}
+    </button>
   </SettingsCard>
 </template>

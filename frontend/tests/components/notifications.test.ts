@@ -1,11 +1,21 @@
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
-import { describe, expect, it, vi } from 'vitest'
+import type { VueWrapper } from '@vue/test-utils'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import NotificationsMenu from '~/components/layout/NotificationsMenu.vue'
 import { notificationsFixture } from '../fixtures/settings'
 
+// Menus of earlier tests keep their timers and listeners until unmounted.
+const mounted: VueWrapper[] = []
+
+afterEach(() => {
+  mounted.splice(0).forEach(menu => menu.unmount())
+})
+
 const mountMenu = async () => {
   const menu = await mountSuspended(NotificationsMenu, { props: { buttonClass: '' } })
+
+  mounted.push(menu)
 
   await flushPromises()
 
@@ -75,5 +85,82 @@ describe('NotificationsMenu', () => {
 
     expect(markAllRead).toHaveBeenCalled()
     expect(useNotificationsState().value.items.every(item => item.read)).toBe(true)
+  })
+})
+
+describe('NotificationsMenu polling', () => {
+  // Pretends the tab went to the background or came back.
+  function setVisibility(state: 'visible' | 'hidden') {
+    Object.defineProperty(document, 'visibilityState', { value: state, configurable: true })
+    document.dispatchEvent(new Event('visibilitychange'))
+  }
+
+  afterEach(() => {
+    setVisibility('visible')
+    vi.useRealTimers()
+  })
+
+  it('polls every minute while the tab is visible', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] })
+    const list = vi.spyOn(notificationsService, 'list')
+    await mountMenu()
+
+    expect(list).toHaveBeenCalledTimes(1)
+
+    vi.advanceTimersByTime(60_000)
+    expect(list).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not poll while the tab is in the background, and catches up on return', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] })
+    const list = vi.spyOn(notificationsService, 'list')
+    await mountMenu()
+
+    setVisibility('hidden')
+    vi.advanceTimersByTime(180_000)
+    expect(list).toHaveBeenCalledTimes(1)
+
+    setVisibility('visible')
+    expect(list).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not ask again on return when the last load is recent', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] })
+    const list = vi.spyOn(notificationsService, 'list')
+    await mountMenu()
+
+    setVisibility('hidden')
+    vi.advanceTimersByTime(5_000)
+    setVisibility('visible')
+
+    expect(list).toHaveBeenCalledTimes(1)
+  })
+
+  // Clicks with fake timers get dropped by Vue (see docs/testes.md), so only Date.now moves here.
+  it('opens with the list just loaded instead of asking again', async () => {
+    const now = vi.spyOn(Date, 'now').mockReturnValue(1_000_000)
+    const list = vi.spyOn(notificationsService, 'list')
+    const menu = await mountMenu()
+
+    await menu.find('button').trigger('click')
+    expect(list).toHaveBeenCalledTimes(1)
+
+    // Closed and opened again later, it refreshes.
+    await menu.find('button').trigger('click')
+    now.mockReturnValue(1_030_000)
+    await menu.find('button').trigger('click')
+    expect(list).toHaveBeenCalledTimes(2)
+  })
+
+  it('stops polling when the top bar leaves', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] })
+    const list = vi.spyOn(notificationsService, 'list')
+    await mountMenu()
+
+    mounted.splice(0).forEach(menu => menu.unmount())
+    vi.advanceTimersByTime(120_000)
+    setVisibility('visible')
+
+    expect(list).toHaveBeenCalledTimes(1)
   })
 })

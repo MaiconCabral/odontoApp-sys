@@ -7,8 +7,11 @@ definePageMeta({ layout: 'platform', middleware: 'platform-auth' })
 const id = String(useRoute().params.id)
 const { showToast } = useToast()
 
-const { data: clinic, error, pending, refresh } = await useAsyncData(`platform-clinic-${id}`, () => platformService.clinic(id))
-const { data: plans } = await useAsyncData('platform-plans', () => platformService.plans())
+// The clinic and the plans load at the same time.
+const [{ data: clinic, error, pending, refresh }, { data: plans }] = await Promise.all([
+  useAsyncData(`platform-clinic-${id}`, () => platformService.clinic(id)),
+  usePlatformPlans(),
+])
 
 useHead({ title: () => clinic.value?.name ?? 'Clínica' })
 

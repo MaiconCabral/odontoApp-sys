@@ -304,3 +304,52 @@ describe('PatientsNewModal', () => {
     expect(modal.text()).toContain('Já existe um paciente com este CPF.')
   })
 })
+
+describe('AppointmentsNewModal answers that arrive late', () => {
+  beforeEach(() => {
+    useActiveModal().openModal('appointment')
+  })
+
+  it('keeps the times of the latest choice when an older answer arrives after it', async () => {
+    const answers: Array<(slots: { time: string, professionalIds: string[] }[]) => void> = []
+    vi.spyOn(appointmentsService, 'availability').mockImplementation(() => new Promise((resolve) => {
+      answers.push(resolve)
+    }))
+
+    const modal = await mountSuspended(AppointmentModal)
+    await flushPromises()
+    await fieldByLabel(modal, 'Data').setValue('2099-01-02')
+    await flushPromises()
+
+    // The newer answer arrives first, then the old one for the first date.
+    answers[1]!([{ time: '10:00', professionalIds: ['carlos'] }])
+    await flushPromises()
+    answers[0]!([{ time: '08:00', professionalIds: ['carlos'] }])
+    await flushPromises()
+
+    expect(fieldByLabel(modal, 'Horário').findAll('option').map(option => option.text())).toEqual(['Escolha um horário livre', '10:00'])
+  })
+
+  it('ignores a patient search answered after a newer one', async () => {
+    const searches: Array<(list: Awaited<ReturnType<typeof patientsService.list>>) => void> = []
+    vi.spyOn(patientsService, 'list').mockImplementation(() => new Promise((resolve) => {
+      searches.push(resolve)
+    }))
+
+    const modal = await mountSuspended(AppointmentModal)
+    const page = (name: string) => ({ patients: [{ ...patientFixture, id: name, name }], total: 1, page: 1, lastPage: 1 })
+
+    await fieldByLabel(modal, 'Paciente').setValue('Ca')
+    await new Promise(resolve => setTimeout(resolve, 300))
+    await fieldByLabel(modal, 'Paciente').setValue('Camila')
+    await new Promise(resolve => setTimeout(resolve, 300))
+
+    searches[1]!(page('Camila Ferreira'))
+    await flushPromises()
+    searches[0]!(page('Carlos Antigo'))
+    await flushPromises()
+
+    expect(modal.findAll('[role="option"]').map(option => option.text()).join(' ')).toContain('Camila Ferreira')
+    expect(modal.text()).not.toContain('Carlos Antigo')
+  })
+})

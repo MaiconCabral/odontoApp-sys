@@ -3,7 +3,6 @@ import type { AppointmentAction, AppointmentDetails } from '~/types/agenda'
 
 const { closeModal, modalPayload, openModal } = useActiveModal()
 const { showToast } = useToast()
-const { data: agenda } = await useAgenda()
 
 const id = String(modalPayload.value?.id ?? '')
 const details = ref<AppointmentDetails | null>(null)
@@ -21,7 +20,8 @@ async function load() {
   }
 }
 
-await load()
+// The form options and the appointment load at the same time.
+const [{ data: agenda }] = await Promise.all([useAgendaOptions(), load()])
 
 const pendingAction = ref<AppointmentAction | null>(null)
 const reason = ref('')

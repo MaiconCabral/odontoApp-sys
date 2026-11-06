@@ -25,7 +25,8 @@ function openEdit(room: RoomItem) {
 async function onSaved(message: string) {
   isModalOpen.value = false
   showToast(message)
-  await refreshNuxtData(['rooms', 'agenda'])
+  await refreshNuxtData('rooms')
+  forgetAgendaOptions()
 }
 
 // Deletes a room after a second click.
@@ -41,7 +42,8 @@ async function remove(room: RoomItem) {
   try {
     await roomsService.remove(room.id)
     showToast(`${room.name} foi excluída.`)
-    await refreshNuxtData(['rooms', 'agenda'])
+    await refreshNuxtData('rooms')
+    forgetAgendaOptions()
   }
   catch (failure) {
     const { message, fields } = parseApiError(failure)

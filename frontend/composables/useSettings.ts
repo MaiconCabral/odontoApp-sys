@@ -1,3 +1,4 @@
+// Clinic data and preferences shown in the settings.
 export function useSettings() {
-  return useAsyncData('settings', () => settingsService.get())
+  return useCachedAsyncData('settings', () => settingsService.get())
 }

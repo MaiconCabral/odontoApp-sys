@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ToothRecord, ToothSurface } from '~/types/clinical'
+import type { ToothState } from '~/utils/odontogram'
 
 const props = defineProps<{
   records: ToothRecord[]
@@ -13,19 +14,29 @@ const emit = defineEmits<{
 
 const rows = computed(() => (props.deciduous ? DECIDUOUS_ROWS : PERMANENT_ROWS))
 
-// Fill class of one surface of a tooth.
-function fillOf(tooth: number, surface: ToothSurface) {
-  const record = toothState(props.records, tooth).surfaces[surface]
+// Everything one tooth draws, computed once per change of the records instead of on every
+// render: selecting a tooth re-renders the chart but does not scan the records again.
+const teeth = computed(() => {
+  const states = toothStates(props.records)
+  const empty: ToothState = { whole: null, surfaces: {} }
 
-  return (record && SURFACE_FILL[record.condition]?.fill) ?? 'fill-surface'
-}
+  return new Map(rows.value.flat().map((tooth) => {
+    const state = states.get(tooth) ?? empty
+    const sides = surfaceSides(tooth)
+    const fill = (surface: ToothSurface) => {
+      const record = state.surfaces[surface]
 
-// Mark drawn under a tooth with a whole-tooth condition.
-function markOf(tooth: number) {
-  const whole = toothState(props.records, tooth).whole
+      return (record && SURFACE_FILL[record.condition]?.fill) ?? 'fill-surface'
+    }
 
-  return whole ? TOOTH_MARK[whole.condition] ?? null : null
-}
+    return [tooth, {
+      label: describeTooth(state, tooth),
+      mark: state.whole ? TOOTH_MARK[state.whole.condition] ?? null : null,
+      sides,
+      fills: { top: fill(sides.top), bottom: fill(sides.bottom), left: fill(sides.left), right: fill(sides.right), center: fill('O') },
+    }]
+  }))
+})
 
 // The five surfaces as polygons of a 30x30 square: four trapezoids around a center square.
 const shapes = {
@@ -46,7 +57,7 @@ const shapes = {
             type="button"
             class="group flex flex-col items-center gap-0.5 rounded-md p-0.5 outline-none focus-visible:ring-2 focus-visible:ring-brand-accent"
             :class="{ 'bg-brand-tint': selected === tooth }"
-            :aria-label="toothLabel(records, tooth)"
+            :aria-label="teeth.get(tooth)?.label"
             :aria-pressed="selected === tooth"
             @click="emit('select', tooth, null)"
           >
@@ -54,7 +65,7 @@ const shapes = {
             <svg
               viewBox="0 0 30 30"
               class="h-[30px] w-[30px] stroke-line"
-              :class="{ 'opacity-40': markOf(tooth)?.letter === '—' }"
+              :class="{ 'opacity-40': teeth.get(tooth)?.mark?.letter === '—' }"
               aria-hidden="true"
             >
               <polygon
@@ -63,8 +74,8 @@ const shapes = {
                 :points="points"
                 stroke-width="1"
                 class="cursor-pointer transition duration-150 group-hover:stroke-brand-accent"
-                :class="fillOf(tooth, surfaceSides(tooth)[side])"
-                @click.stop="emit('select', tooth, surfaceSides(tooth)[side])"
+                :class="teeth.get(tooth)?.fills[side]"
+                @click.stop="emit('select', tooth, teeth.get(tooth)!.sides[side])"
               />
               <rect
                 x="9"
@@ -73,11 +84,11 @@ const shapes = {
                 height="12"
                 stroke-width="1"
                 class="cursor-pointer transition duration-150 group-hover:stroke-brand-accent"
-                :class="fillOf(tooth, 'O')"
+                :class="teeth.get(tooth)?.fills.center"
                 @click.stop="emit('select', tooth, 'O')"
               />
             </svg>
-            <span class="h-3 text-[10px] font-bold leading-3" :class="markOf(tooth)?.class" aria-hidden="true">{{ markOf(tooth)?.letter ?? '' }}</span>
+            <span class="h-3 text-[10px] font-bold leading-3" :class="teeth.get(tooth)?.mark?.class" aria-hidden="true">{{ teeth.get(tooth)?.mark?.letter ?? '' }}</span>
             <span v-if="index === rows.length - 1" class="text-[9px] font-semibold text-muted" aria-hidden="true">{{ tooth }}</span>
           </button>
         </template>
