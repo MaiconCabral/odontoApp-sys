@@ -7,11 +7,28 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class Procedure extends Model
 {
     /** @use HasFactory<ProcedureFactory> */
     use HasFactory;
+
+    /** How long the booking options stay cached; any change to a procedure clears them sooner. */
+    private const OPTIONS_TTL = 3600;
+
+    /** Clears the cached booking options whenever a procedure changes. */
+    protected static function booted(): void
+    {
+        static::saved(fn () => Cache::forget(self::optionsCacheKey()));
+        static::deleted(fn () => Cache::forget(self::optionsCacheKey()));
+    }
+
+    /** Cache key of the booking options, per clinic because the cache store is shared. */
+    public static function optionsCacheKey(): string
+    {
+        return 'tenant:'.tenant()?->getTenantKey().':procedure-options';
+    }
 
     protected $fillable = [
         'name',
@@ -65,13 +82,13 @@ class Procedure extends Model
     }
 
     /**
-     * Active procedures in the format the booking forms use.
+     * Active procedures in the format the booking forms use, cached per clinic.
      *
      * @return list<array{id: string, label: string, duration: int}>
      */
     public static function options(): array
     {
-        return self::query()
+        return Cache::remember(self::optionsCacheKey(), self::OPTIONS_TTL, fn () => self::query()
             ->active()
             ->orderBy('name')
             ->get(['id', 'name', 'duration_minutes'])
@@ -80,6 +97,6 @@ class Procedure extends Model
                 'label' => $procedure->name,
                 'duration' => $procedure->duration_minutes,
             ])
-            ->all();
+            ->all());
     }
 }

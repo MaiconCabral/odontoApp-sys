@@ -163,6 +163,8 @@ Regras:
 }
 ```
 
+`GET /api/agenda/options` traz só `today`, `procedures`, `professionals` e `rooms`, com as mesmas regras de papel e sem eventos. É o que os formulários usam para preencher os selects sem carregar a agenda do período.
+
 ### Consultas
 
 | Método e rota | Acesso | Corpo |

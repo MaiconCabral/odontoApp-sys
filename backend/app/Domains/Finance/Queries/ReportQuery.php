@@ -116,9 +116,7 @@ class ReportQuery
         return Payment::query()
             ->valid()
             ->join('appointments', 'appointments.id', '=', 'payments.appointment_id')
-            // The date cast stores a time too, so the days are compared with DATE().
-            ->whereDate('payments.paid_at', '>=', $start->toDateString())
-            ->whereDate('payments.paid_at', '<=', $end->toDateString())
+            ->paidBetween($start, $end)
             ->selectRaw("{$key} as group_key, SUM(payments.amount_cents) as received")
             ->groupBy('group_key')
             ->get()
@@ -157,8 +155,7 @@ class ReportQuery
     {
         return Payment::query()
             ->valid()
-            ->whereDate('paid_at', '>=', $start->toDateString())
-            ->whereDate('paid_at', '<=', $end->toDateString())
+            ->paidBetween($start, $end)
             ->selectRaw('method, SUM(amount_cents) as received')
             ->groupBy('method')
             ->orderByDesc('received')

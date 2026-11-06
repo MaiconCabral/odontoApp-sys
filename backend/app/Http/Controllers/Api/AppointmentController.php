@@ -18,7 +18,9 @@ use Illuminate\Support\Facades\Gate;
 
 class AppointmentController extends Controller
 {
-    private const DETAILS = ['patient', 'professional', 'room', 'procedure', 'statusChanges.author', 'notificationLogs'];
+    private const LIST = ['patient:id,name,phone,email', 'professional:id,name', 'room:id,name', 'procedure'];
+
+    private const DETAILS = [...self::LIST, 'statusChanges.author:id,name', 'notificationLogs'];
 
     /** Lists the patient requests waiting for an answer, oldest first. */
     public function requests(): AnonymousResourceCollection
@@ -26,7 +28,8 @@ class AppointmentController extends Controller
         Gate::authorize('manage', Appointment::class);
 
         $requests = Appointment::query()
-            ->with(['patient', 'professional', 'room', 'procedure'])
+            ->with(self::LIST)
+            ->withPaidCents()
             ->where('status', AppointmentStatus::Requested)
             ->orderBy('created_at')
             ->get();
@@ -39,7 +42,7 @@ class AppointmentController extends Controller
     {
         Gate::authorize('view', $appointment);
 
-        return new AppointmentResource($appointment->load(self::DETAILS));
+        return new AppointmentResource($this->detailed($appointment));
     }
 
     /** Books an appointment from the panel. */
@@ -47,7 +50,7 @@ class AppointmentController extends Controller
     {
         $appointment = $schedule->handle($request->toData(), $request->user());
 
-        return new AppointmentResource($appointment->load(self::DETAILS));
+        return new AppointmentResource($this->detailed($appointment));
     }
 
     /** Moves or edits an appointment. */
@@ -55,7 +58,7 @@ class AppointmentController extends Controller
     {
         $appointment = $reschedule->handle($appointment, $request->toData(), $request->user());
 
-        return new AppointmentResource($appointment->load(self::DETAILS));
+        return new AppointmentResource($this->detailed($appointment));
     }
 
     /** Changes the status of an appointment. */
@@ -63,7 +66,7 @@ class AppointmentController extends Controller
     {
         $appointment = $change->handle($appointment, $request->status(), $request->input('reason'), $request->user());
 
-        return new AppointmentResource($appointment->load(self::DETAILS));
+        return new AppointmentResource($this->detailed($appointment));
     }
 
     /** Accepts a patient request in a free room. */
@@ -71,6 +74,12 @@ class AppointmentController extends Controller
     {
         $appointment = $accept->handle($appointment, $request->integer('room_id'), $request->user());
 
-        return new AppointmentResource($appointment->load(self::DETAILS));
+        return new AppointmentResource($this->detailed($appointment));
+    }
+
+    /** Loads the relations and the paid sum the detail view shows, in a fixed number of queries. */
+    private function detailed(Appointment $appointment): Appointment
+    {
+        return $appointment->load(self::DETAILS)->loadPaidCents();
     }
 }

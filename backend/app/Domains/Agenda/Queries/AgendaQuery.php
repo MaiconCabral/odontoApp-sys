@@ -23,6 +23,23 @@ class AgendaQuery
     public function __construct(private readonly AvailableSlots $slots) {}
 
     /**
+     * Lists the forms need (procedures, professionals and rooms), without the events of a period.
+     *
+     * @return array<string, mixed>
+     */
+    public function options(User $viewer): array
+    {
+        $professionalId = $viewer->can('viewAll', Appointment::class) ? null : $viewer->id;
+
+        return [
+            'today' => today()->toDateString(),
+            'procedures' => Procedure::options(),
+            'professionals' => $this->professionals($professionalId),
+            'rooms' => $this->rooms(),
+        ];
+    }
+
+    /**
      * Builds the agenda of a period that the viewer is allowed to see.
      *
      * @return array<string, mixed>
@@ -54,9 +71,12 @@ class AgendaQuery
      */
     private function hours(): array
     {
-        $open = BusinessHour::query()->where('closed', false);
-        $opening = BusinessHour::hhmm($open->clone()->min('opens_at')) ?? self::DEFAULT_OPENING;
-        $closing = BusinessHour::hhmm($open->clone()->max('closes_at')) ?? self::DEFAULT_CLOSING;
+        $range = BusinessHour::query()->where('closed', false)
+            ->toBase()
+            ->selectRaw('MIN(opens_at) as opening, MAX(closes_at) as closing')
+            ->first();
+        $opening = BusinessHour::hhmm($range?->opening) ?? self::DEFAULT_OPENING;
+        $closing = BusinessHour::hhmm($range?->closing) ?? self::DEFAULT_CLOSING;
         $hours = [];
 
         for ($time = CarbonImmutable::parse($opening); $time->format('H:i') < $closing; $time = $time->addMinutes(DaySchedule::SLOT_MINUTES)) {

@@ -123,9 +123,7 @@ class OverviewQuery
     {
         $sums = Payment::query()
             ->valid()
-            // The date cast stores a time too, so the days are compared with DATE().
-            ->whereDate('paid_at', '>=', $today->subDay()->toDateString())
-            ->whereDate('paid_at', '<=', $today->toDateString())
+            ->paidBetween($today->subDay(), $today)
             ->selectRaw('DATE(paid_at) as day, SUM(amount_cents) as total')
             ->groupBy('day')
             ->pluck('total', 'day');

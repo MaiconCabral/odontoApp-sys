@@ -6,7 +6,6 @@ use App\Domains\Agenda\Models\Patient;
 use App\Domains\Agenda\Models\ScheduleBlock;
 use App\Domains\Identity\Models\User;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\DB;
 
 // Thursday, 12 November 2026, 10:15.
 beforeEach(function () {
@@ -107,17 +106,10 @@ it('keeps the numbers away from professionals', function () {
 it('does not run a query per appointment', function () {
     $this->signIn('sorriso', $this->admin);
 
-    $countQueries = function () {
-        $this->resetRequestState();
-        $queries = 0;
-        DB::listen(function () use (&$queries) {
-            $queries++;
-        });
-        $this->clinicRequest('sorriso', 'GET', 'overview')->assertOk();
+    $countQueries = fn () => $this->countQueries(fn () => $this->clinicRequest('sorriso', 'GET', 'overview')->assertOk());
 
-        return $queries;
-    };
-
+    // The first request fills the caches; the comparison starts warm.
+    $countQueries();
     $few = $countQueries();
     $this->clinic->run(fn () => Appointment::factory()->count(8)->at('2026-11-12 15:00')->create(['professional_id' => $this->ana->id]));
     $many = $countQueries();

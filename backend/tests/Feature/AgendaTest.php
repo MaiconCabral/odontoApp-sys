@@ -107,17 +107,10 @@ it('leaves out cancelled and rejected appointments and those outside the period'
 it('does not run a query per appointment', function () {
     ($this->signIn)($this->admin);
 
-    $countQueries = function () {
-        $this->resetRequestState();
-        $queries = 0;
-        DB::listen(function () use (&$queries) {
-            $queries++;
-        });
-        $this->clinicRequest('sorriso', 'GET', 'agenda')->assertOk();
+    $countQueries = fn () => $this->countQueries(fn () => $this->clinicRequest('sorriso', 'GET', 'agenda')->assertOk());
 
-        return $queries;
-    };
-
+    // The first request fills the caches; the comparison starts warm.
+    $countQueries();
     $few = $countQueries();
     $this->clinic->run(fn () => Appointment::factory()->count(10)->create(['professional_id' => $this->ana->id]));
     $many = $countQueries();

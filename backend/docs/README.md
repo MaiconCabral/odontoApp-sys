@@ -8,6 +8,7 @@ API do odontoApp em Laravel 12, consumida pelo Nuxt em `frontend/`.
 | [Multi-tenancy e autenticação](multitenancy.md) | Banco por clínica, subdomínios, sessão, papéis, contas demo e produção |
 | [Agenda](agenda.md) | Disponibilidade, procedimentos e salas, travas contra horário duplicado, status, pedido online e visão geral |
 | [Notificações](notificacoes.md) | E-mails ao paciente, fila, lembrete de 24h, links de confirmação, WhatsApp e como rodar |
+| [Performance](performance.md) | Gargalos corrigidos, testes de orçamento de consultas e pendências |
 
 ## O que está implementado
 

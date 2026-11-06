@@ -6,6 +6,8 @@ use App\Domains\Agenda\Models\Appointment;
 use App\Domains\Agenda\Models\Patient;
 use App\Domains\Finance\Enums\PaymentMethod;
 use App\Domains\Identity\Models\User;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -69,5 +71,15 @@ class Payment extends Model
     public function scopeValid(Builder $query): Builder
     {
         return $query->whereNull('voided_at');
+    }
+
+    /** Payments dated between two days, inclusive, as a plain range so the (paid_at, voided_at) index is used. */
+    public function scopePaidBetween(Builder $query, CarbonInterface $first, CarbonInterface $last): Builder
+    {
+        $column = $query->qualifyColumn('paid_at');
+
+        return $query
+            ->where($column, '>=', CarbonImmutable::instance($first)->startOfDay())
+            ->where($column, '<', CarbonImmutable::instance($last)->startOfDay()->addDay());
     }
 }

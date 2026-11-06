@@ -62,8 +62,9 @@ class OfferFreedSlot
         return WaitlistEntry::query()
             ->with(['patient', 'procedure'])
             ->where('status', WaitlistStatus::Waiting)
-            ->whereDate('from_date', '<=', $start->toDateString())
-            ->whereDate('to_date', '>=', $start->toDateString())
+            // Plain ranges instead of DATE() so the columns stay indexable; the date cast stores midnight.
+            ->where('from_date', '<', $start->startOfDay()->addDay())
+            ->where('to_date', '>=', $start->startOfDay())
             ->where(fn ($query) => $query->whereNull('professional_id')->orWhere('professional_id', $professionalId))
             ->when($ignorePatientId, fn ($query) => $query->where('patient_id', '!=', $ignorePatientId))
             ->oldest('id')

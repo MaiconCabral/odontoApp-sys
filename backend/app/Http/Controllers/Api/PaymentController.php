@@ -49,8 +49,9 @@ class PaymentController extends Controller
     /** Price, paid, balance, status and the list of payments of an appointment. */
     private function summary(Appointment $appointment): JsonResponse
     {
-        $payments = $appointment->payments()->with(['recorder', 'voider'])->get();
-        $paid = $appointment->paidCents();
+        $payments = $appointment->payments()->with(['recorder:id,name', 'voider:id,name'])->get();
+        $paid = (int) $payments->whereNull('voided_at')->sum('amount_cents');
+        $appointment->setRawAttributes([...$appointment->getAttributes(), 'paid_cents' => $paid], true);
 
         return response()->json([
             'priceCents' => $appointment->price_cents,

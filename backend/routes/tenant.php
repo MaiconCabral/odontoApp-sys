@@ -93,6 +93,7 @@ Route::prefix('api')
             Route::apiResource('rooms', RoomController::class);
 
             Route::get('agenda', AgendaController::class);
+            Route::get('agenda/options', [AgendaController::class, 'options']);
             Route::get('overview', OverviewController::class);
             Route::get('availability', AvailabilityController::class);
 

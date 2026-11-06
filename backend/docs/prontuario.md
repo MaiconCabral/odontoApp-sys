@@ -21,7 +21,7 @@ Prontuário, odontograma e anexos são dados de saúde (LGPD). As regras estão 
 
 | Método e rota | Corpo |
 | --- | --- |
-| `GET /api/patients/{id}/notes` | |
+| `GET /api/patients/{id}/notes` | Páginas de 30, da mais recente; `?page=2` e `meta.last_page` |
 | `POST /api/patients/{id}/notes` | `body` (até 5.000), `appointment_id` e `amends_id`, ambos opcionais |
 
 - **Só acréscimo:** uma anotação nunca é editada nem excluída, nem pela API nem pelo banco (as chaves usam `restrictOnDelete`).
@@ -48,7 +48,7 @@ Prontuário, odontograma e anexos são dados de saúde (LGPD). As regras estão 
 
 | Método e rota | Acesso |
 | --- | --- |
-| `GET /api/patients/{id}/attachments` | `viewRecord` |
+| `GET /api/patients/{id}/attachments` | `viewRecord`. Páginas de 30, do mais recente; `?page=2` e `meta.last_page` |
 | `POST /api/patients/{id}/attachments` (multipart, campo `file`) | `writeRecord`, até 20 envios por minuto por usuário |
 | `GET /api/attachments/{id}/download` | `viewRecord` |
 | `DELETE /api/attachments/{id}` | Admin |

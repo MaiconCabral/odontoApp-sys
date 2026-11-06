@@ -6,8 +6,10 @@ use App\Domains\Agenda\Models\Procedure;
 use App\Domains\Identity\Models\User;
 use App\Domains\Tenancy\Models\Plan;
 use App\Domains\Tenancy\Models\Tenant;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Testing\TestResponse;
 
@@ -87,6 +89,35 @@ abstract class TestCase extends BaseTestCase
 
         return $this->withHeaders(['Origin' => 'http://localhost:3000', 'Accept' => 'application/json'])
             ->json($method, "http://localhost/api/{$uri}", $data);
+    }
+
+    /** Number of queries, on any connection, that the callback runs. */
+    protected function countQueries(callable $send): int
+    {
+        return count($this->recordQueries($send));
+    }
+
+    /**
+     * SQL of every query, on any connection, that the callback runs.
+     *
+     * @return list<string>
+     */
+    protected function recordQueries(callable $send): array
+    {
+        $this->resetRequestState();
+        $queries = [];
+        $recording = true;
+
+        DB::listen(function (QueryExecuted $query) use (&$queries, &$recording) {
+            if ($recording) {
+                $queries[] = $query->sql;
+            }
+        });
+
+        $send();
+        $recording = false;
+
+        return $queries;
     }
 
     /**

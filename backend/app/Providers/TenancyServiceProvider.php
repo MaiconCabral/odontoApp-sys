@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Domains\Tenancy\Models\Tenant;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Stancl\JobPipeline\JobPipeline;
+use Stancl\Tenancy\Database\Models\Domain;
 use Stancl\Tenancy\Events;
 use Stancl\Tenancy\Jobs;
 use Stancl\Tenancy\Listeners;
 use Stancl\Tenancy\Middleware;
+use Stancl\Tenancy\Resolvers\DomainTenantResolver;
 
 class TenancyServiceProvider extends ServiceProvider
 {
@@ -109,10 +112,25 @@ class TenancyServiceProvider extends ServiceProvider
             404,
         );
 
+        $this->cacheTenantLookup();
         $this->bootEvents();
         $this->mapRoutes();
 
         $this->makeTenancyMiddlewareHighestPriority();
+    }
+
+    /** Caches the subdomain lookup, so each request skips two central queries; any change to a clinic clears it. */
+    protected function cacheTenantLookup(): void
+    {
+        DomainTenantResolver::$shouldCache = true;
+        DomainTenantResolver::$cacheTTL = 300;
+
+        $forget = fn (Tenant $tenant) => $this->app->make(DomainTenantResolver::class)->invalidateCache($tenant);
+
+        Tenant::saved($forget);
+        Tenant::deleted($forget);
+        Domain::saved(fn (Domain $domain) => $domain->tenant && $forget($domain->tenant));
+        Domain::deleted(fn (Domain $domain) => $domain->tenant && $forget($domain->tenant));
     }
 
     /** Registers the tenancy listeners. */

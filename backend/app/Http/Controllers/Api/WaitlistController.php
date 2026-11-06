@@ -19,7 +19,7 @@ use Illuminate\Validation\Rule;
 class WaitlistController extends Controller
 {
     /** What every entry of the list shows. */
-    private const RELATIONS = ['patient', 'procedure', 'professional'];
+    private const RELATIONS = ['patient:id,name,phone,email', 'procedure', 'professional:id,name'];
 
     /** Lists the entries, oldest first. Without a status, the open ones (waiting and notified). */
     public function index(Request $request): AnonymousResourceCollection

@@ -17,16 +17,22 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PatientAttachmentController extends Controller
 {
-    /** Lists the files of the patient, newest first. */
+    /** Files per page of the patient record. */
+    private const PER_PAGE = 30;
+
+    /** Lists the files of the patient, newest first, in pages. */
     public function index(Patient $patient): AnonymousResourceCollection
     {
         Gate::authorize('viewRecord', $patient);
 
         $attachments = PatientAttachment::query()
-            ->with(['uploader', 'patient'])
+            ->with('uploader:id,name')
             ->where('patient_id', $patient->id)
             ->latest('id')
-            ->get();
+            ->paginate(self::PER_PAGE);
+
+        // Every row belongs to this patient, so it is set once instead of loaded per row.
+        $attachments->getCollection()->each->setRelation('patient', $patient);
 
         return PatientAttachmentResource::collection($attachments);
     }

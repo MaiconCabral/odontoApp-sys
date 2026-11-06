@@ -6,6 +6,7 @@ use App\Domains\Agenda\Enums\AppointmentStatus;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Identity\Models\User;
 use App\Domains\Notifications\Models\NotificationLog;
+use Carbon\CarbonImmutable;
 use Database\Factories\AppointmentFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,6 +22,9 @@ class Appointment extends Model
     public const SOURCE_INTERNAL = 'internal';
 
     public const SOURCE_PUBLIC = 'public';
+
+    /** Longest an appointment may last (procedures go up to 4 hours), with room to spare. */
+    public const MAX_MINUTES = 24 * 60;
 
     protected $fillable = [
         'patient_id',
@@ -139,16 +143,24 @@ class Appointment extends Model
         return $query->withSum(['payments as paid_cents' => fn ($payments) => $payments->whereNull('voided_at')], 'amount_cents');
     }
 
+    /** Loads the sum of the valid payments as paid_cents on this model. */
+    public function loadPaidCents(): static
+    {
+        return $this->loadSum(['payments as paid_cents' => fn ($payments) => $payments->whereNull('voided_at')], 'amount_cents');
+    }
+
     /** Appointments that hold their time in the agenda. */
     public function scopeOccupying(Builder $query): Builder
     {
         return $query->whereIn('status', AppointmentStatus::occupying());
     }
 
-    /** Appointments that cross the given interval. */
+    /** Appointments that cross the given interval, bounded below so the starts_at index skips the history. */
     public function scopeOverlapping(Builder $query, mixed $start, mixed $end): Builder
     {
-        return $query->where('starts_at', '<', $end)->where('ends_at', '>', $start);
+        $earliest = CarbonImmutable::parse($start)->subMinutes(self::MAX_MINUTES);
+
+        return $query->where('starts_at', '>', $earliest)->where('starts_at', '<', $end)->where('ends_at', '>', $start);
     }
 
     /** Moves to a status and writes it in the history. */

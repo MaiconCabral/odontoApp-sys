@@ -21,16 +21,19 @@ class ClinicalRecordController extends Controller
     /** Latest odontogram changes listed below the chart. */
     private const HISTORY_LIMIT = 100;
 
-    /** Lists the notes of the medical record, newest first. */
+    /** Notes per page of the medical record. */
+    private const NOTES_PER_PAGE = 30;
+
+    /** Lists the notes of the medical record, newest first, in pages. */
     public function notes(Patient $patient): AnonymousResourceCollection
     {
         Gate::authorize('viewRecord', $patient);
 
         $notes = ClinicalNote::query()
-            ->with(['author', 'appointment.procedure'])
+            ->with(['author:id,name', 'appointment.procedure'])
             ->where('patient_id', $patient->id)
             ->latest('id')
-            ->get();
+            ->paginate(self::NOTES_PER_PAGE);
 
         return ClinicalNoteResource::collection($notes);
     }
@@ -40,7 +43,7 @@ class ClinicalRecordController extends Controller
     {
         $note = $addNote->handle($patient, $request->toData(), $request->user());
 
-        return (new ClinicalNoteResource($note->load(['author', 'appointment.procedure'])))->response()->setStatusCode(201);
+        return (new ClinicalNoteResource($note->load(['author:id,name', 'appointment.procedure'])))->response()->setStatusCode(201);
     }
 
     /** Current state of each tooth and the latest changes. */
@@ -48,7 +51,7 @@ class ClinicalRecordController extends Controller
     {
         Gate::authorize('viewRecord', $patient);
 
-        $records = ToothRecord::query()->with('author')->where('patient_id', $patient->id);
+        $records = ToothRecord::query()->with('author:id,name')->where('patient_id', $patient->id);
 
         return response()->json([
             'current' => ToothRecordResource::collection((clone $records)->current()->orderBy('tooth')->get()),
