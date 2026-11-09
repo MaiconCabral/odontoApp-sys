@@ -67,6 +67,8 @@ A extensão `phpredis` não está instalada no ambiente local:
 
 ## Produção
 
+O servidor de demonstração (Docker na VPS, atrás do Nginx Proxy Manager) está descrito em [`deploy/README.md`](../../deploy/README.md). Cada clínica é um subdomínio, então o DNS precisa de um registro wildcard (`*.odonto.<dominio>`) e o certificado também. Atrás de proxy, defina `TRUSTED_PROXIES=*` para o Laravel enxergar o HTTPS original.
+
 Ajuste no ambiente:
 
 - `TENANCY_CENTRAL_DOMAINS`: o domínio central primeiro, pois ele monta os links enviados por e-mail.
@@ -75,6 +77,8 @@ Ajuste no ambiente:
 - `SESSION_SECURE_COOKIE=true`.
 
 `SEED_DEMO_PASSWORD` não deve existir em produção.
+
+No servidor de demonstração, `DEMO_MODE=true` faz o `db:seed` criar as clínicas demo e agenda o `demo:reset` para as 04:00. O reset apaga todas as clínicas, incluindo os bancos e os anexos delas, e roda `migrate:fresh --seed`. Fora do modo demo o comando se recusa a rodar.
 
 ## Testes
 

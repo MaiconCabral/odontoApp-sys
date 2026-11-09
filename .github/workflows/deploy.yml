@@ -1,0 +1,119 @@
+name: Deploy
+
+# Every push to main: tests, images on GHCR, then the VPS pulls them and migrates.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  images:
+    name: Image ${{ matrix.image }}
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - image: odonto-api
+            dockerfile: deploy/api.Dockerfile
+          - image: odonto-web
+            dockerfile: deploy/web.Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Image name
+        id: name
+        run: echo "ref=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/${{ matrix.image }}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: |
+            ${{ steps.name.outputs.ref }}:latest
+            ${{ steps.name.outputs.ref }}:sha-${{ github.sha }}
+          # Links the package to this repository, so the deploy token may pull it.
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+  deploy:
+    name: Deploy to the VPS
+    needs: images
+    runs-on: ubuntu-latest
+    environment: demo
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy the stack files
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          source: deploy/docker-compose.yml,deploy/nginx/router.conf,deploy/mysql/init/10-clinic-grants.sh
+          target: /opt/odonto
+          strip_components: 1
+
+      - name: Pull, restart and migrate
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          IMAGE_TAG: sha-${{ github.sha }}
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          envs: IMAGE_TAG,GHCR_USER,GHCR_TOKEN
+          command_timeout: 15m
+          script: |
+            set -e
+            cd /opt/odonto
+            chmod +x mysql/init/*.sh
+
+            # The tag deployed stays in .env, so a restart or a rollback knows what runs.
+            sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=${IMAGE_TAG}/" .env
+
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+            docker compose pull
+            docker logout ghcr.io
+
+            docker compose up -d --remove-orphans --wait --wait-timeout 300
+            docker compose exec -T api php artisan migrate --force
+            docker compose exec -T api php artisan tenants:migrate --force
+            docker image prune -f
+
+      - name: Health check
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            if curl -fsS "https://${{ vars.DEPLOY_DOMAIN }}/up" > /dev/null; then
+              echo "odontoApp is up"; exit 0
+            fi
+            sleep 10
+          done
+          echo "https://${{ vars.DEPLOY_DOMAIN }}/up did not answer"; exit 1

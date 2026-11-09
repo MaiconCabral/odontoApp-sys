@@ -59,6 +59,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Demo mode
+    |--------------------------------------------------------------------------
+    |
+    | On the public demo server, the seeders create the demo clinics and the
+    | data is wiped and seeded again every day (demo:reset). Off by default,
+    | so local and production environments are never reset.
+    |
+    */
+
+    'demo' => (bool) env('DEMO_MODE', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

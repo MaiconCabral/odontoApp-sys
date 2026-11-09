@@ -17,6 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->statefulApi();
+
+        // Behind the proxies of the server (TRUSTED_PROXIES=*), Laravel must read the original scheme
+        // and host from X-Forwarded-*. Empty by default, so local development trusts no proxy.
+        if ($proxies = env('TRUSTED_PROXIES')) {
+            $middleware->trustProxies(at: $proxies === '*' ? '*' : explode(',', $proxies));
+        }
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(fn (AuthenticationException $exception, Request $request) => $request->expectsJson()

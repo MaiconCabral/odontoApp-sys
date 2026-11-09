@@ -1,0 +1,100 @@
+# odontoApp stack for the demo server. Run from the folder with the .env (see deploy/README.md):
+#   docker compose pull && docker compose up -d
+#
+# router     the only entry; Nginx Proxy Manager forwards odonto.<domain> and *.odonto.<domain> to it
+# api        Laravel (PHP-FPM + nginx)
+# worker     queue (patient e-mails) · scheduler: reminders every 15 min and the 04:00 demo reset
+# web        Nuxt server · mysql: central database and one database per clinic
+
+name: odonto
+
+x-app: &app
+  image: ghcr.io/maiconcabral/odonto-api:${IMAGE_TAG:-latest}
+  env_file: .env
+  restart: unless-stopped
+  depends_on:
+    mysql:
+      condition: service_healthy
+  volumes:
+    - storage:/var/www/html/storage
+  networks:
+    - internal
+
+services:
+  router:
+    image: nginx:1.27-alpine
+    container_name: odonto-router
+    restart: unless-stopped
+    volumes:
+      - ./nginx/router.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - api
+      - web
+    networks:
+      - internal
+      - proxy
+
+  api:
+    <<: *app
+    environment:
+      # Caches config, routes, views and events on start; migrations run in the deploy job.
+      AUTORUN_ENABLED: "true"
+      AUTORUN_LARAVEL_MIGRATION: "false"
+      AUTORUN_LARAVEL_STORAGE_LINK: "false"
+
+  worker:
+    <<: *app
+    command: ["php", "/var/www/html/artisan", "queue:work", "--tries=3", "--max-time=3600"]
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "healthcheck-queue"]
+      start_period: 10s
+
+  scheduler:
+    <<: *app
+    command: ["php", "/var/www/html/artisan", "schedule:work"]
+    stop_signal: SIGTERM
+    healthcheck:
+      test: ["CMD", "healthcheck-schedule"]
+      start_period: 10s
+
+  web:
+    image: ghcr.io/maiconcabral/odonto-web:${IMAGE_TAG:-latest}
+    env_file: .env
+    restart: unless-stopped
+    networks:
+      - internal
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      TZ: America/Sao_Paulo
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - internal
+
+volumes:
+  mysql-data:
+  storage:
+
+networks:
+  internal:
+  # Network of Nginx Proxy Manager, so it reaches the router by its container name.
+  proxy:
+    external: true
+    name: ${NPM_NETWORK:-nginx-proxy-manager_default}

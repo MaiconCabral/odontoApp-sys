@@ -1,0 +1,27 @@
+# Optional local test of the containers, apart from the XAMPP setup (nothing here uses 80, 443
+# or 3306). Builds the images from this checkout and opens the stack on port 8088:
+#   docker network create odonto-local-proxy   (once; stands in for the NPM network)
+#   docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.local.yml --env-file deploy/.env up -d --build
+# Then http://localhost:8088 and http://sorriso-perfeito.localhost:8088
+services:
+  router:
+    ports:
+      - "8088:80"
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/api.Dockerfile
+  worker:
+    build:
+      context: ..
+      dockerfile: deploy/api.Dockerfile
+  scheduler:
+    build:
+      context: ..
+      dockerfile: deploy/api.Dockerfile
+
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/web.Dockerfile
