@@ -5,20 +5,15 @@
 # api        Laravel (PHP-FPM + nginx)
 # worker     queue (patient e-mails) · scheduler: reminders every 15 min and the 04:00 demo reset
 # web        Nuxt server · mysql: central database and one database per clinic
+#
+# Networks:
+#   odonto_proxy     shared only by Nginx Proxy Manager and the router (create it once, see README)
+#   odonto_internal  router, api, worker, scheduler, web and mysql; nothing else reaches it
+#
+# api, worker and scheduler repeat the same settings on purpose: the Hostinger Docker panel
+# cannot read YAML anchors (&app / <<: *app).
 
 name: odonto
-
-x-app: &app
-  image: ghcr.io/maiconcabral/odonto-api:${IMAGE_TAG:-latest}
-  env_file: .env
-  restart: unless-stopped
-  depends_on:
-    mysql:
-      condition: service_healthy
-  volumes:
-    - storage:/var/www/html/storage
-  networks:
-    - internal
 
 services:
   router:
@@ -35,29 +30,56 @@ services:
       - proxy
 
   api:
-    <<: *app
+    image: ghcr.io/maiconcabral/odonto-api:${IMAGE_TAG:-latest}
+    env_file: .env
+    restart: unless-stopped
     environment:
       # Caches config, routes, views and events on start; migrations run in the deploy job.
       AUTORUN_ENABLED: "true"
       AUTORUN_LARAVEL_MIGRATION: "false"
       AUTORUN_LARAVEL_STORAGE_LINK: "false"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - storage:/var/www/html/storage
+    networks:
+      - internal
 
   worker:
-    <<: *app
+    image: ghcr.io/maiconcabral/odonto-api:${IMAGE_TAG:-latest}
+    env_file: .env
+    restart: unless-stopped
     command: ["php", "/var/www/html/artisan", "queue:work", "--tries=3", "--max-time=3600"]
     stop_signal: SIGTERM
     stop_grace_period: 30s
     healthcheck:
       test: ["CMD", "healthcheck-queue"]
       start_period: 10s
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - storage:/var/www/html/storage
+    networks:
+      - internal
 
   scheduler:
-    <<: *app
+    image: ghcr.io/maiconcabral/odonto-api:${IMAGE_TAG:-latest}
+    env_file: .env
+    restart: unless-stopped
     command: ["php", "/var/www/html/artisan", "schedule:work"]
     stop_signal: SIGTERM
     healthcheck:
       test: ["CMD", "healthcheck-schedule"]
       start_period: 10s
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - storage:/var/www/html/storage
+    networks:
+      - internal
 
   web:
     image: ghcr.io/maiconcabral/odonto-web:${IMAGE_TAG:-latest}
@@ -94,7 +116,9 @@ volumes:
 
 networks:
   internal:
-  # Network of Nginx Proxy Manager, so it reaches the router by its container name.
+  # Dedicated network between Nginx Proxy Manager and the router. It is created outside this
+  # stack (docker network create odonto_proxy) and NPM is connected to it, so NPM reaches
+  # odonto-router by name without joining the networks of other projects.
   proxy:
     external: true
-    name: ${NPM_NETWORK:-nginx-proxy-manager_default}
+    name: ${NPM_NETWORK:-odonto_proxy}

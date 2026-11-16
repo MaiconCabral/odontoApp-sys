@@ -49,8 +49,25 @@ Um certificado para `*.odonto.<dominio>` só sai pelo desafio DNS:
 
 ```bash
 sudo mkdir -p /opt/odonto && sudo chown $USER /opt/odonto
-docker network ls | grep -i proxy   # nome da rede do NPM, para NPM_NETWORK
 ```
+
+#### Rede dedicada entre o NPM e o odontoApp
+
+O NPM fala com o `odonto-router` por uma rede só deste projeto, a `odonto_proxy`. Assim, o odontoApp não entra nas redes dos outros sites, e o NPM não entra na rede interna da stack (`odonto_internal`).
+
+```bash
+NPM=$(docker ps --format '{{.Names}}' | grep -i -E 'proxy|npm' | head -1); echo "NPM: $NPM"
+docker network create odonto_proxy
+docker network connect odonto_proxy "$NPM"
+```
+
+O `docker network connect` continua valendo depois de reiniciar o NPM, mas se perde quando o container dele é recriado (numa atualização, por exemplo). Para deixar fixo, declare a rede no compose do próprio NPM, cuja pasta aparece com:
+
+```bash
+docker inspect "$NPM" --format '{{index .Config.Labels "com.docker.compose.project.working_dir"}}'
+```
+
+Nesse arquivo, acrescente `odonto_proxy` às redes do serviço do NPM, sem remover as que ele já usa, e declare-a como `external: true`.
 
 Copie para `/opt/odonto` os arquivos `docker-compose.yml`, `nginx/` e `mysql/`. Depois do primeiro deploy, o GitHub Actions passa a copiá-los sozinho.
 

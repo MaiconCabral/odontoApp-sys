@@ -109,11 +109,19 @@ jobs:
             docker image prune -f
 
       - name: Health check
+        env:
+          DEPLOY_DOMAIN: ${{ vars.DEPLOY_DOMAIN }}
         run: |
+          # Accepts the domain with or without https:// and a trailing slash.
+          domain="${DEPLOY_DOMAIN#http://}"
+          domain="${domain#https://}"
+          domain="${domain%%/*}"
+          url="https://${domain}/up"
+
           for attempt in 1 2 3 4 5 6; do
-            if curl -fsS "https://${{ vars.DEPLOY_DOMAIN }}/up" > /dev/null; then
-              echo "odontoApp is up"; exit 0
+            if curl -fsS "$url" > /dev/null; then
+              echo "odontoApp is up at $url"; exit 0
             fi
             sleep 10
           done
-          echo "https://${{ vars.DEPLOY_DOMAIN }}/up did not answer"; exit 1
+          echo "$url did not answer"; exit 1
