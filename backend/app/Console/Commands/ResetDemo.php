@@ -68,8 +68,11 @@ class ResetDemo extends Command
             return count($files);
         }
 
-        $names = collect(DB::connection($central)->select('SHOW DATABASES LIKE ?', [str_replace('_', '\_', $prefix).'%']))
-            ->map(fn (object $row) => array_values((array) $row)[0]);
+        // SHOW DATABASES LIKE does not take a bound parameter in MySQL; information_schema does.
+        $names = collect(DB::connection($central)->select(
+            'SELECT SCHEMA_NAME AS name FROM information_schema.SCHEMATA WHERE SCHEMA_NAME LIKE ?',
+            [str_replace('_', '\_', $prefix).'%'],
+        ))->map(fn (object $row) => $row->name);
 
         $names->each(fn (string $name) => DB::connection($central)->statement('DROP DATABASE `'.str_replace('`', '', $name).'`'));
 
