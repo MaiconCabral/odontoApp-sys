@@ -104,6 +104,9 @@ jobs:
             docker logout ghcr.io
 
             docker compose up -d --remove-orphans --wait --wait-timeout 300
+            # router.conf is a mounted file: compose does not restart the router when only it
+            # changes, so the restart loads the copy sent in this deploy.
+            docker compose restart router
             docker compose exec -T api php artisan migrate --force
             docker compose exec -T api php artisan tenants:migrate --force
             docker image prune -f
