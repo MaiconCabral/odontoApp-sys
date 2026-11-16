@@ -50,7 +50,12 @@ it('refuses a repeated CPF and invalid data', function () {
 it('searches by name, CPF digits or phone digits, page by page', function () {
     $this->clinic->run(function () {
         Patient::factory()->create(['name' => 'Mariana Costa', 'cpf' => '111.222.333-44', 'phone' => '(11) 90000-1111']);
-        Patient::factory()->count(25)->create();
+        // Fixed names and phones: a random "Mariana" or a phone with 900001111 would match the search.
+        // "(21) 3…" leaves only 8 digits after a 9 can appear, too few to hold 900001111.
+        Patient::factory()->count(25)->sequence(fn ($sequence) => [
+            'name' => 'Paciente '.($sequence->index + 1),
+            'phone' => fake()->numerify('(21) 3###-####'),
+        ])->create();
     });
 
     $this->signIn('sorriso', $this->receptionist);
